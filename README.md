@@ -1,4 +1,4 @@
-# 🎓 E-Kurs — Fullstack EdTech & Learning Management Platform
+# 🎓 Course Management Platform — Fullstack EdTech & Learning Management Platform
 
 [![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
 [![React 19](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=black)](https://react.dev/)
@@ -69,7 +69,7 @@ A modern, role-based educational management and online course platform built wit
 ## 📂 Project Architecture
 
 ```
-e-kurs-projesi/
+course-management-platform/
 ├── backend/
 │   ├── EdTechApi.API/           # HTTP Controllers, Middlewares, DI Setup, Program.cs
 │   │   ├── Controllers/         # Auth, Courses, Students, Teachers, Requests, etc.
