@@ -37,6 +37,7 @@ dist-ssr
 
 # User uploaded files (profile photos, etc.)
 backend/EdTechApi.API/wwwroot/uploads/
+backend/EdTechApi.API/App_Data/
 
 # Visual Studio
 .vs/

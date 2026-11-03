@@ -78,5 +78,32 @@ namespace EdTechApi.API.Controllers
             var relativeUrl = $"/uploads/course-images/{fileName}";
             return Ok(new { url = relativeUrl });
         }
+
+        // Ders videosu yükleme. Dosya wwwroot dışına kaydedilir; LessonsController imzalı adresle sunar.
+        [HttpPost("video")]
+        [Authorize(Roles = "Admin,Teacher")]
+        [RequestSizeLimit(524_288_000)] // 500 MB
+        [RequestFormLimits(MultipartBodyLengthLimit = 524_288_000)]
+        public async Task<IActionResult> UploadVideo(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("Dosya seçilmedi.");
+
+            var allowedExtensions = new[] { ".mp4", ".webm" };
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(extension))
+                return BadRequest("Sadece mp4 veya webm videoları yüklenebilir.");
+
+            var uploadsFolder = EdTechApi.API.Helpers.VideoUrlSigner.FolderPath(_env);
+            Directory.CreateDirectory(uploadsFolder);
+
+            var fileName = $"{Guid.NewGuid()}{extension}";
+            using (var stream = new FileStream(Path.Combine(uploadsFolder, fileName), FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return Ok(new { url = $"{EdTechApi.API.Helpers.VideoUrlSigner.Prefix}{fileName}" });
+        }
     }
 }
