@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.RateLimiting;
 using EdTechApi.DataAccess.Context;
 using EdTechApi.Core.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -31,6 +32,11 @@ namespace EdTechApi.API.Controllers
             _emailService = emailService;
         }
 
+        private const int MaxOtpAttempts = 5;
+        private const int MaxLoginFailures = 5;
+        private static readonly TimeSpan LoginLockout = TimeSpan.FromMinutes(5);
+
+        [EnableRateLimiting("auth")]
         [HttpPost("send-verification-email")]
         public async Task<IActionResult> SendVerificationEmail([FromBody] SendVerificationEmailRequest request)
         {
@@ -41,9 +47,10 @@ namespace EdTechApi.API.Controllers
             if (emailExists)
                 return BadRequest("Bu e-posta adresi zaten kullanımda.");
 
-            var code = new Random().Next(100000, 999999).ToString();
+            var code = System.Security.Cryptography.RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
 
             _memoryCache.Set(request.Email, code, TimeSpan.FromMinutes(5));
+            _memoryCache.Remove($"otp-fail:{request.Email}");
 
             var subject = "E-Kurs Kayıt Doğrulama Kodu";
             var body = $@"
@@ -58,6 +65,7 @@ namespace EdTechApi.API.Controllers
             return Ok(new { message = "Doğrulama kodu e-posta adresinize gönderildi." });
         }
 
+        [EnableRateLimiting("auth")]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
@@ -69,8 +77,14 @@ namespace EdTechApi.API.Controllers
             {
                 if (!_memoryCache.TryGetValue(request.Email, out string? expectedCode) || expectedCode != request.VerificationCode)
                 {
+                    // Kaba kuvvete karşı: 5 yanlış denemede kod geçersiz olur, yenisi istenmeli
+                    var failKey = $"otp-fail:{request.Email}";
+                    var fails = _memoryCache.GetOrCreate(failKey, e => { e.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5); return 0; }) + 1;
+                    _memoryCache.Set(failKey, fails, TimeSpan.FromMinutes(5));
+                    if (fails >= MaxOtpAttempts) _memoryCache.Remove(request.Email);
                     return BadRequest("Geçersiz veya süresi dolmuş doğrulama kodu.");
                 }
+                _memoryCache.Remove(request.Email); // kod tek kullanımlık
             }
 
             if (!new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(request.Email))
@@ -186,15 +200,22 @@ namespace EdTechApi.API.Controllers
             }
         }
 
+        [EnableRateLimiting("auth")]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
+            var lockKey = $"login-fail:{request.Username?.ToLowerInvariant()}";
+            if (_memoryCache.TryGetValue(lockKey, out int failures) && failures >= MaxLoginFailures)
+                return StatusCode(429, "Çok fazla hatalı giriş denemesi. Lütfen 5 dakika sonra tekrar deneyin.");
+
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username || u.Email == request.Username);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
             {
+                _memoryCache.Set(lockKey, failures + 1, LoginLockout);
                 return Unauthorized("Geçersiz kullanıcı adı veya şifre.");
             }
+            _memoryCache.Remove(lockKey);
 
             var tokenString = GenerateJwtToken(user);
             return Ok(new { token = tokenString });

@@ -1,4 +1,7 @@
+using EdTechApi.API.Helpers;
 using EdTechApi.Business.Interfaces;
+using EdTechApi.DataAccess.Context;
+using Microsoft.EntityFrameworkCore;
 using EdTechApi.Core.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,17 +18,21 @@ namespace EdTechApi.API.Controllers
     public class StudentsController : ControllerBase
     {
         private readonly IStudentService _studentService;
+        private readonly AppDbContext _context;
 
-        public StudentsController(IStudentService studentService)
+        public StudentsController(IStudentService studentService, AppDbContext context)
         {
             _studentService = studentService;
+            _context = context;
         }
 
+        // Yönetici herkesi, öğretmen yalnızca kendi kurslarındaki öğrencileri görür; öğrenciler listeyi göremez.
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var students = await _studentService.GetAllStudentsAsync();
-            return Ok(students);
+            if (User.IsAdmin()) return Ok(await _studentService.GetAllStudentsAsync());
+            if (!User.IsInRole("Teacher")) return StatusCode(403, "Öğrenci listesini görme yetkiniz yok.");
+            return Ok(await StudentsOfMyCourses().ToListAsync());
         }
 
         [HttpGet("{id}")]
@@ -36,7 +43,18 @@ namespace EdTechApi.API.Controllers
             {
                 return NotFound("Öğrenci bulunamadı.");
             }
+            var username = User.GetUsername();
+            var isSelf = student.UserId != null && await _context.Users.AnyAsync(u => u.Id == student.UserId && u.Username == username);
+            var isMyStudent = User.IsInRole("Teacher") && await StudentsOfMyCourses().AnyAsync(s => s.Id == id);
+            if (!User.IsAdmin() && !isSelf && !isMyStudent) return StatusCode(403, "Bu öğrenciyi görme yetkiniz yok.");
             return Ok(student);
+        }
+
+        private IQueryable<Student> StudentsOfMyCourses()
+        {
+            var username = User.GetUsername();
+            return _context.Students.Where(s => s.Enrollments.Any(e =>
+                e.Course.Teacher != null && e.Course.Teacher.User != null && e.Course.Teacher.User.Username == username));
         }
 
 

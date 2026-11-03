@@ -124,11 +124,26 @@ namespace EdTechApi.API.Controllers
             return Ok(new { message = "Kayıt başarıyla silindi." });
         }
 
-        [Authorize(Roles = "Admin")]
+        // Kapasite sayıları için herkes kayıtları görür; ad/numara yalnızca yöneticiye,
+        // kursun öğretmenine ve kaydın sahibine gösterilir.
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAllEnrollments()
         {
-            var enrollments = await _enrollmentService.GetAllEnrollmentsAsync();
+            var enrollments = (await _enrollmentService.GetAllEnrollmentsAsync()).ToList();
+            if (EdTechApi.API.Helpers.ClaimsPrincipalExtensions.IsAdmin(User)) return Ok(enrollments);
+
+            var username = EdTechApi.API.Helpers.ClaimsPrincipalExtensions.GetUsername(User);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            if (user == null) return Unauthorized();
+            var myStudentId = await _context.Students.Where(s => s.UserId == user.Id).Select(s => (int?)s.Id).FirstOrDefaultAsync();
+            var myCourseIds = await _context.Courses.Where(c => c.Teacher != null && c.Teacher.UserId == user.Id).Select(c => c.Id).ToListAsync();
+
+            foreach (var e in enrollments.Where(e => e.StudentId != myStudentId && !myCourseIds.Contains(e.CourseId)))
+            {
+                e.StudentFullName = string.Empty;
+                e.StudentNumber = string.Empty;
+            }
             return Ok(enrollments);
         }
 

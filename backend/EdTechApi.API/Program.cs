@@ -67,6 +67,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddOpenApi();
 
+// Giriş/kayıt uç noktaları: IP başına dakikada 10 istek
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("auth", http => System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
+        http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1) }));
+});
+
+
 var app = builder.Build();
 
 if (builder.Configuration["Jwt:Key"]?.StartsWith("YOUR_SECRET") == true)
@@ -114,6 +124,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
 app.UseMiddleware<EdTechApi.API.Middlewares.ExceptionMiddleware>();
 app.MapControllers();
 
