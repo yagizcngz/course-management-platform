@@ -277,13 +277,6 @@ function HomePage() {
       >
         <div className="w-full aspect-video relative overflow-hidden bg-muted">
           <img src={getCourseImage(c, index)} alt={title} className="w-full h-full object-cover" />
-          <div
-            className="absolute inset-0 opacity-20"
-            style={{
-              backgroundImage:
-                "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(0,0,0,0.06) 100%)",
-            }}
-          />
           {isEnrolled && status && (
             <div className="absolute top-2 right-2 bg-black text-white text-[10px] px-2 py-1 rounded-sm font-bold uppercase z-10">
               {i18n.exists(`dynamic.status.${status}`)

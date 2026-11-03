@@ -262,8 +262,8 @@ export function AppSidebar() {
               to={item.url}
               className={`group flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-all ${
                 isActive
-                  ? "bg-neutral-900 text-white font-medium shadow-[0_4px_10px_-2px_rgba(0,0,0,0.45),inset_0_1px_0_0_rgba(255,255,255,0.12),inset_0_-2px_0_0_rgba(0,0,0,0.5)] ring-1 ring-black/60"
-                  : "text-sidebar-foreground hover:bg-neutral-900/5 hover:text-neutral-900 hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.4),inset_0_-1px_0_0_rgba(0,0,0,0.08)] dark:hover:bg-white/5 dark:hover:text-white"
+                  ? "bg-neutral-900 text-white font-medium dark:bg-white dark:text-neutral-900"
+                  : "text-sidebar-foreground hover:bg-neutral-900/5 hover:text-neutral-900 dark:hover:bg-white/5 dark:hover:text-white"
               }`}
             >
               <Icon className="h-4 w-4" />

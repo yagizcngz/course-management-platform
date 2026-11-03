@@ -779,7 +779,7 @@ function SettingsPage() {
       {/* Delete Setting Confirmation Modal */}
       {deleteSettingConfirm && (
         <div className="fixed inset-0 z-100 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-background rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="bg-background rounded-2xl shadow-lg w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-6">
               <div className="flex gap-4">
                 <div className="size-10 rounded-full bg-red-100 grid place-items-center shrink-0">
@@ -846,7 +846,7 @@ function SettingsPage() {
       {/* Delete Category Confirmation Modal */}
       {deleteCategoryConfirm && (
         <div className="fixed inset-0 z-100 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-background rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="bg-background rounded-2xl shadow-lg w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-6">
               <div className="flex gap-4">
                 <div className="size-10 rounded-full bg-red-100 grid place-items-center shrink-0">

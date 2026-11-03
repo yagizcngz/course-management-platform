@@ -544,13 +544,6 @@ function CoursesPage() {
                 >
                   <div className="w-full aspect-video relative overflow-hidden bg-neutral-100">
                     <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
-                    <div
-                      className="absolute inset-0 opacity-20"
-                      style={{
-                        backgroundImage:
-                          "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(0,0,0,0.06) 100%)",
-                      }}
-                    />
                     {(() => {
                       const isStudent =
                         isStudentRole(currentUser.role) ||
@@ -651,7 +644,7 @@ function CoursesPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-md p-6 relative animate-in zoom-in-95 duration-200"
+            className="bg-card border border-border rounded-xl shadow-lg w-full max-w-md p-6 relative animate-in zoom-in-95 duration-200"
           >
             <button
               onClick={handleCloseModal}
@@ -793,7 +786,7 @@ function CoursesPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-md p-6 animate-in zoom-in-95 duration-200"
+            className="bg-card border border-border rounded-xl shadow-lg w-full max-w-md p-6 animate-in zoom-in-95 duration-200"
           >
             <div className="flex items-start gap-4">
               <div className="size-10 rounded-full bg-red-100 grid place-items-center shrink-0">

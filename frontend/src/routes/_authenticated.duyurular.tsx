@@ -147,7 +147,7 @@ function AnnouncementsPage() {
           onClick={() => setIsModalOpen(false)}
         >
           <div
-            className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-lg p-6 relative animate-in zoom-in-95 duration-200"
+            className="bg-card border border-border rounded-xl shadow-lg w-full max-w-lg p-6 relative animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-xl font-bold mb-6">

@@ -370,7 +370,7 @@ function ProfilePage() {
                     {branch.map((b) => (
                       <span
                         key={b}
-                        className="bg-slate-100 dark:bg-zinc-800 text-sm px-2 py-1 rounded-md"
+                        className="bg-zinc-100 dark:bg-zinc-800 text-sm px-2 py-1 rounded-md"
                       >
                         {i18n.exists(`dynamic.categories.${b}`) ? t(`dynamic.categories.${b}`) : b}
                       </span>
@@ -507,7 +507,7 @@ function ProfilePage() {
                     {categories.map((c) => (
                       <label
                         key={c}
-                        className="flex items-center gap-2 text-sm bg-slate-50 dark:bg-zinc-800/50 p-2 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                        className="flex items-center gap-2 text-sm bg-zinc-50 dark:bg-zinc-800/50 p-2 rounded-md cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                       >
                         <input
                           type="checkbox"
@@ -516,7 +516,7 @@ function ProfilePage() {
                             if (e.target.checked) setBranch([...branch, c]);
                             else setBranch(branch.filter((b) => b !== c));
                           }}
-                          className="rounded text-indigo-600 focus:ring-indigo-500"
+                          className="rounded text-foreground focus:ring-foreground"
                         />
                         {i18n.exists(`dynamic.categories.${c}`) ? t(`dynamic.categories.${c}`) : c}
                       </label>

@@ -645,7 +645,7 @@ function TeachersPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm p-8 relative flex flex-col items-center animate-in zoom-in-95 duration-200"
+            className="bg-card border border-border rounded-2xl shadow-lg w-full max-w-sm p-8 relative flex flex-col items-center animate-in zoom-in-95 duration-200"
           >
             <button
               onClick={() => setSelectedProfileTeacher(null)}
@@ -681,7 +681,7 @@ function TeachersPage() {
                       className="size-20 rounded-full object-cover border border-border"
                     />
                   ) : (
-                    <div className="size-20 rounded-full bg-linear-to-tr from-stone-800 to-stone-600 text-white flex items-center justify-center text-2xl font-mono uppercase">
+                    <div className="size-20 rounded-full bg-neutral-900 dark:bg-neutral-700 text-white flex items-center justify-center text-2xl font-mono uppercase">
                       {`${editFirstName || ""} ${editLastName || ""}`
                         .trim()
                         .slice(0, 2)
@@ -787,7 +787,7 @@ function TeachersPage() {
                     {categories.map((c) => (
                       <label
                         key={c}
-                        className="flex items-center gap-2 text-sm bg-slate-50 dark:bg-zinc-800/50 p-2 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                        className="flex items-center gap-2 text-sm bg-zinc-50 dark:bg-zinc-800/50 p-2 rounded-md cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                       >
                         <input
                           type="checkbox"
@@ -796,7 +796,7 @@ function TeachersPage() {
                             if (e.target.checked) setEditBranch([...editBranch, c]);
                             else setEditBranch(editBranch.filter((b) => b !== c));
                           }}
-                          className="rounded text-indigo-600 focus:ring-indigo-500"
+                          className="rounded text-foreground focus:ring-foreground"
                         />
                         {i18n.exists(`dynamic.categories.${c}`) ? t(`dynamic.categories.${c}`) : c}
                       </label>
@@ -848,7 +848,7 @@ function TeachersPage() {
                       className="size-24 rounded-full object-cover shadow-md border border-border"
                     />
                   ) : (
-                    <div className="size-24 rounded-full bg-linear-to-tr from-stone-800 to-stone-600 text-white flex items-center justify-center text-3xl font-mono uppercase shadow-md">
+                    <div className="size-24 rounded-full bg-neutral-900 dark:bg-neutral-700 text-white flex items-center justify-center text-3xl font-mono uppercase shadow-md">
                       {`${selectedProfileTeacher.firstName || selectedProfileTeacher.FirstName || ""} ${selectedProfileTeacher.lastName || selectedProfileTeacher.LastName || ""}`
                         .trim()
                         .slice(0, 2)
@@ -916,7 +916,7 @@ function TeachersPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-md p-6 relative animate-in zoom-in-95 duration-200"
+            className="bg-card border border-border rounded-xl shadow-lg w-full max-w-md p-6 relative animate-in zoom-in-95 duration-200"
           >
             <button
               onClick={() => setIsModalOpen(false)}
@@ -1014,7 +1014,7 @@ function TeachersPage() {
                   {categories.map((c) => (
                     <label
                       key={c}
-                      className="flex items-center gap-2 text-sm bg-slate-50 dark:bg-zinc-800/50 p-2 rounded-md cursor-pointer hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+                      className="flex items-center gap-2 text-sm bg-zinc-50 dark:bg-zinc-800/50 p-2 rounded-md cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                     >
                       <input
                         type="checkbox"
@@ -1023,7 +1023,7 @@ function TeachersPage() {
                           if (e.target.checked) setNewBranch([...newBranch, c]);
                           else setNewBranch(newBranch.filter((b) => b !== c));
                         }}
-                        className="rounded text-indigo-600 focus:ring-indigo-500"
+                        className="rounded text-foreground focus:ring-foreground"
                       />
                       {i18n.exists(`dynamic.categories.${c}`) ? t(`dynamic.categories.${c}`) : c}
                     </label>

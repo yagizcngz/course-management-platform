@@ -56,7 +56,7 @@ export function PageHeader({ crumb, action, searchValue, onSearchChange }: PageH
         <div className="relative">
           <button
             onClick={() => setLangMenuOpen(!langMenuOpen)}
-            className="flex items-center gap-1 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+            className="flex items-center gap-1 p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
           >
             <Globe className="h-5 w-5" />
             <span className="text-xs font-bold uppercase hidden sm:inline-block">
@@ -71,7 +71,7 @@ export function PageHeader({ crumb, action, searchValue, onSearchChange }: PageH
                   localStorage.setItem("i18nextLng", "tr");
                   setLangMenuOpen(false);
                 }}
-                className={`px-4 py-2 text-sm font-bold hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors ${
+                className={`px-4 py-2 text-sm font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors ${
                   i18n.language === "tr" ? "text-primary" : "text-muted-foreground"
                 }`}
               >
@@ -83,7 +83,7 @@ export function PageHeader({ crumb, action, searchValue, onSearchChange }: PageH
                   localStorage.setItem("i18nextLng", "en");
                   setLangMenuOpen(false);
                 }}
-                className={`px-4 py-2 text-sm font-bold hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors ${
+                className={`px-4 py-2 text-sm font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors ${
                   i18n.language === "en" ? "text-primary" : "text-muted-foreground"
                 }`}
               >
@@ -94,7 +94,7 @@ export function PageHeader({ crumb, action, searchValue, onSearchChange }: PageH
         </div>
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors"
+          className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
         >
           {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </button>

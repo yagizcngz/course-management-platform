@@ -425,7 +425,7 @@ export function CourseDetailModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200"
+        className="bg-card border border-border rounded-2xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200"
       >
         <button
           onClick={onClose}
@@ -801,7 +801,7 @@ export function CourseDetailModal({
                       className="size-14 rounded-full object-cover border border-border shrink-0"
                     />
                   ) : (
-                    <div className="size-14 rounded-full bg-linear-to-tr from-stone-800 to-stone-600 text-white flex items-center justify-center text-lg font-mono uppercase shrink-0">
+                    <div className="size-14 rounded-full bg-neutral-900 dark:bg-neutral-700 text-white flex items-center justify-center text-lg font-mono uppercase shrink-0">
                       {instructorInitials}
                     </div>
                   )}
@@ -872,7 +872,7 @@ export function CourseDetailModal({
       </div>
       {statusMessage && (
         <div
-          className={`fixed bottom-6 right-6 z-300 flex items-center gap-3 rounded-lg px-5 py-3.5 text-sm font-bold text-white shadow-xl ${
+          className={`fixed bottom-6 right-6 z-300 flex items-center gap-3 rounded-lg px-5 py-3.5 text-sm font-bold text-white shadow-lg ${
             statusMessage.type === "success" ? "bg-emerald-600" : "bg-red-600"
           }`}
         >

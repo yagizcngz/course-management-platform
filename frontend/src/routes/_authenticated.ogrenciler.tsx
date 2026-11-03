@@ -586,7 +586,7 @@ function StudentsPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-card border border-border rounded-2xl shadow-2xl w-full max-w-sm p-8 relative flex flex-col items-center animate-in zoom-in-95 duration-200"
+            className="bg-card border border-border rounded-2xl shadow-lg w-full max-w-sm p-8 relative flex flex-col items-center animate-in zoom-in-95 duration-200"
           >
             <button
               onClick={() => setSelectedProfileStudent(null)}
@@ -622,7 +622,7 @@ function StudentsPage() {
                       className="size-20 rounded-full object-cover border border-border"
                     />
                   ) : (
-                    <div className="size-20 rounded-full bg-linear-to-tr from-stone-800 to-stone-600 text-white flex items-center justify-center text-2xl font-mono uppercase">
+                    <div className="size-20 rounded-full bg-neutral-900 dark:bg-neutral-700 text-white flex items-center justify-center text-2xl font-mono uppercase">
                       {`${editFirstName || ""} ${editLastName || ""}`
                         .trim()
                         .slice(0, 2)
@@ -765,7 +765,7 @@ function StudentsPage() {
                       className="size-24 rounded-full object-cover shadow-md border border-border"
                     />
                   ) : (
-                    <div className="size-24 rounded-full bg-linear-to-tr from-stone-800 to-stone-600 text-white flex items-center justify-center text-3xl font-mono uppercase shadow-md">
+                    <div className="size-24 rounded-full bg-neutral-900 dark:bg-neutral-700 text-white flex items-center justify-center text-3xl font-mono uppercase shadow-md">
                       {(
                         selectedProfileStudent.name ||
                         `${selectedProfileStudent.firstName || selectedProfileStudent.FirstName || ""} ${selectedProfileStudent.lastName || selectedProfileStudent.LastName || ""}`
@@ -843,7 +843,7 @@ function StudentsPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-md p-6 relative animate-in zoom-in-95 duration-200"
+            className="bg-card border border-border rounded-xl shadow-lg w-full max-w-md p-6 relative animate-in zoom-in-95 duration-200"
           >
             <button
               onClick={() => setIsModalOpen(false)}

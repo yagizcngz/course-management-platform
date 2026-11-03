@@ -110,7 +110,7 @@ function KpiCard({ label, value, hint, hintTone = "muted", valueTone = "default"
       : hintTone === "accent"
         ? "text-accent"
         : hintTone === "warn"
-          ? "text-amber-600"
+          ? "text-foreground"
           : "text-muted-foreground";
   const valueClass =
     valueTone === "accent"

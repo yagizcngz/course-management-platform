@@ -146,13 +146,6 @@ function MyCoursesPage() {
                 >
                   <div className="w-full aspect-video relative overflow-hidden bg-neutral-100 dark:bg-zinc-800">
                     <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
-                    <div
-                      className="absolute inset-0 opacity-20"
-                      style={{
-                        backgroundImage:
-                          "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(0,0,0,0.06) 100%)",
-                      }}
-                    />
                     <span className="absolute top-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider backdrop-blur-sm shadow-sm border border-white/10">
                       {t("dashboard.inProgress", "DEVAM EDİYOR")}
                     </span>

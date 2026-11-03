@@ -241,13 +241,6 @@ function TaughtCoursesPage() {
                   >
                     <div className="w-full aspect-video relative overflow-hidden bg-neutral-100">
                       <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
-                      <div
-                        className="absolute inset-0 opacity-20"
-                        style={{
-                          backgroundImage:
-                            "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(0,0,0,0.06) 100%)",
-                        }}
-                      />
                     </div>
                     <div className="p-5 flex-1 flex flex-col">
                       <div className="flex justify-between items-start mb-3">
@@ -352,7 +345,7 @@ function TaughtCoursesPage() {
           onClick={() => setIsModalOpen(false)}
         >
           <div
-            className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-md p-6"
+            className="bg-card border border-border rounded-xl shadow-lg w-full max-w-md p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-lg font-bold mb-4">{t("courses.newCourse")}</h3>
