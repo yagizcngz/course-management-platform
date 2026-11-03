@@ -11,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Trash, Trash2, Edit2 } from "lucide-react";
 
+import { API_BASE } from "@/components/courseHelpers";
+import { useAdminGuard } from "@/hooks/useAdminGuard";
 export const Route = createFileRoute("/_authenticated/istekler")({
   component: RequestsPage,
 });
@@ -40,6 +42,7 @@ interface SupportRequest {
 }
 
 function RequestsPage() {
+  useAdminGuard();
   const { t, i18n } = useTranslation();
   const [teachingRequests, setTeachingRequests] = useState<TeachingRequest[]>([]);
   const [supportRequests, setSupportRequests] = useState<SupportRequest[]>([]);
@@ -57,10 +60,10 @@ function RequestsPage() {
       if (!token) return;
 
       const [trRes, srRes] = await Promise.all([
-        fetch("http://localhost:5157/api/teachingrequests", {
+        fetch(`${API_BASE}/api/teachingrequests`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch("http://localhost:5157/api/supportrequests", {
+        fetch(`${API_BASE}/api/supportrequests`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -81,7 +84,7 @@ function RequestsPage() {
   const handleApprove = async (id: number) => {
     try {
       const token = localStorage.getItem("jwt_token");
-      const res = await fetch(`http://localhost:5157/api/teachingrequests/${id}/approve`, {
+      const res = await fetch(`${API_BASE}/api/teachingrequests/${id}/approve`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -97,7 +100,7 @@ function RequestsPage() {
   const handleReject = async (id: number) => {
     try {
       const token = localStorage.getItem("jwt_token");
-      const res = await fetch(`http://localhost:5157/api/teachingrequests/${id}/reject`, {
+      const res = await fetch(`${API_BASE}/api/teachingrequests/${id}/reject`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -115,7 +118,7 @@ function RequestsPage() {
 
     try {
       const token = localStorage.getItem("jwt_token");
-      const res = await fetch(`http://localhost:5157/api/supportrequests/${id}/reply`, {
+      const res = await fetch(`${API_BASE}/api/supportrequests/${id}/reply`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -164,7 +167,7 @@ function RequestsPage() {
       if (selectedTeachingIds.length > 0) {
         await Promise.all(
           selectedTeachingIds.map((id) =>
-            fetch(`http://localhost:5157/api/teachingrequests/${id}`, {
+            fetch(`${API_BASE}/api/teachingrequests/${id}`, {
               method: "DELETE",
               headers,
             }),
@@ -174,7 +177,7 @@ function RequestsPage() {
       if (selectedSupportIds.length > 0) {
         await Promise.all(
           selectedSupportIds.map((id) =>
-            fetch(`http://localhost:5157/api/supportrequests/${id}`, { method: "DELETE", headers }),
+            fetch(`${API_BASE}/api/supportrequests/${id}`, { method: "DELETE", headers }),
           ),
         );
       }

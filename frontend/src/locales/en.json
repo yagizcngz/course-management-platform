@@ -172,7 +172,11 @@
       "noAnnouncements": "No announcements yet.",
       "noMyCourses": "You are not enrolled in any courses yet.",
       "noRecommendedCourses": "No recommended courses found.",
-      "inProgress": "IN PROGRESS"
+      "inProgress": "IN PROGRESS",
+      "newAnnouncement": "New Announcement",
+      "announcementTitle": "Title",
+      "announcementContent": "Content",
+      "create": "Create"
     },
     "profile": {
       "breadcrumb": "/ profile / me",
@@ -316,7 +320,9 @@
         "instructorEmpty": "Please select an instructor.",
         "updateSuccess": "Course updated successfully.",
         "updateFailed": "An error occurred while updating the course."
-      }
+      },
+      "studentNumber": "Student No",
+      "enrollmentDate": "Enrollment Date"
     },
     "students": {
       "breadcrumb": "/ students",
@@ -498,7 +504,8 @@
       },
       "noTaughtCourses": "You haven't taught any courses yet.",
       "myTeachingRequests": "My Teaching Requests",
-      "noTeachingRequests": "You don't have any teaching requests."
+      "noTeachingRequests": "You don't have any teaching requests.",
+      "free": "Free"
     },
     "enrollments": {
       "breadcrumb": "/ enrollments",
@@ -702,6 +709,11 @@
       "statusResolved": "Resolved",
       "yourMessage": "Your Message:",
       "supportReply": "Support Team Reply"
+    },
+    "common": {
+      "loading": "Loading...",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
     }
   }
 }

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
@@ -196,7 +197,7 @@ function LoginPage() {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:5157/api/auth/login", {
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),

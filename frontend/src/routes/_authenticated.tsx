@@ -2,26 +2,10 @@ import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppSidebar } from "../components/AppSidebar";
 
+import { parseJwt } from "@/lib/auth";
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
 });
-
-// JWT'nin ortadaki payload (body) kısmını decode eder
-const parseJwt = (token: string) => {
-  try {
-    const base64Url = token.split(".")[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-        .join(""),
-    );
-    return JSON.parse(jsonPayload);
-  } catch (e) {
-    return null;
-  }
-};
 
 // Token'ın süresinin dolup dolmadığını kontrol eder.
 // JWT'nin "exp" alanı UNIX timestamp'tir (saniye), Date.now() ise milisaniye döner.

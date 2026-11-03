@@ -19,24 +19,10 @@ import {
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-const parseJwt = (token: string) => {
-  try {
-    const base64Url = token.split(".")[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-        .join(""),
-    );
-    return JSON.parse(jsonPayload);
-  } catch {
-    return null;
-  }
-};
-
 import type { TFunction } from "i18next";
 
+import { parseJwt } from "@/lib/auth";
+import { API_BASE } from "@/components/courseHelpers";
 const translateRole = (role: string, t: TFunction) => {
   const r = String(role).toLowerCase();
   if (r === "user" || r === "student") return t("profile.roles.student");
@@ -64,7 +50,11 @@ const getMenuItems = (t: TFunction) => [
   { title: t("sidebar.enrollments"), url: "/kayitlar", icon: ClipboardList },
   { title: t("sidebar.reports"), url: "/raporlar", icon: BarChart3 },
   { title: t("sidebar.announcements"), url: "/duyurular", icon: Bell },
-  { title: t("sidebar.mySupportRequests", "Yardım Taleplerim"), url: "/yardim-taleplerim", icon: HelpCircle },
+  {
+    title: t("sidebar.mySupportRequests", "Yardım Taleplerim"),
+    url: "/yardim-taleplerim",
+    icon: HelpCircle,
+  },
 ];
 
 export function AppSidebar() {
@@ -120,7 +110,7 @@ export function AppSidebar() {
 
       const loadProfileData = async () => {
         try {
-          const res = await fetch("http://localhost:5157/api/profile/me", {
+          const res = await fetch(`${API_BASE}/api/profile/me`, {
             headers: { Authorization: `Bearer ${token}` },
           });
 

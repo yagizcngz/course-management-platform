@@ -6,22 +6,8 @@ import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
 
-const parseJwt = (token: string) => {
-  try {
-    const base64Url = token.split(".")[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-        .join(""),
-    );
-    return JSON.parse(jsonPayload);
-  } catch {
-    return null;
-  }
-};
-
+import { parseJwt, isAdminRole } from "@/lib/auth";
+import { API_BASE } from "@/components/courseHelpers";
 interface AnnouncementData {
   id: number;
   title: string;
@@ -54,7 +40,7 @@ function AnnouncementsPage() {
     const token = localStorage.getItem("jwt_token");
     const headers = { Authorization: `Bearer ${token}` };
     try {
-      const res = await fetch("http://localhost:5157/api/announcements", { headers });
+      const res = await fetch(`${API_BASE}/api/announcements`, { headers });
       if (res.ok) {
         setAnnouncements(await res.json());
       }
@@ -72,7 +58,7 @@ function AnnouncementsPage() {
       if (payload) {
         const role =
           payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || payload.role;
-        if (role === "Admin" || role === "superadmin") {
+        if (isAdminRole(role)) {
           setIsAdmin(true);
         }
       }
@@ -89,7 +75,7 @@ function AnnouncementsPage() {
 
     try {
       const token = localStorage.getItem("jwt_token");
-      const res = await fetch("http://localhost:5157/api/announcements", {
+      const res = await fetch(`${API_BASE}/api/announcements`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

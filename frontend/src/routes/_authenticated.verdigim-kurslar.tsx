@@ -16,11 +16,14 @@ import {
 } from "@/components/courseHelpers";
 import { CourseDetailModal } from "@/components/CourseDetailModal";
 
+import { API_BASE } from "@/components/courseHelpers";
+import { useTeacherGuard } from "@/hooks/useAdminGuard";
 export const Route = createFileRoute("/_authenticated/verdigim-kurslar")({
   component: TaughtCoursesPage,
 });
 
 function TaughtCoursesPage() {
+  useTeacherGuard();
   const { t, i18n } = useTranslation();
   const [courses, setCourses] = useState<CourseData[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,19 +47,19 @@ function TaughtCoursesPage() {
       const token = localStorage.getItem("jwt_token");
       if (!token) return;
 
-      const profileRes = await fetch("http://localhost:5157/api/profile/me", {
+      const profileRes = await fetch(`${API_BASE}/api/profile/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!profileRes.ok) return;
       const profile = await profileRes.json();
 
-      const cRes = await fetch("http://localhost:5157/api/courses", {
+      const cRes = await fetch(`${API_BASE}/api/courses`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const tRes = await fetch("http://localhost:5157/api/teachers", {
+      const tRes = await fetch(`${API_BASE}/api/teachers`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const eRes = await fetch("http://localhost:5157/api/enrollments", {
+      const eRes = await fetch(`${API_BASE}/api/enrollments`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -100,7 +103,7 @@ function TaughtCoursesPage() {
         setCourses(myCourses);
       }
 
-      const rRes = await fetch("http://localhost:5157/api/teachingrequests/my-requests", {
+      const rRes = await fetch(`${API_BASE}/api/teachingrequests/my-requests`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (rRes.ok) {
@@ -125,12 +128,12 @@ function TaughtCoursesPage() {
     try {
       const token = localStorage.getItem("jwt_token");
 
-      const profileRes = await fetch("http://localhost:5157/api/profile/me", {
+      const profileRes = await fetch(`${API_BASE}/api/profile/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const profile = await profileRes.json();
 
-      const teacherRes = await fetch("http://localhost:5157/api/teachers", {
+      const teacherRes = await fetch(`${API_BASE}/api/teachers`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const teachers = await teacherRes.json();
@@ -143,7 +146,7 @@ function TaughtCoursesPage() {
           t.Email === profile.email,
       );
 
-      const response = await fetch("http://localhost:5157/api/courses", {
+      const response = await fetch(`${API_BASE}/api/courses`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -182,7 +185,7 @@ function TaughtCoursesPage() {
   const handleCancelRequest = async (requestId: number) => {
     try {
       const token = localStorage.getItem("jwt_token");
-      const res = await fetch(`http://localhost:5157/api/teachingrequests/${requestId}`, {
+      const res = await fetch(`${API_BASE}/api/teachingrequests/${requestId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

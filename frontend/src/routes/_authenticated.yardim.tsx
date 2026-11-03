@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/accordion";
 import { PageHeader } from "@/components/PageHeader";
 
+import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/_authenticated/yardim")({
   component: HelpPage,
 });
@@ -30,7 +31,7 @@ function HelpPage() {
 
     try {
       const token = localStorage.getItem("jwt_token");
-      const res = await fetch("http://localhost:5157/api/supportrequests", {
+      const res = await fetch(`${API_BASE}/api/supportrequests`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

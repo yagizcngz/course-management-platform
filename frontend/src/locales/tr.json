@@ -172,7 +172,11 @@
       "noAnnouncements": "Henüz bir duyuru bulunmuyor.",
       "noMyCourses": "Henüz bir kursa kayıtlı değilsiniz.",
       "noRecommendedCourses": "Önerilecek yeni kurs bulunamadı.",
-      "inProgress": "DEVAM EDİYOR"
+      "inProgress": "DEVAM EDİYOR",
+      "newAnnouncement": "Yeni Duyuru",
+      "announcementTitle": "Başlık",
+      "announcementContent": "İçerik",
+      "create": "Oluştur"
     },
     "profile": {
       "breadcrumb": "/ profil / benim",
@@ -313,7 +317,10 @@
         "instructorEmpty": "Lütfen bir eğitmen seçin.",
         "updateSuccess": "Kurs başarıyla güncellendi.",
         "updateFailed": "Kurs güncellenirken bir hata oluştu."
-      }
+      },
+      "studentNumber": "Öğrenci No",
+      "enrollmentDate": "Kayıt Tarihi",
+      "teachCourse": "Ders Ver"
     },
     "students": {
       "breadcrumb": "/ ogrenciler",
@@ -495,7 +502,8 @@
       },
       "noTaughtCourses": "Henüz verdiğiniz bir kurs bulunmuyor.",
       "myTeachingRequests": "Ders Verme İsteklerim",
-      "noTeachingRequests": "Ders verme isteğiniz bulunmuyor."
+      "noTeachingRequests": "Ders verme isteğiniz bulunmuyor.",
+      "free": "Ücretsiz"
     },
     "enrollments": {
       "breadcrumb": "/ kayıtlar",
@@ -697,6 +705,11 @@
       "statusResolved": "Yanıtlandı",
       "yourMessage": "Mesajınız:",
       "supportReply": "Destek Ekibi Yanıtı"
+    },
+    "common": {
+      "loading": "Yükleniyor...",
+      "cancel": "Vazgeç",
+      "confirm": "Onayla"
     }
   }
 }

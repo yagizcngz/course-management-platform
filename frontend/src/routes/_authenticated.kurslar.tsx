@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "../components/PageHeader";
-import { Plus, X, CheckCircle2, AlertCircle, Trash2, Filter } from "lucide-react";
+import { Plus, X, Trash2, Filter } from "lucide-react";
+import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { CourseDetailModal } from "../components/CourseDetailModal";
@@ -15,30 +16,14 @@ import {
   type TeacherLiteDto,
 } from "../components/courseHelpers";
 
+import { parseJwt, isAdminRole, isStudentRole, isTeacherRole } from "@/lib/auth";
+import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/_authenticated/kurslar")({
   component: CoursesPage,
   validateSearch: (search: Record<string, unknown>) => ({
     category: (search.category as string) || "",
   }),
 });
-
-const parseJwt = (token: string) => {
-  try {
-    const base64Url = token.split(".")[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map(function (c) {
-          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-        })
-        .join(""),
-    );
-    return JSON.parse(jsonPayload);
-  } catch (e) {
-    return null;
-  }
-};
 
 function CoursesPage() {
   const { t, i18n } = useTranslation();
@@ -86,18 +71,14 @@ function CoursesPage() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
-
-  const showToast = (message: string, type: "success" | "error" = "success") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
+  const showToast = (message: string, type: "success" | "error" = "success") =>
+    type === "error" ? toast.error(message) : toast.success(message);
 
   const fetchCourses = async () => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("jwt_token");
-      const response = await fetch("http://localhost:5157/api/courses", {
+      const response = await fetch(`${API_BASE}/api/courses`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -146,7 +127,7 @@ function CoursesPage() {
 
     const fetchEnrollments = async () => {
       try {
-        const res = await fetch("http://localhost:5157/api/enrollments", { headers });
+        const res = await fetch(`${API_BASE}/api/enrollments`, { headers });
         if (res.ok) setDbEnrollments(await res.json());
       } catch (error) {
         console.error("Kayıtlar yüklenirken hata:", error);
@@ -155,7 +136,7 @@ function CoursesPage() {
 
     const fetchTeachers = async () => {
       try {
-        const res = await fetch("http://localhost:5157/api/teachers", { headers });
+        const res = await fetch(`${API_BASE}/api/teachers`, { headers });
         if (res.ok) {
           const teachers = await res.json();
           setDbTeachers(teachers);
@@ -184,7 +165,7 @@ function CoursesPage() {
 
     const fetchMyCourses = async () => {
       try {
-        const res = await fetch("http://localhost:5157/api/enrollments/my-courses", { headers });
+        const res = await fetch(`${API_BASE}/api/enrollments/my-courses`, { headers });
         if (res.ok) setMyCourses(await res.json());
       } catch (error) {
         console.error("Öğrenci kursları yüklenirken hata:", error);
@@ -250,7 +231,7 @@ function CoursesPage() {
 
     try {
       const token = localStorage.getItem("jwt_token");
-      const response = await fetch("http://localhost:5157/api/courses", {
+      const response = await fetch(`${API_BASE}/api/courses`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -285,7 +266,7 @@ function CoursesPage() {
     e.stopPropagation();
     try {
       const token = localStorage.getItem("jwt_token");
-      const response = await fetch("http://localhost:5157/api/teachingrequests", {
+      const response = await fetch(`${API_BASE}/api/teachingrequests`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -308,7 +289,7 @@ function CoursesPage() {
   const handleJoinCourse = async (courseId: number | string) => {
     try {
       const token = localStorage.getItem("jwt_token");
-      const response = await fetch(`http://localhost:5157/api/enrollments/join/${courseId}`, {
+      const response = await fetch(`${API_BASE}/api/enrollments/join/${courseId}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -319,7 +300,7 @@ function CoursesPage() {
       if (response.ok) {
         showToast(t("dashboard.alerts.joinSuccess", "Kursa başarıyla katıldınız."), "success");
         // Update myCourses
-        const myRes = await fetch("http://localhost:5157/api/enrollments/my-courses", {
+        const myRes = await fetch(`${API_BASE}/api/enrollments/my-courses`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (myRes.ok) setMyCourses(await myRes.json());
@@ -371,7 +352,7 @@ function CoursesPage() {
 
       await Promise.all(
         selectedCourseIds.map((id) =>
-          fetch(`http://localhost:5157/api/courses/${id}`, {
+          fetch(`${API_BASE}/api/courses/${id}`, {
             method: "DELETE",
             headers,
           }),
@@ -391,10 +372,8 @@ function CoursesPage() {
     }
   };
 
-  const canManage =
-    currentUser.role === "Eğitmen" ||
-    currentUser.role === "Admin" ||
-    currentUser.role === "superadmin";
+  // Katalogda toplu düzenleme yöneticiye ait; öğretmenler kendi kurslarını "Verdiğim Kurslar"dan yönetir
+  const canManage = isAdminRole(currentUser.role);
 
   const searchLower = searchTerm.toLowerCase();
   const filteredCourses = dbCourses.filter((c) => {
@@ -574,9 +553,7 @@ function CoursesPage() {
                     />
                     {(() => {
                       const isStudent =
-                        currentUser.role.toLowerCase() === "user" ||
-                        currentUser.role.toLowerCase() === "student" ||
-                        currentUser.role === "Öğrenci" ||
+                        isStudentRole(currentUser.role) ||
                         currentUser.role === t("courses.student");
                       if (isStudent) {
                         const isEnrolled = myCourses.some((enc) => {
@@ -611,7 +588,7 @@ function CoursesPage() {
                     </h4>
                     <div className="flex justify-between items-center text-xs text-muted-foreground mt-auto">
                       <span>{t("courses.instructorPrefix", { name: instructor })}</span>
-                      {currentUser.role === "Eğitmen" &&
+                      {isTeacherRole(currentUser.role) &&
                         myTeacherId &&
                         String(c.teacherId || c.TeacherId) !== String(myTeacherId) &&
                         !myCourses.some((enc) => (enc.courseId || enc.CourseId) === currentId) && (
@@ -658,12 +635,7 @@ function CoursesPage() {
           teachers={dbTeachers}
           categories={categories}
           onSaved={handleCourseSaved}
-          isStudent={
-            currentUser.role.toLowerCase() === "user" ||
-            currentUser.role.toLowerCase() === "student" ||
-            currentUser.role === "Öğrenci" ||
-            currentUser.role === t("courses.student")
-          }
+          isStudent={isStudentRole(currentUser.role) || currentUser.role === t("courses.student")}
           isEnrolled={myCourses.some(
             (e) =>
               String(e.courseId || e.CourseId) === String(selectedCourse.id || selectedCourse.Id),
@@ -857,19 +829,6 @@ function CoursesPage() {
               </button>
             </div>
           </div>
-        </div>
-      )}
-
-      {toast && (
-        <div
-          className={`fixed bottom-6 right-6 flex items-center gap-3 px-5 py-3.5 rounded-lg shadow-xl text-sm font-bold text-white z-300 animate-in slide-in-from-bottom-5 fade-in duration-300 ${toast.type === "success" ? "bg-emerald-600" : "bg-red-600"}`}
-        >
-          {toast.type === "success" ? (
-            <CheckCircle2 className="size-5" />
-          ) : (
-            <AlertCircle className="size-5" />
-          )}
-          {toast.message}
         </div>
       )}
     </>

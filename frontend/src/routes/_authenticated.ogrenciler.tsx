@@ -1,22 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "../components/PageHeader";
-import {
-  Plus,
-  X,
-  CheckCircle2,
-  AlertCircle,
-  Edit2,
-  Trash2,
-  Camera,
-  Upload,
-  Link2,
-  Search,
-} from "lucide-react";
+import { Plus, X, Edit2, Trash2, Camera, Upload, Link2, Search } from "lucide-react";
+import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { translateBackendError } from "../lib/errorTranslator";
 import { useAdminGuard } from "../hooks/useAdminGuard";
 
+import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/_authenticated/ogrenciler")({
   component: StudentsPage,
 });
@@ -101,18 +92,14 @@ function StudentsPage() {
   const [isUploadingProfileImage, setIsUploadingProfileImage] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
-
-  const showToast = (message: string, type: "success" | "error" = "success") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
+  const showToast = (message: string, type: "success" | "error" = "success") =>
+    type === "error" ? toast.error(message) : toast.success(message);
 
   const fetchStudents = async () => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("jwt_token");
-      const response = await fetch("http://localhost:5157/api/students", {
+      const response = await fetch(`${API_BASE}/api/students`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -142,7 +129,7 @@ function StudentsPage() {
       const headers = { Authorization: `Bearer ${token}` };
 
       try {
-        const res = await fetch("http://localhost:5157/api/enrollments", { headers });
+        const res = await fetch(`${API_BASE}/api/enrollments`, { headers });
         if (res.ok) {
           setDbEnrollments(await res.json());
         }
@@ -194,7 +181,7 @@ function StudentsPage() {
 
       await Promise.all(
         selectedStudentIds.map((id) =>
-          fetch(`http://localhost:5157/api/students/${id}`, {
+          fetch(`${API_BASE}/api/students/${id}`, {
             method: "DELETE",
             headers,
           }),
@@ -232,7 +219,7 @@ function StudentsPage() {
       // Register endpoint kullanıcıyı + öğrenci profilini otomatik oluşturur
       // (RegistrationCode boş = "User" rolü = otomatik Student kaydı)
       const token = localStorage.getItem("jwt_token");
-      const res = await fetch("http://localhost:5157/api/auth/register", {
+      const res = await fetch(`${API_BASE}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -320,7 +307,7 @@ function StudentsPage() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("http://localhost:5157/api/uploads/profile-picture", {
+      const response = await fetch(`${API_BASE}/api/uploads/profile-picture`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -328,7 +315,7 @@ function StudentsPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setEditProfilePictureUrl(`http://localhost:5157${data.url}`);
+        setEditProfilePictureUrl(`${API_BASE}${data.url}`);
       } else {
         showToast(t("students.errors.photoUploadFailed"), "error");
       }
@@ -360,7 +347,7 @@ function StudentsPage() {
       const token = localStorage.getItem("jwt_token");
       // handleSaveStudentEdit fonksiyonu içindeki fetch isteğini bu şekilde güncelleyin:
 
-      const response = await fetch(`http://localhost:5157/api/students/${studentId}`, {
+      const response = await fetch(`${API_BASE}/api/students/${studentId}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -629,7 +616,7 @@ function StudentsPage() {
                         editProfilePictureUrl.startsWith("http") ||
                         editProfilePictureUrl.startsWith("data:")
                           ? editProfilePictureUrl
-                          : `http://localhost:5157${editProfilePictureUrl}`
+                          : `${API_BASE}${editProfilePictureUrl}`
                       }
                       alt="Önizleme"
                       className="size-20 rounded-full object-cover border border-border"
@@ -967,19 +954,6 @@ function StudentsPage() {
               </div>
             </form>
           </div>
-        </div>
-      )}
-
-      {toast && (
-        <div
-          className={`fixed bottom-6 right-6 flex items-center gap-3 px-5 py-3.5 rounded-lg shadow-xl text-sm font-bold text-white z-300 animate-in slide-in-from-bottom-5 fade-in duration-300 ${toast.type === "success" ? "bg-emerald-600" : "bg-red-600"}`}
-        >
-          {toast.type === "success" ? (
-            <CheckCircle2 className="size-5" />
-          ) : (
-            <AlertCircle className="size-5" />
-          )}
-          {toast.message}
         </div>
       )}
 

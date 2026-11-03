@@ -5,7 +5,10 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import type { TFunction } from "i18next";
 import { fetchCategories, type CourseData, type TeacherLiteDto } from "../components/courseHelpers";
+import { toast } from "sonner";
 
+import { parseJwt } from "@/lib/auth";
+import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/_authenticated/profil")({
   head: () => ({
     meta: [
@@ -15,22 +18,6 @@ export const Route = createFileRoute("/_authenticated/profil")({
   }),
   component: ProfilePage,
 });
-
-const parseJwt = (token: string) => {
-  try {
-    const base64Url = token.split(".")[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-        .join(""),
-    );
-    return JSON.parse(jsonPayload);
-  } catch (e) {
-    return null;
-  }
-};
 
 interface EnrollmentDto {
   id?: number;
@@ -77,7 +64,6 @@ function ProfilePage() {
   const [isPublic, setIsPublic] = useState(true);
   const [enrollments, setEnrollments] = useState<EnrollmentDto[]>([]);
   const [profileLoaded, setProfileLoaded] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [branch, setBranch] = useState<string[]>([]);
@@ -125,7 +111,7 @@ function ProfilePage() {
     const loadProfile = async () => {
       if (!token) return;
       try {
-        const res = await fetch("http://localhost:5157/api/profile/me", {
+        const res = await fetch(`${API_BASE}/api/profile/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -183,13 +169,13 @@ function ProfilePage() {
     const fetchData = async () => {
       try {
         const [enrRes, crsRes, tchRes] = await Promise.all([
-          fetch("http://localhost:5157/api/enrollments/my-courses", {
+          fetch(`${API_BASE}/api/enrollments/my-courses`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch("http://localhost:5157/api/courses", {
+          fetch(`${API_BASE}/api/courses`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch("http://localhost:5157/api/teachers", {
+          fetch(`${API_BASE}/api/teachers`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -236,10 +222,8 @@ function ProfilePage() {
     return () => window.removeEventListener("profile-updated", onProfileUpdated as EventListener);
   }, []);
 
-  const showToast = (message: string, type: "success" | "error" = "success") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
+  const showToast = (message: string, type: "success" | "error" = "success") =>
+    type === "error" ? toast.error(message) : toast.success(message);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -251,7 +235,7 @@ function ProfilePage() {
 
     try {
       const token = localStorage.getItem("jwt_token");
-      const response = await fetch("http://localhost:5157/api/profile/me", {
+      const response = await fetch(`${API_BASE}/api/profile/me`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -289,7 +273,7 @@ function ProfilePage() {
     formData.append("file", file);
 
     try {
-      const res = await fetch("http://localhost:5157/api/uploads/profile-picture", {
+      const res = await fetch(`${API_BASE}/api/uploads/profile-picture`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -297,7 +281,7 @@ function ProfilePage() {
 
       if (res.ok) {
         const data = await res.json();
-        const fullUrl = `http://localhost:5157${data.url}`;
+        const fullUrl = `${API_BASE}${data.url}`;
         setPhotoUrl(fullUrl);
         window.dispatchEvent(
           new CustomEvent("profile-updated", { detail: { name, photoUrl: fullUrl } }),
@@ -581,15 +565,6 @@ function ProfilePage() {
           </div>
         </div>
       </div>
-
-      {toast && (
-        <div
-          className={`fixed bottom-6 right-6 z-300 flex items-center gap-3 rounded-lg px-5 py-3.5 text-sm font-bold text-white shadow-xl ${toast.type === "success" ? "bg-emerald-600" : "bg-red-600"}`}
-        >
-          <CheckCircle2 className="w-5 h-5" />
-          {toast.message}
-        </div>
-      )}
     </>
   );
 }

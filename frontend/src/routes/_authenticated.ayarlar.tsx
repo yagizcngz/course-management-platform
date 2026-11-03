@@ -6,7 +6,6 @@ import {
   User as UserIcon,
   Lock,
   Mail,
-  CheckCircle2,
   AlertCircle,
   Database,
   List,
@@ -15,7 +14,20 @@ import {
   Save,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
+import { parseJwt, isAdminRole } from "@/lib/auth";
+import { API_BASE } from "@/components/courseHelpers";
 interface SystemSettingData {
   settingKey: string;
   settingValue: string;
@@ -27,24 +39,6 @@ interface CategoryData {
   name: string;
   description?: string;
 }
-
-const parseJwt = (token: string) => {
-  try {
-    const base64Url = token.split(".")[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map(function (c) {
-          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-        })
-        .join(""),
-    );
-    return JSON.parse(jsonPayload);
-  } catch (e) {
-    return null;
-  }
-};
 
 export const Route = createFileRoute("/_authenticated/ayarlar")({
   component: SettingsPage,
@@ -81,7 +75,10 @@ function SettingsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const [isSaving, setIsSaving] = useState(false);
-  const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [pendingConfirm, setPendingConfirm] = useState<{
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
 
   // System Settings State
   const [settings, setSettings] = useState<SystemSettingData[]>([]);
@@ -99,13 +96,13 @@ function SettingsPage() {
   }, [i18n.language]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token") || localStorage.getItem("jwt_token");
+    const token = localStorage.getItem("jwt_token");
     if (token) {
       const payload = parseJwt(token);
       if (payload) {
         const role =
           payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || payload.role;
-        setIsAdmin(role === "Admin" || role === "superadmin");
+        setIsAdmin(isAdminRole(role));
       }
     }
     fetchProfile();
@@ -120,8 +117,8 @@ function SettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      const token = localStorage.getItem("token") || localStorage.getItem("jwt_token");
-      const res = await fetch("http://localhost:5157/api/systemsettings", {
+      const token = localStorage.getItem("jwt_token");
+      const res = await fetch(`${API_BASE}/api/systemsettings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) setSettings(await res.json());
@@ -132,8 +129,8 @@ function SettingsPage() {
 
   const fetchCategoriesList = async () => {
     try {
-      const token = localStorage.getItem("token") || localStorage.getItem("jwt_token");
-      const res = await fetch("http://localhost:5157/api/categories", {
+      const token = localStorage.getItem("jwt_token");
+      const res = await fetch(`${API_BASE}/api/categories`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) setCategories(await res.json());
@@ -144,8 +141,8 @@ function SettingsPage() {
 
   const fetchProfile = async () => {
     try {
-      const token = localStorage.getItem("token") || localStorage.getItem("jwt_token");
-      const res = await fetch("http://localhost:5157/api/profile/me", {
+      const token = localStorage.getItem("jwt_token");
+      const res = await fetch(`${API_BASE}/api/profile/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -166,10 +163,8 @@ function SettingsPage() {
     }
   };
 
-  const showToast = (type: "success" | "error", message: string) => {
-    setToast({ type, message });
-    setTimeout(() => setToast(null), 3000);
-  };
+  const showToast = (type: "success" | "error", message: string) =>
+    type === "error" ? toast.error(message) : toast.success(message);
 
   const handleLanguageChange = (lang: string) => {
     i18n.changeLanguage(lang);
@@ -181,8 +176,8 @@ function SettingsPage() {
     e.preventDefault();
     setIsSaving(true);
     try {
-      const token = localStorage.getItem("token") || localStorage.getItem("jwt_token");
-      const res = await fetch("http://localhost:5157/api/profile/me", {
+      const token = localStorage.getItem("jwt_token");
+      const res = await fetch(`${API_BASE}/api/profile/me`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -220,8 +215,8 @@ function SettingsPage() {
     e.preventDefault();
     setIsSaving(true);
     try {
-      const token = localStorage.getItem("token") || localStorage.getItem("jwt_token");
-      const res = await fetch("http://localhost:5157/api/profile/change-password", {
+      const token = localStorage.getItem("jwt_token");
+      const res = await fetch(`${API_BASE}/api/profile/change-password`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -248,8 +243,8 @@ function SettingsPage() {
     e.preventDefault();
     setIsSaving(true);
     try {
-      const token = localStorage.getItem("token") || localStorage.getItem("jwt_token");
-      const res = await fetch("http://localhost:5157/api/profile/change-email", {
+      const token = localStorage.getItem("jwt_token");
+      const res = await fetch(`${API_BASE}/api/profile/change-email`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -274,8 +269,8 @@ function SettingsPage() {
     e.preventDefault();
     setIsSaving(true);
     try {
-      const token = localStorage.getItem("token") || localStorage.getItem("jwt_token");
-      const res = await fetch("http://localhost:5157/api/profile/change-username", {
+      const token = localStorage.getItem("jwt_token");
+      const res = await fetch(`${API_BASE}/api/profile/change-username`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -457,47 +452,50 @@ function SettingsPage() {
 
               <div className="space-y-5">
                 <button
-                  onClick={async () => {
-                    if (window.confirm(t("settings.profile.deleteConfirm"))) {
-                      const token =
-                        localStorage.getItem("jwt_token") || localStorage.getItem("token");
-                      if (token) {
-                        const payload = parseJwt(token);
-                        const userId = payload?.nameid || payload?.sub || payload?.id;
-                        const userRole =
-                          payload?.role ||
-                          payload?.[
-                            "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-                          ] ||
-                          "user";
+                  onClick={() =>
+                    setPendingConfirm({
+                      message: t("settings.profile.deleteConfirm"),
+                      onConfirm: async () => {
+                        const token =
+                          localStorage.getItem("jwt_token") || localStorage.getItem("token");
+                        if (token) {
+                          const payload = parseJwt(token);
+                          const userId = payload?.nameid || payload?.sub || payload?.id;
+                          const userRole =
+                            payload?.role ||
+                            payload?.[
+                              "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+                            ] ||
+                            "user";
 
-                        if (userId) {
-                          try {
-                            const isTeacher = userRole.toString().toLowerCase() === "teacher";
-                            const endpoint = isTeacher
-                              ? `http://localhost:5157/api/Teachers/${userId}`
-                              : `http://localhost:5157/api/Students/${userId}`;
+                          if (userId) {
+                            try {
+                              const isTeacher = userRole.toString().toLowerCase() === "teacher";
+                              const endpoint = isTeacher
+                                ? `${API_BASE}/api/Teachers/${userId}`
+                                : `${API_BASE}/api/Students/${userId}`;
 
-                            const res = await fetch(endpoint, {
-                              method: "DELETE",
-                              headers: { Authorization: `Bearer ${token}` },
-                            });
+                              const res = await fetch(endpoint, {
+                                method: "DELETE",
+                                headers: { Authorization: `Bearer ${token}` },
+                              });
 
-                            if (res.ok) {
-                              localStorage.removeItem("jwt_token");
-                              localStorage.removeItem("token");
-                              window.location.href = "/";
-                            } else {
-                              alert(t("settings.profile.deleteError"));
+                              if (res.ok) {
+                                localStorage.removeItem("jwt_token");
+                                localStorage.removeItem("token");
+                                window.location.href = "/";
+                              } else {
+                                showToast("error", t("settings.profile.deleteError"));
+                              }
+                            } catch (e) {
+                              console.error(e);
+                              showToast("error", t("settings.profile.deleteError"));
                             }
-                          } catch (e) {
-                            console.error(e);
-                            alert(t("settings.profile.deleteError"));
                           }
                         }
-                      }
-                    }
-                  }}
+                      },
+                    })
+                  }
                   className="w-full sm:w-auto px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md transition-colors flex items-center justify-center gap-2"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -527,9 +525,8 @@ function SettingsPage() {
                     const newValue = e.target.checked;
                     setReceiveEmail(newValue);
                     // auto save preference
-                    const token =
-                      localStorage.getItem("token") || localStorage.getItem("jwt_token");
-                    await fetch("http://localhost:5157/api/profile/me", {
+                    const token = localStorage.getItem("jwt_token");
+                    await fetch(`${API_BASE}/api/profile/me`, {
                       method: "PUT",
                       headers: {
                         "Content-Type": "application/json",
@@ -583,10 +580,9 @@ function SettingsPage() {
                         onBlur={async (e) => {
                           const val = e.target.value;
                           if (val === setting.settingValue) return;
-                          const token =
-                            localStorage.getItem("token") || localStorage.getItem("jwt_token");
+                          const token = localStorage.getItem("jwt_token");
                           const res = await fetch(
-                            `http://localhost:5157/api/systemsettings/${setting.settingKey}`,
+                            `${API_BASE}/api/systemsettings/${setting.settingKey}`,
                             {
                               method: "PUT",
                               headers: {
@@ -666,21 +662,18 @@ function SettingsPage() {
               <button
                 onClick={async () => {
                   if (!newSettingKey || !newSettingValue) return;
-                  const token = localStorage.getItem("token") || localStorage.getItem("jwt_token");
-                  const res = await fetch(
-                    `http://localhost:5157/api/systemsettings/${newSettingKey}`,
-                    {
-                      method: "PUT",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                      },
-                      body: JSON.stringify({
-                        settingValue: newSettingValue,
-                        description: newSettingDesc,
-                      }),
+                  const token = localStorage.getItem("jwt_token");
+                  const res = await fetch(`${API_BASE}/api/systemsettings/${newSettingKey}`, {
+                    method: "PUT",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${token}`,
                     },
-                  );
+                    body: JSON.stringify({
+                      settingValue: newSettingValue,
+                      description: newSettingDesc,
+                    }),
+                  });
                   if (res.ok) {
                     showToast("success", t("settings.system.addSuccess"));
                     setNewSettingKey("");
@@ -756,8 +749,8 @@ function SettingsPage() {
               <button
                 onClick={async () => {
                   if (!newCategoryName) return;
-                  const token = localStorage.getItem("token") || localStorage.getItem("jwt_token");
-                  const res = await fetch("http://localhost:5157/api/categories", {
+                  const token = localStorage.getItem("jwt_token");
+                  const res = await fetch(`${API_BASE}/api/categories`, {
                     method: "POST",
                     headers: {
                       "Content-Type": "application/json",
@@ -815,10 +808,9 @@ function SettingsPage() {
                 onClick={async () => {
                   setIsDeleting(true);
                   try {
-                    const token =
-                      localStorage.getItem("token") || localStorage.getItem("jwt_token");
+                    const token = localStorage.getItem("jwt_token");
                     const res = await fetch(
-                      `http://localhost:5157/api/systemsettings/${deleteSettingConfirm}`,
+                      `${API_BASE}/api/systemsettings/${deleteSettingConfirm}`,
                       {
                         method: "DELETE",
                         headers: { Authorization: `Bearer ${token}` },
@@ -883,15 +875,11 @@ function SettingsPage() {
                 onClick={async () => {
                   setIsDeleting(true);
                   try {
-                    const token =
-                      localStorage.getItem("token") || localStorage.getItem("jwt_token");
-                    const res = await fetch(
-                      `http://localhost:5157/api/categories/${deleteCategoryConfirm}`,
-                      {
-                        method: "DELETE",
-                        headers: { Authorization: `Bearer ${token}` },
-                      },
-                    );
+                    const token = localStorage.getItem("jwt_token");
+                    const res = await fetch(`${API_BASE}/api/categories/${deleteCategoryConfirm}`, {
+                      method: "DELETE",
+                      headers: { Authorization: `Bearer ${token}` },
+                    });
                     if (res.ok) {
                       showToast("success", t("settings.categories.deleteSuccess"));
                       fetchCategoriesList();
@@ -919,18 +907,31 @@ function SettingsPage() {
         </div>
       )}
 
-      {toast && (
-        <div
-          className={`fixed bottom-6 right-6 flex items-center gap-3 px-5 py-3.5 rounded-lg shadow-xl text-sm font-bold text-white z-50 animate-in slide-in-from-bottom-5 fade-in duration-300 ${toast.type === "success" ? "bg-emerald-600" : "bg-red-600"}`}
-        >
-          {toast.type === "success" ? (
-            <CheckCircle2 className="size-5" />
-          ) : (
-            <AlertCircle className="size-5" />
-          )}
-          {toast.message}
-        </div>
-      )}
+      <AlertDialog
+        open={pendingConfirm !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingConfirm(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("common.confirm", "Onayla")}</AlertDialogTitle>
+            <AlertDialogDescription>{pendingConfirm?.message}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                const run = pendingConfirm?.onConfirm;
+                setPendingConfirm(null);
+                run?.();
+              }}
+            >
+              {t("common.confirm", "Onayla")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

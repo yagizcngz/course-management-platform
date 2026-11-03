@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/_authenticated/yardim-taleplerim")({
   component: MySupportRequestsPage,
 });
@@ -32,7 +33,7 @@ function MySupportRequestsPage() {
       const token = localStorage.getItem("jwt_token");
       if (!token) return;
 
-      const res = await fetch("http://localhost:5157/api/supportrequests/my-requests", {
+      const res = await fetch(`${API_BASE}/api/supportrequests/my-requests`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

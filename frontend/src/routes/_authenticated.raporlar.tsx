@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useAdminGuard } from "../hooks/useAdminGuard";
 
+import { API_BASE } from "@/components/courseHelpers";
+
 export const Route = createFileRoute("/_authenticated/raporlar")({
   head: () => ({
     meta: [
@@ -133,14 +135,14 @@ function ReportsPage() {
 
       try {
         const [sRes, cRes, eRes, tRes, dsRes, dcRes, dtRes, deRes] = await Promise.all([
-          fetch("http://localhost:5157/api/students", { headers }),
-          fetch("http://localhost:5157/api/courses", { headers }),
-          fetch("http://localhost:5157/api/enrollments", { headers }),
-          fetch("http://localhost:5157/api/teachers", { headers }),
-          fetch("http://localhost:5157/api/students/deleted", { headers }),
-          fetch("http://localhost:5157/api/courses/deleted", { headers }),
-          fetch("http://localhost:5157/api/teachers/deleted", { headers }),
-          fetch("http://localhost:5157/api/enrollments/deleted", { headers }),
+          fetch(`${API_BASE}/api/students`, { headers }),
+          fetch(`${API_BASE}/api/courses`, { headers }),
+          fetch(`${API_BASE}/api/enrollments`, { headers }),
+          fetch(`${API_BASE}/api/teachers`, { headers }),
+          fetch(`${API_BASE}/api/students/deleted`, { headers }),
+          fetch(`${API_BASE}/api/courses/deleted`, { headers }),
+          fetch(`${API_BASE}/api/teachers/deleted`, { headers }),
+          fetch(`${API_BASE}/api/enrollments/deleted`, { headers }),
         ]);
 
         if (sRes.ok) setDbStudents(await sRes.json());

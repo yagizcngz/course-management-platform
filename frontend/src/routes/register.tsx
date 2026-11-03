@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/register")({
   component: RegisterPage,
 });
@@ -32,7 +33,7 @@ function RegisterPage() {
         setError(t("register.invalidEmail"));
         return;
       }
-      const response = await fetch("http://localhost:5157/api/auth/register", {
+      const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -68,7 +69,7 @@ function RegisterPage() {
 
     setIsSending(true);
     try {
-      const response = await fetch("http://localhost:5157/api/auth/send-verification-email", {
+      const response = await fetch(`${API_BASE}/api/auth/send-verification-email`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),

@@ -1,22 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "../components/PageHeader";
-import {
-  Plus,
-  X,
-  CheckCircle2,
-  AlertCircle,
-  Edit2,
-  Trash2,
-  Upload,
-  Link2,
-  Search,
-} from "lucide-react";
+import { Plus, X, Edit2, Trash2, Upload, Link2, Search } from "lucide-react";
+import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { translateBackendError } from "../lib/errorTranslator";
 import { useAdminGuard } from "../hooks/useAdminGuard";
 import { fetchCategories } from "../components/courseHelpers";
 
+import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/_authenticated/ogretmenler")({
   component: TeachersPage,
 });
@@ -88,18 +80,14 @@ function TeachersPage() {
   const [isUploadingProfileImage, setIsUploadingProfileImage] = useState(false);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
-
-  const showToast = (message: string, type: "success" | "error" = "success") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
+  const showToast = (message: string, type: "success" | "error" = "success") =>
+    type === "error" ? toast.error(message) : toast.success(message);
 
   const fetchTeachers = async () => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("jwt_token");
-      const response = await fetch("http://localhost:5157/api/teachers", {
+      const response = await fetch(`${API_BASE}/api/teachers`, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -128,7 +116,7 @@ function TeachersPage() {
       const headers = { Authorization: `Bearer ${token}` };
 
       try {
-        const res = await fetch("http://localhost:5157/api/courses", { headers });
+        const res = await fetch(`${API_BASE}/api/courses`, { headers });
         if (res.ok) {
           setDbCourses(await res.json());
         }
@@ -183,7 +171,7 @@ function TeachersPage() {
       const token = localStorage.getItem("jwt_token");
 
       // Backend'de bunun için ayrı bir toplu silme uç noktası var, tek tek istek atmaya gerek yok.
-      const response = await fetch("http://localhost:5157/api/teachers/bulk-delete", {
+      const response = await fetch(`${API_BASE}/api/teachers/bulk-delete`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -234,7 +222,7 @@ function TeachersPage() {
       // Register endpoint kullanıcıyı + öğretmen profilini otomatik oluşturur
       // (RegistrationCode="12345" = "Teacher" rolü = otomatik Teacher kaydı)
       const token = localStorage.getItem("jwt_token");
-      const res = await fetch("http://localhost:5157/api/auth/register", {
+      const res = await fetch(`${API_BASE}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -266,7 +254,7 @@ function TeachersPage() {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           };
-          const listRes = await fetch("http://localhost:5157/api/teachers", { headers });
+          const listRes = await fetch(`${API_BASE}/api/teachers`, { headers });
           if (listRes.ok) {
             const teachers: TeacherData[] = await listRes.json();
             const created = teachers.find(
@@ -274,7 +262,7 @@ function TeachersPage() {
             );
             const createdId = created?.id ?? created?.Id;
             if (createdId) {
-              await fetch(`http://localhost:5157/api/teachers/${createdId}`, {
+              await fetch(`${API_BASE}/api/teachers/${createdId}`, {
                 method: "PUT",
                 headers,
                 body: JSON.stringify({
@@ -371,7 +359,7 @@ function TeachersPage() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await fetch("http://localhost:5157/api/uploads/profile-picture", {
+      const response = await fetch(`${API_BASE}/api/uploads/profile-picture`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -379,7 +367,7 @@ function TeachersPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setEditProfilePictureUrl(`http://localhost:5157${data.url}`);
+        setEditProfilePictureUrl(`${API_BASE}${data.url}`);
         showToast(t("teachers.errors.updateSuccess"));
       } else {
         const errText = await response.text();
@@ -416,7 +404,7 @@ function TeachersPage() {
     try {
       const token = localStorage.getItem("jwt_token");
 
-      const response = await fetch(`http://localhost:5157/api/teachers/${teacherId}`, {
+      const response = await fetch(`${API_BASE}/api/teachers/${teacherId}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -687,7 +675,7 @@ function TeachersPage() {
                         editProfilePictureUrl.startsWith("http") ||
                         editProfilePictureUrl.startsWith("data:")
                           ? editProfilePictureUrl
-                          : `http://localhost:5157${editProfilePictureUrl}`
+                          : `${API_BASE}${editProfilePictureUrl}`
                       }
                       alt="Önizleme"
                       className="size-20 rounded-full object-cover border border-border"
@@ -1063,19 +1051,6 @@ function TeachersPage() {
               </div>
             </form>
           </div>
-        </div>
-      )}
-
-      {toast && (
-        <div
-          className={`fixed bottom-6 right-6 flex items-center gap-3 px-5 py-3.5 rounded-lg shadow-xl text-sm font-bold text-white z-300 animate-in slide-in-from-bottom-5 fade-in duration-300 ${toast.type === "success" ? "bg-emerald-600" : "bg-red-600"}`}
-        >
-          {toast.type === "success" ? (
-            <CheckCircle2 className="size-5" />
-          ) : (
-            <AlertCircle className="size-5" />
-          )}
-          {toast.message}
         </div>
       )}
 

@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Plus, X, CheckCircle2, AlertCircle, Trash2 } from "lucide-react";
+import { Plus, X, AlertCircle, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { PageHeader } from "../components/PageHeader";
 import type { FormEvent } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAdminGuard } from "../hooks/useAdminGuard";
 
+import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/_authenticated/kayitlar")({
   head: () => ({
     meta: [
@@ -16,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/kayitlar")({
   component: EnrollmentsPage,
 });
 
-const API = "http://localhost:5157/api";
+const API = `${API_BASE}/api`;
 
 interface EnrollmentDto {
   id?: number;
@@ -72,15 +74,8 @@ function EnrollmentsPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedEnrollmentIds, setSelectedEnrollmentIds] = useState<number[]>([]);
 
-  const [toast, setToast] = useState<{
-    message: string;
-    type: "success" | "error";
-  } | null>(null);
-
-  const showToast = (message: string, type: "success" | "error" = "success") => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
+  const showToast = (message: string, type: "success" | "error" = "success") =>
+    type === "error" ? toast.error(message) : toast.success(message);
 
   const authHeaders = () => {
     const token = localStorage.getItem("jwt_token");
@@ -530,18 +525,6 @@ function EnrollmentsPage() {
               </button>
             </div>
           </div>
-        </div>
-      )}
-
-      {toast && (
-        <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-3 shadow-lg">
-          {toast.type === "success" ? (
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
-          ) : (
-            <AlertCircle className="h-5 w-5 text-red-600" />
-          )}
-
-          <span className="text-sm font-medium">{toast.message}</span>
         </div>
       )}
     </>

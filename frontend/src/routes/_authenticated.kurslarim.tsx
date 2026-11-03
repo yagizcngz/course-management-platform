@@ -11,6 +11,7 @@ import {
 } from "@/components/courseHelpers";
 import { toast } from "sonner";
 
+import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/_authenticated/kurslarim")({
   component: MyCoursesPage,
 });
@@ -33,19 +34,19 @@ function MyCoursesPage() {
 
       const [enrollRes, coursesRes, teachersRes, categoriesRes, enrollmentsRes] = await Promise.all(
         [
-          fetch("http://localhost:5157/api/enrollments/my-courses", {
+          fetch(`${API_BASE}/api/enrollments/my-courses`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch("http://localhost:5157/api/courses", {
+          fetch(`${API_BASE}/api/courses`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch("http://localhost:5157/api/teachers", {
+          fetch(`${API_BASE}/api/teachers`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch("http://localhost:5157/api/categories", {
+          fetch(`${API_BASE}/api/categories`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          fetch("http://localhost:5157/api/enrollments", {
+          fetch(`${API_BASE}/api/enrollments`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ],
@@ -193,7 +194,7 @@ function MyCoursesPage() {
             const token = localStorage.getItem("jwt_token");
             try {
               const res = await fetch(
-                `http://localhost:5157/api/enrollments/leave/${selectedCourse.id || selectedCourse.Id}`,
+                `${API_BASE}/api/enrollments/leave/${selectedCourse.id || selectedCourse.Id}`,
                 {
                   method: "DELETE",
                   headers: { Authorization: `Bearer ${token}` },

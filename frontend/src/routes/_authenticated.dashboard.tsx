@@ -12,6 +12,8 @@ import {
 } from "../components/courseHelpers";
 import { toast } from "sonner";
 
+import { parseJwt } from "@/lib/auth";
+import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
@@ -21,24 +23,6 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   }),
   component: HomePage,
 });
-
-const parseJwt = (token: string) => {
-  try {
-    const base64Url = token.split(".")[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split("")
-        .map(function (c) {
-          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-        })
-        .join(""),
-    );
-    return JSON.parse(jsonPayload);
-  } catch (e) {
-    return null;
-  }
-};
 
 interface StudentData {
   id?: string | number;
@@ -128,12 +112,13 @@ function HomePage() {
 
       try {
         const [sRes, cRes, eRes, tRes] = await Promise.all([
-          fetch("http://localhost:5157/api/students", { headers }),
-          fetch("http://localhost:5157/api/courses", { headers }),
-          fetch("http://localhost:5157/api/enrollments", { headers }),
-          fetch("http://localhost:5157/api/teachers", { headers }),
+          // Öğrenci listesi yalnızca yönetici/öğretmene açık
+          canManage ? fetch(`${API_BASE}/api/students`, { headers }) : Promise.resolve(null),
+          fetch(`${API_BASE}/api/courses`, { headers }),
+          fetch(`${API_BASE}/api/enrollments`, { headers }),
+          fetch(`${API_BASE}/api/teachers`, { headers }),
         ]);
-        if (sRes.ok) setDbStudents(await sRes.json());
+        if (sRes?.ok) setDbStudents(await sRes.json());
         if (cRes.ok) setDbCourses(await cRes.json());
         if (eRes.ok) setDbEnrollments(await eRes.json());
         if (tRes.ok) setDbTeachers(await tRes.json());
@@ -143,8 +128,8 @@ function HomePage() {
 
         if (token) {
           const [myRes, recRes] = await Promise.all([
-            fetch("http://localhost:5157/api/enrollments/my-courses", { headers }),
-            fetch("http://localhost:5157/api/courses/recommended", { headers }),
+            fetch(`${API_BASE}/api/enrollments/my-courses`, { headers }),
+            fetch(`${API_BASE}/api/courses/recommended`, { headers }),
           ]);
           if (myRes.ok) setMyCourses(await myRes.json());
           if (recRes.ok) setRecommendedCourses(await recRes.json());
@@ -195,7 +180,7 @@ function HomePage() {
     const courseId = selectedCourse.id || selectedCourse.Id;
     const token = localStorage.getItem("jwt_token");
     try {
-      const res = await fetch(`http://localhost:5157/api/enrollments/join/${courseId}`, {
+      const res = await fetch(`${API_BASE}/api/enrollments/join/${courseId}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -203,7 +188,7 @@ function HomePage() {
       });
       if (res.ok) {
         toast.success(t("dashboard.alerts.joinSuccess"));
-        const myRes = await fetch("http://localhost:5157/api/enrollments/my-courses", {
+        const myRes = await fetch(`${API_BASE}/api/enrollments/my-courses`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (myRes.ok) setMyCourses(await myRes.json());
@@ -221,7 +206,7 @@ function HomePage() {
     const courseId = selectedCourse.id || selectedCourse.Id;
     const token = localStorage.getItem("jwt_token");
     try {
-      const res = await fetch(`http://localhost:5157/api/enrollments/leave/${courseId}`, {
+      const res = await fetch(`${API_BASE}/api/enrollments/leave/${courseId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -229,7 +214,7 @@ function HomePage() {
       });
       if (res.ok) {
         toast.success(t("dashboard.alerts.leaveSuccess", "Kurstan başarıyla ayrıldınız."));
-        const myRes = await fetch("http://localhost:5157/api/enrollments/my-courses", {
+        const myRes = await fetch(`${API_BASE}/api/enrollments/my-courses`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (myRes.ok) setMyCourses(await myRes.json());

@@ -18,6 +18,7 @@ import type { TFunction, i18n } from "i18next";
 import { getCourseImage } from "../components/courseHelpers";
 import { CourseDetailModal } from "../components/CourseDetailModal";
 
+import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/")({
   component: GuestHomepage,
 });
@@ -83,13 +84,13 @@ function GuestHomepage() {
     }
 
     // Fetch Guest Stats
-    fetch("http://localhost:5157/api/Dashboard/GuestStats")
+    fetch(`${API_BASE}/api/Dashboard/GuestStats`)
       .then((res) => res.json())
       .then((data) => setStats(data))
       .catch(console.error);
 
     // Fetch Popular Courses
-    fetch("http://localhost:5157/api/Courses/popular?count=4")
+    fetch(`${API_BASE}/api/Courses/popular?count=4`)
       .then((res) => res.json())
       .then((data) => setPopularCourses(data))
       .catch(console.error);
@@ -101,9 +102,7 @@ function GuestHomepage() {
 
     setIsSearching(true);
     try {
-      const res = await fetch(
-        `http://localhost:5157/api/Courses?search=${encodeURIComponent(searchQuery)}`,
-      );
+      const res = await fetch(`${API_BASE}/api/Courses?search=${encodeURIComponent(searchQuery)}`);
       const data = await res.json();
       setSearchResults(data);
     } catch (err) {
