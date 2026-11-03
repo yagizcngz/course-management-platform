@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -94,6 +95,8 @@ export function CourseDetailModal({
   const instructor = originalInstructor;
 
   const price = course.price || course.Price || "0";
+  const navigate = useNavigate();
+  const openCoursePage = () => navigate({ to: "/kurs/$id", params: { id: String(courseId) } });
   const teacherId = course.teacherId ?? course.TeacherId;
   const capacity = course.maxCapacity || course.MaxCapacity;
 
@@ -495,6 +498,15 @@ export function CourseDetailModal({
                 </button>
               )}
 
+            {(isAdminRole || isTeacherOfThisCourse) && !isEditing && (
+              <button
+                onClick={openCoursePage}
+                className="text-xs font-bold border border-border rounded-md px-3 py-1.5 hover:bg-muted transition-colors"
+              >
+                {t("lessons.manage")}
+              </button>
+            )}
+
             {!isAdminRole &&
               !isTeacherOfThisCourse &&
               (isEnrolled ? (
@@ -503,6 +515,12 @@ export function CourseDetailModal({
                     <CheckCircle2 className="size-3.5" />
                     {t("courseModal.enrolled", "Kayıtlısınız")}
                   </div>
+                  <button
+                    onClick={openCoursePage}
+                    className="text-xs font-bold bg-primary text-primary-foreground rounded-md px-4 py-1.5 hover:opacity-90 transition-opacity"
+                  >
+                    {t("lessons.watch")}
+                  </button>
                   {onLeave && (
                     <div onClick={(e) => e.stopPropagation()}>
                       <Popover>
@@ -528,11 +546,14 @@ export function CourseDetailModal({
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
+                  {/* Ücretli kurslar kurs sayfasında satın alınır */}
                   <button
-                    onClick={onJoin}
-                    className="flex items-center gap-1.5 text-xs font-bold bg-accent text-white rounded-md px-4 py-1.5 hover:bg-accent/90 transition-colors"
+                    onClick={Number(price) > 0 ? openCoursePage : onJoin}
+                    className="flex items-center gap-1.5 text-xs font-bold bg-primary text-primary-foreground rounded-md px-4 py-1.5 hover:opacity-90 transition-opacity"
                   >
-                    {t("courseModal.joinCourse", "Kursa Katıl")}
+                    {Number(price) > 0
+                      ? t("lessons.buyFor", { price: `₺${price}` })
+                      : t("courseModal.joinCourse", "Kursa Katıl")}
                   </button>
                   {isTeacherRole && !isEditing && hasMatchingBranch && (
                     <div onClick={(e) => e.stopPropagation()}>

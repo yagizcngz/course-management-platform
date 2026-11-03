@@ -18,7 +18,8 @@
       "themeLight": "Tema (Aydınlık)",
       "themeDark": "Tema (Karanlık)",
       "logout": "Çıkış Yap",
-      "mySupportRequests": "Yardım Taleplerim"
+      "mySupportRequests": "Yardım Taleplerim",
+      "wallet": "Cüzdan"
     },
     "settings": {
       "title": "Ayarlar",
@@ -587,7 +588,17 @@
         "9": "Eki",
         "10": "Kas",
         "11": "Ara"
-      }
+      },
+      "platformRevenue": "Platform Geliri (Net)",
+      "platformRevenueHint": "Satış {{gross}} − öğretmen payı {{teachers}}",
+      "sales": "Kurs Satışları",
+      "refundsHint": "{{count}} iade",
+      "teacherPayouts": "Öğretmenlere Ödenen",
+      "teacherPayoutsHint": "İadeler düşülmüş öğretmen payı",
+      "walletBalances": "Cüzdan Bakiyeleri",
+      "walletBalancesHint": "Tüm kullanıcıların harcanmamış bakiyesi",
+      "topCourses": "En Çok Satan Kurslar",
+      "salesCount": "{{count}} satış"
     },
     "requests": {
       "accepted": "Kabul Edildi",
@@ -710,6 +721,65 @@
       "loading": "Yükleniyor...",
       "cancel": "Vazgeç",
       "confirm": "Onayla"
+    },
+    "wallet": {
+      "title": "Cüzdan",
+      "balance": "Bakiye",
+      "spent": "Harcanan",
+      "earnings": "Kazanç",
+      "topUp": "Bakiye yükle",
+      "simulatedNote": "Demo modu: gerçek ödeme alınmaz.",
+      "amount": "Tutar (₺)",
+      "addFunds": "Yükle",
+      "history": "Hareketler",
+      "noTransactions": "Henüz hareket yok.",
+      "invalidAmount": "1 ile 10.000 arasında bir tutar girin.",
+      "topUpFailed": "Bakiye yüklenemedi.",
+      "topUpSuccess": "Bakiye yüklendi.",
+      "loadFailed": "Cüzdan yüklenemedi.",
+      "types": {
+        "TopUp": "Bakiye yükleme",
+        "Purchase": "Kurs satın alma",
+        "Earning": "Kurs satışı",
+        "Refund": "İade",
+        "EarningReversal": "İade edilen satış"
+      }
+    },
+    "lessons": {
+      "title": "Kurs",
+      "watch": "İzle",
+      "manage": "Dersler",
+      "buyFor": "{{price}} ile satın al",
+      "list": "Dersler ({{count}})",
+      "empty": "Henüz ders yok.",
+      "noVideo": "Bu dersin videosu yok.",
+      "locked": "Dersleri izlemek için kursa kaydolun.",
+      "yourBalance": "Bakiyeniz: {{balance}}",
+      "topUpFirst": "Satın almak için bakiye yükleyin",
+      "confirmTitle": "Satın almayı onayla",
+      "confirmBody": "\"{{course}}\" için cüzdanınızdan {{price}} düşülecek.",
+      "confirmBuy": "Satın al",
+      "purchaseSuccess": "Kurs satın alındı. İyi dersler!",
+      "enrollFailed": "Kayıt yapılamadı.",
+      "loadFailed": "Kurs yüklenemedi.",
+      "addLesson": "Ders ekle",
+      "lessonTitle": "Ders başlığı",
+      "lessonDescription": "Açıklama (isteğe bağlı)",
+      "chooseVideo": "Video yükle (mp4/webm)",
+      "videoUrl": "…ya da video / YouTube bağlantısı yapıştır",
+      "saving": "Kaydediliyor...",
+      "added": "Ders eklendi.",
+      "saveFailed": "Ders kaydedilemedi.",
+      "uploadFailed": "Video yüklenemedi.",
+      "titleRequired": "Ders başlığı zorunlu.",
+      "delete": "Dersi sil",
+      "deleted": "Ders silindi.",
+      "deleteFailed": "Ders silinemedi.",
+      "refund": "İade iste",
+      "refundHint": "Vazgeçtiniz mi? Satın almadan sonraki 7 gün içinde tam iade.",
+      "refundBody": "{{price}} cüzdanınıza iade edilecek ve \"{{course}}\" kursuna erişiminiz kapanacak.",
+      "refundSuccess": "Cüzdanınıza iade edildi.",
+      "refundFailed": "İade yapılamadı."
     }
   }
 }

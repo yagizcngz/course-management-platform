@@ -16,12 +16,14 @@ import {
   LogOut,
   Bell,
   CheckCircle,
+  Wallet,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 import type { TFunction } from "i18next";
 
-import { parseJwt } from "@/lib/auth";
+import { parseJwt, authHeaders, getToken, isAdminRole } from "@/lib/auth";
+import { formatTry } from "@/lib/utils";
 import { API_BASE } from "@/components/courseHelpers";
 const translateRole = (role: string, t: TFunction) => {
   const r = String(role).toLowerCase();
@@ -50,6 +52,7 @@ const getMenuItems = (t: TFunction) => [
   { title: t("sidebar.enrollments"), url: "/kayitlar", icon: ClipboardList },
   { title: t("sidebar.reports"), url: "/raporlar", icon: BarChart3 },
   { title: t("sidebar.announcements"), url: "/duyurular", icon: Bell },
+  { title: t("sidebar.wallet"), url: "/cuzdan", icon: Wallet },
   {
     title: t("sidebar.mySupportRequests", "Yardım Taleplerim"),
     url: "/yardim-taleplerim",
@@ -166,6 +169,21 @@ export function AppSidebar() {
     }
   }, [location.pathname, t]);
 
+  // Cüzdan bakiyesi (yönetici hariç); satın alma/yükleme sonrası "wallet-changed" olayıyla yenilenir
+  const [balance, setBalance] = useState<number | null>(null);
+  const showBalance = !!currentUser.rawRole && !isAdminRole(currentUser.rawRole);
+  useEffect(() => {
+    if (!showBalance || !getToken()) return;
+    const load = () =>
+      fetch(`${API_BASE}/api/wallet/me`, { headers: authHeaders() })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => d && setBalance(d.balance))
+        .catch(() => {});
+    load();
+    window.addEventListener("wallet-changed", load);
+    return () => window.removeEventListener("wallet-changed", load);
+  }, [showBalance]);
+
   useEffect(() => {
     const onProfileUpdated = (e: Event) => {
       const detail = (e as CustomEvent).detail as { name?: string; photoUrl?: string } | undefined;
@@ -208,6 +226,7 @@ export function AppSidebar() {
       if (item.url === "/verdigim-kurslar") return false;
       if (item.url === "/kurslarim") return false;
       if (item.url === "/yardim-taleplerim") return false;
+      if (item.url === "/cuzdan") return false;
       return true;
     }
 
@@ -218,6 +237,7 @@ export function AppSidebar() {
     }
 
     // Default for user/student or unrecognized role
+    if (item.url === "/cuzdan") return true;
     if (item.url === "/kurslarim") return true;
     if (item.url === "/yardim-taleplerim") return true;
 
@@ -272,6 +292,9 @@ export function AppSidebar() {
                 <p className="text-sm font-medium truncate">{currentUser.name}</p>
                 <p className="text-xs text-muted-foreground truncate">
                   {translateRole(currentUser.rawRole || "user", t)}
+                  {showBalance && balance !== null && (
+                    <span className="tabular-nums"> · {formatTry(balance)}</span>
+                  )}
                 </p>
               </div>
               <ChevronUp

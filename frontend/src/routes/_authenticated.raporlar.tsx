@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useAdminGuard } from "../hooks/useAdminGuard";
 
 import { API_BASE } from "@/components/courseHelpers";
-
+import { formatTry } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/raporlar")({
   head: () => ({
     meta: [
@@ -15,6 +15,17 @@ export const Route = createFileRoute("/_authenticated/raporlar")({
   }),
   component: ReportsPage,
 });
+
+interface SalesSummary {
+  sales: number;
+  refunds: number;
+  grossRevenue: number;
+  teacherEarnings: number;
+  platformRevenue: number;
+  totalBalances: number;
+  monthly: { year: number; month: number; revenue: number; sales: number; refunds: number }[];
+  topCourses: { courseId: number; title: string; revenue: number; sales: number }[];
+}
 
 interface StudentData {
   id?: string | number;
@@ -126,6 +137,7 @@ function ReportsPage() {
   const [deletedTeachers, setDeletedTeachers] = useState<TeacherData[]>([]);
   const [deletedEnrollments, setDeletedEnrollments] = useState<EnrollmentData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [sales, setSales] = useState<SalesSummary | null>(null);
 
   // Veritabanından verileri çek
   useEffect(() => {
@@ -144,6 +156,8 @@ function ReportsPage() {
           fetch(`${API_BASE}/api/teachers/deleted`, { headers }),
           fetch(`${API_BASE}/api/enrollments/deleted`, { headers }),
         ]);
+        const salesRes = await fetch(`${API_BASE}/api/wallet/summary`, { headers });
+        if (salesRes.ok) setSales(await salesRes.json());
 
         if (sRes.ok) setDbStudents(await sRes.json());
         if (cRes.ok) setDbCourses(await cRes.json());
@@ -208,48 +222,20 @@ function ReportsPage() {
         : 0
       : ((enrollmentsLast30 - enrollmentsPrev30) / enrollmentsPrev30) * 100;
 
-  // 3. Aylık Gelir (sistemdeki tüm aktif kayıtlar, kursun güncel fiyatı üzerinden) + Yıllık Ciro projeksiyonunun temeli
-  const startOfThisMonth = new Date(currentYear, currentMonth, 1);
-
-  let revTotalNow = 0;
-  let revTotalAsOfLastMonth = 0;
-
-  dbEnrollments.forEach((e) => {
-    const enrolledCourseTitle = e.courseTitle || e.CourseTitle || "";
-    const matchedCourse = dbCourses.find((c) => {
-      const courseTitle = c.title || c.Title || "";
-      return courseTitle.toLowerCase().trim() === enrolledCourseTitle.toLowerCase().trim();
-    });
-
-    if (!matchedCourse) return;
-
-    const priceString = String(matchedCourse.price || matchedCourse.Price || "0");
-    const numericPrice = parseFloat(priceString.replace(/[^\d.]/g, "")) || 0;
-
-    revTotalNow += numericPrice;
-
-    const dRaw = e.enrollmentDate || e.EnrollmentDate || e.date || e.Date;
-    const d = dRaw ? new Date(dRaw) : new Date();
-    if (d < startOfThisMonth) {
-      revTotalAsOfLastMonth += numericPrice;
-    }
-  });
-
-  // Gelirlerin Admin Komisyonu (%10)
-  const adminRevThisMonth = revTotalNow * 0.1;
-  const adminRevLastMonth = revTotalAsOfLastMonth * 0.1;
+  // 3. Gelir: cüzdan satın alma kayıtlarından (iadeler düşülmüş, net) — /api/wallet/summary
+  const monthRevenue = (year: number, month: number) =>
+    sales?.monthly.find((m) => m.year === year && m.month === month + 1)?.revenue ?? 0;
+  const lastMonthDate = new Date(currentYear, currentMonth - 1, 1);
+  const revThisMonth = monthRevenue(currentYear, currentMonth);
+  const revLastMonth = monthRevenue(lastMonthDate.getFullYear(), lastMonthDate.getMonth());
   const revenueGrowth =
-    adminRevLastMonth === 0
-      ? adminRevThisMonth > 0
+    revLastMonth === 0
+      ? revThisMonth > 0
         ? 100
         : 0
-      : ((adminRevThisMonth - adminRevLastMonth) / adminRevLastMonth) * 100;
+      : ((revThisMonth - revLastMonth) / revLastMonth) * 100;
 
-  const formatMoney = (val: number) => {
-    if (val >= 1000) return `₺${(val / 1000).toFixed(1)}K`;
-    return `₺${val.toFixed(0)}`;
-  };
-  const dynamicRevenue = formatMoney(adminRevThisMonth);
+  const dynamicRevenue = formatTry(revThisMonth);
 
   // --- DİĞER METRİK HESAPLAMALARI ---
 
@@ -263,16 +249,6 @@ function ReportsPage() {
   const totalDeletedCourses = deletedCourses.length;
   const totalDeletedTeachers = deletedTeachers.length;
   const totalDeletedEnrollments = deletedEnrollments.length;
-
-  // Yıllık Gelir (Projeksiyon): Aylık Gelir'in (komisyon dahil) 12 katı — iki kart aynı mantığı kullansın diye
-  // önceden burada "revTotalNow * 12" vardı (komisyonsuz tam kurs fiyatı), Aylık Gelir ise %10 komisyon
-  // kullanıyordu; bu da iki rakamın birbiriyle tutarsız görünmesine yol açıyordu.
-  const formatCurrency = (val: number) => {
-    if (val >= 1000000) return `₺${(val / 1000000).toFixed(1)}M`;
-    if (val >= 1000) return `₺${(val / 1000).toFixed(1)}K`;
-    return `₺${val}`;
-  };
-  const yillikCiroFormatted = formatCurrency(adminRevThisMonth * 12);
 
   // Aylık Kayıt Trendi (Grafik Verisi) — takvim yılına (örn. sabit "2026") bağlı kalmayan,
   // bugünden geriye doğru son 12 ayı kapsayan kayan pencere. Eskiden "d.getFullYear() === currentYear"
@@ -515,13 +491,56 @@ function ReportsPage() {
             valueTone="accent"
           />
           <KpiCard
-            label={t("reports.annualRevenueProj")}
-            value={isLoading ? "..." : yillikCiroFormatted}
-            hint={t("reports.annualRevenueHint")}
-            hintTone="up"
+            label={t("reports.platformRevenue")}
+            value={isLoading ? "..." : formatTry(sales?.platformRevenue ?? 0)}
+            hint={t("reports.platformRevenueHint", {
+              gross: formatTry(sales?.grossRevenue ?? 0),
+              teachers: formatTry(sales?.teacherEarnings ?? 0),
+            })}
+            hintTone="muted"
             valueTone="accent"
           />
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <KpiCard
+            label={t("reports.sales")}
+            value={isLoading ? "..." : (sales?.sales ?? 0)}
+            hint={t("reports.refundsHint", { count: sales?.refunds ?? 0 })}
+            hintTone="muted"
+          />
+          <KpiCard
+            label={t("reports.teacherPayouts")}
+            value={isLoading ? "..." : formatTry(sales?.teacherEarnings ?? 0)}
+            hint={t("reports.teacherPayoutsHint")}
+            hintTone="muted"
+          />
+          <KpiCard
+            label={t("reports.walletBalances")}
+            value={isLoading ? "..." : formatTry(sales?.totalBalances ?? 0)}
+            hint={t("reports.walletBalancesHint")}
+            hintTone="muted"
+          />
+        </div>
+
+        {sales && sales.topCourses.length > 0 && (
+          <section className="space-y-4">
+            <SectionHeader title={t("reports.topCourses")} />
+            <div className="bg-card border border-border divide-y">
+              {sales.topCourses.map((c) => (
+                <div
+                  key={c.courseId}
+                  className="flex items-center justify-between px-6 py-3 text-sm"
+                >
+                  <span className="font-medium truncate">{c.title}</span>
+                  <span className="tabular-nums text-muted-foreground">
+                    {t("reports.salesCount", { count: c.sales })} · {formatTry(c.revenue)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="space-y-4">
           <SectionHeader

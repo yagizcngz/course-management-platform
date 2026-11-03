@@ -27,7 +27,9 @@ import { Route as AuthenticatedKayitlarRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedIsteklerRouteImport } from './routes/_authenticated.istekler'
 import { Route as AuthenticatedDuyurularRouteImport } from './routes/_authenticated.duyurular'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
+import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated.cuzdan'
 import { Route as AuthenticatedAyarlarRouteImport } from './routes/_authenticated.ayarlar'
+import { Route as AuthenticatedKursIdRouteImport } from './routes/_authenticated.kurs.$id'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -121,9 +123,19 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedCuzdanRoute = AuthenticatedCuzdanRouteImport.update({
+  id: '/cuzdan',
+  path: '/cuzdan',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAyarlarRoute = AuthenticatedAyarlarRouteImport.update({
   id: '/ayarlar',
   path: '/ayarlar',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedKursIdRoute = AuthenticatedKursIdRouteImport.update({
+  id: '/kurs/$id',
+  path: '/kurs/$id',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 
@@ -133,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/ayarlar': typeof AuthenticatedAyarlarRoute
+  '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/duyurular': typeof AuthenticatedDuyurularRoute
   '/istekler': typeof AuthenticatedIsteklerRoute
@@ -146,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/verdigim-kurslar': typeof AuthenticatedVerdigimKurslarRoute
   '/yardim': typeof AuthenticatedYardimRoute
   '/yardim-taleplerim': typeof AuthenticatedYardimTaleplerimRoute
+  '/kurs/$id': typeof AuthenticatedKursIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -153,6 +167,7 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/ayarlar': typeof AuthenticatedAyarlarRoute
+  '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/duyurular': typeof AuthenticatedDuyurularRoute
   '/istekler': typeof AuthenticatedIsteklerRoute
@@ -166,6 +181,7 @@ export interface FileRoutesByTo {
   '/verdigim-kurslar': typeof AuthenticatedVerdigimKurslarRoute
   '/yardim': typeof AuthenticatedYardimRoute
   '/yardim-taleplerim': typeof AuthenticatedYardimTaleplerimRoute
+  '/kurs/$id': typeof AuthenticatedKursIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -175,6 +191,7 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/ayarlar': typeof AuthenticatedAyarlarRoute
+  '/_authenticated/cuzdan': typeof AuthenticatedCuzdanRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/duyurular': typeof AuthenticatedDuyurularRoute
   '/_authenticated/istekler': typeof AuthenticatedIsteklerRoute
@@ -188,6 +205,7 @@ export interface FileRoutesById {
   '/_authenticated/verdigim-kurslar': typeof AuthenticatedVerdigimKurslarRoute
   '/_authenticated/yardim': typeof AuthenticatedYardimRoute
   '/_authenticated/yardim-taleplerim': typeof AuthenticatedYardimTaleplerimRoute
+  '/_authenticated/kurs/$id': typeof AuthenticatedKursIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -197,6 +215,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/sitemap.xml'
     | '/ayarlar'
+    | '/cuzdan'
     | '/dashboard'
     | '/duyurular'
     | '/istekler'
@@ -210,6 +229,7 @@ export interface FileRouteTypes {
     | '/verdigim-kurslar'
     | '/yardim'
     | '/yardim-taleplerim'
+    | '/kurs/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -217,6 +237,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/sitemap.xml'
     | '/ayarlar'
+    | '/cuzdan'
     | '/dashboard'
     | '/duyurular'
     | '/istekler'
@@ -230,6 +251,7 @@ export interface FileRouteTypes {
     | '/verdigim-kurslar'
     | '/yardim'
     | '/yardim-taleplerim'
+    | '/kurs/$id'
   id:
     | '__root__'
     | '/'
@@ -238,6 +260,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/sitemap.xml'
     | '/_authenticated/ayarlar'
+    | '/_authenticated/cuzdan'
     | '/_authenticated/dashboard'
     | '/_authenticated/duyurular'
     | '/_authenticated/istekler'
@@ -251,6 +274,7 @@ export interface FileRouteTypes {
     | '/_authenticated/verdigim-kurslar'
     | '/_authenticated/yardim'
     | '/_authenticated/yardim-taleplerim'
+    | '/_authenticated/kurs/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -389,6 +413,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/cuzdan': {
+      id: '/_authenticated/cuzdan'
+      path: '/cuzdan'
+      fullPath: '/cuzdan'
+      preLoaderRoute: typeof AuthenticatedCuzdanRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/ayarlar': {
       id: '/_authenticated/ayarlar'
       path: '/ayarlar'
@@ -396,11 +427,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAyarlarRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/kurs/$id': {
+      id: '/_authenticated/kurs/$id'
+      path: '/kurs/$id'
+      fullPath: '/kurs/$id'
+      preLoaderRoute: typeof AuthenticatedKursIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAyarlarRoute: typeof AuthenticatedAyarlarRoute
+  AuthenticatedCuzdanRoute: typeof AuthenticatedCuzdanRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDuyurularRoute: typeof AuthenticatedDuyurularRoute
   AuthenticatedIsteklerRoute: typeof AuthenticatedIsteklerRoute
@@ -414,10 +453,12 @@ interface AuthenticatedRouteChildren {
   AuthenticatedVerdigimKurslarRoute: typeof AuthenticatedVerdigimKurslarRoute
   AuthenticatedYardimRoute: typeof AuthenticatedYardimRoute
   AuthenticatedYardimTaleplerimRoute: typeof AuthenticatedYardimTaleplerimRoute
+  AuthenticatedKursIdRoute: typeof AuthenticatedKursIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAyarlarRoute: AuthenticatedAyarlarRoute,
+  AuthenticatedCuzdanRoute: AuthenticatedCuzdanRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDuyurularRoute: AuthenticatedDuyurularRoute,
   AuthenticatedIsteklerRoute: AuthenticatedIsteklerRoute,
@@ -431,6 +472,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedVerdigimKurslarRoute: AuthenticatedVerdigimKurslarRoute,
   AuthenticatedYardimRoute: AuthenticatedYardimRoute,
   AuthenticatedYardimTaleplerimRoute: AuthenticatedYardimTaleplerimRoute,
+  AuthenticatedKursIdRoute: AuthenticatedKursIdRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

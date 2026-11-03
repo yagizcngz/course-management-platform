@@ -18,7 +18,8 @@
       "themeLight": "Theme (Light)",
       "themeDark": "Theme (Dark)",
       "logout": "Log Out",
-      "mySupportRequests": "My Support Requests"
+      "mySupportRequests": "My Support Requests",
+      "wallet": "Wallet"
     },
     "settings": {
       "title": "Settings",
@@ -589,7 +590,17 @@
         "9": "Oct",
         "10": "Nov",
         "11": "Dec"
-      }
+      },
+      "platformRevenue": "Platform Revenue (Net)",
+      "platformRevenueHint": "Sales {{gross}} − teacher share {{teachers}}",
+      "sales": "Course Sales",
+      "refundsHint": "{{count}} refunded",
+      "teacherPayouts": "Paid to Teachers",
+      "teacherPayoutsHint": "Teacher share of sales, after refunds",
+      "walletBalances": "Wallet Balances",
+      "walletBalancesHint": "Total unspent balance across all users",
+      "topCourses": "Top Selling Courses",
+      "salesCount": "{{count}} sales"
     },
     "requests": {
       "accepted": "Accepted",
@@ -714,6 +725,65 @@
       "loading": "Loading...",
       "cancel": "Cancel",
       "confirm": "Confirm"
+    },
+    "wallet": {
+      "title": "Wallet",
+      "balance": "Balance",
+      "spent": "Spent",
+      "earnings": "Earnings",
+      "topUp": "Add funds",
+      "simulatedNote": "Demo mode: no real payment is taken.",
+      "amount": "Amount (₺)",
+      "addFunds": "Add",
+      "history": "Transactions",
+      "noTransactions": "No transactions yet.",
+      "invalidAmount": "Enter an amount between 1 and 10,000.",
+      "topUpFailed": "Could not add funds.",
+      "topUpSuccess": "Funds added.",
+      "loadFailed": "Could not load wallet.",
+      "types": {
+        "TopUp": "Top-up",
+        "Purchase": "Course purchase",
+        "Earning": "Course sale",
+        "Refund": "Refund",
+        "EarningReversal": "Refunded sale"
+      }
+    },
+    "lessons": {
+      "title": "Course",
+      "watch": "Watch",
+      "manage": "Lessons",
+      "buyFor": "Buy for {{price}}",
+      "list": "Lessons ({{count}})",
+      "empty": "No lessons yet.",
+      "noVideo": "This lesson has no video.",
+      "locked": "Enroll in this course to watch the lessons.",
+      "yourBalance": "Your balance: {{balance}}",
+      "topUpFirst": "Add funds to buy",
+      "confirmTitle": "Confirm purchase",
+      "confirmBody": "{{price}} will be deducted from your wallet for \"{{course}}\".",
+      "confirmBuy": "Buy",
+      "purchaseSuccess": "Course purchased. Enjoy!",
+      "enrollFailed": "Could not enroll.",
+      "loadFailed": "Could not load course.",
+      "addLesson": "Add lesson",
+      "lessonTitle": "Lesson title",
+      "lessonDescription": "Description (optional)",
+      "chooseVideo": "Upload video (mp4/webm)",
+      "videoUrl": "…or paste a video / YouTube link",
+      "saving": "Saving...",
+      "added": "Lesson added.",
+      "saveFailed": "Could not save lesson.",
+      "uploadFailed": "Video upload failed.",
+      "titleRequired": "Lesson title is required.",
+      "delete": "Delete lesson",
+      "deleted": "Lesson deleted.",
+      "deleteFailed": "Could not delete lesson.",
+      "refund": "Request refund",
+      "refundHint": "Changed your mind? Full refund within 7 days of purchase.",
+      "refundBody": "{{price}} will be returned to your wallet and you will lose access to \"{{course}}\".",
+      "refundSuccess": "Refunded to your wallet.",
+      "refundFailed": "Refund failed."
     }
   }
 }
