@@ -117,12 +117,6 @@ namespace EdTechApi.API.Controllers
                 }
             }
 
-            // Geriye dönük uyumluluk: superadmin adı da Admin yapar
-            if (request.Username == "superadmin" && assignedRole == "User")
-            {
-                assignedRole = "Admin";
-            }
-
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {

@@ -51,7 +51,7 @@ namespace EdTechApi.API.Controllers
         // Kurslar.tsx / Kontrol Paneli'ndeki "Kursu Düzenle" ekranında hem dosya yükleme hem de
         // dışarıdan link yapıştırma seçeneği var; bu endpoint yalnızca "dosya yükle" seçeneği için.
         [HttpPost("course-image")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Teacher")]
         [RequestSizeLimit(20_000_000)] // 20 MB üst sınır
         public async Task<IActionResult> UploadCourseImage(IFormFile file)
         {

@@ -34,7 +34,7 @@ namespace EdTechApi.API.Controllers
             string? branch = null;
             if (user.Role == "Teacher" || user.Role == "Eğitmen")
             {
-                var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == user.Id || t.Email == user.Email);
+                var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == user.Id);
                 if (teacher != null)
                 {
                     branch = teacher.Branch;
@@ -77,7 +77,7 @@ namespace EdTechApi.API.Controllers
             if (request.ReceiveEmailNotifications.HasValue) user.ReceiveEmailNotifications = request.ReceiveEmailNotifications.Value;
 
             // Update Student table if exists
-            var student = await _context.Students.FirstOrDefaultAsync(s => s.UserId == user.Id || s.Email == user.Email);
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.UserId == user.Id);
             if (student != null)
             {
                 student.AboutMe = request.AboutMe;
@@ -87,7 +87,7 @@ namespace EdTechApi.API.Controllers
             }
 
             // Update Teacher table if exists
-            var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == user.Id || t.Email == user.Email);
+            var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == user.Id);
             if (teacher != null)
             {
                 teacher.AboutMe = request.AboutMe;

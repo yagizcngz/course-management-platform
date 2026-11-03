@@ -44,6 +44,9 @@ namespace EdTechApi.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateStudent([FromBody] Student newStudent)
         {
+            // Gövdeden gelen ilişki/sistem alanlarını yok say (over-posting)
+            newStudent.Id = 0; newStudent.User = null; newStudent.UserId = null; newStudent.IsDeleted = false;
+            newStudent.Enrollments = new List<Enrollment>();
             try
             {
                 await _studentService.AddStudentAsync(newStudent);

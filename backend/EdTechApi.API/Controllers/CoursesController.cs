@@ -76,6 +76,18 @@ namespace EdTechApi.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateCourse([FromBody] Course newCourse)
         {
+            // Gövdeden gelen ilişki/sistem alanlarını yok say (over-posting)
+            newCourse.Id = 0; newCourse.Teacher = null; newCourse.IsDeleted = false;
+            newCourse.Enrollments = new List<Enrollment>();
+
+            // Öğretmen yalnızca kendi adına kurs açabilir
+            var ownTeacherId = await GetOwnTeacherIdAsync();
+            if (User.IsInRole("Teacher"))
+            {
+                if (ownTeacherId == null) return StatusCode(403, "Öğretmen profili bulunamadı.");
+                newCourse.TeacherId = ownTeacherId;
+            }
+
             if (newCourse.TeacherId == null || newCourse.TeacherId == 0)
             {
                 var username = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
@@ -111,6 +123,14 @@ namespace EdTechApi.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCourse(int id, [FromBody] Course updatedCourse)
         {
+            if (User.IsInRole("Teacher"))
+            {
+                var ownTeacherId = await GetOwnTeacherIdAsync();
+                var ownerId = await _context.Courses.Where(c => c.Id == id).Select(c => c.TeacherId).FirstOrDefaultAsync();
+                if (ownTeacherId == null || ownerId != ownTeacherId) return StatusCode(403, "Sadece kendi kurslarınızı düzenleyebilirsiniz.");
+                updatedCourse.TeacherId = ownTeacherId; // öğretmen kursu başkasına devredemez
+            }
+
             var (isValid, error) = await ValidateCategoryAndTeacherAsync(updatedCourse);
             if (!isValid)
             {
@@ -131,16 +151,34 @@ namespace EdTechApi.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCourse(int id)
         {
+            if (User.IsInRole("Teacher"))
+            {
+                var ownTeacherId = await GetOwnTeacherIdAsync();
+                var ownerId = await _context.Courses.Where(c => c.Id == id).Select(c => c.TeacherId).FirstOrDefaultAsync();
+                if (ownTeacherId == null || ownerId != ownTeacherId) return StatusCode(403, "Sadece kendi kurslarınızı silebilirsiniz.");
+            }
             await _courseService.DeleteCourseAsync(id);
             return NoContent();
         }
 
         // Silinmiş (soft-deleted) kurslar — Raporlar sayfasındaki "Silinen Kurslar" kartı için
+        [Authorize(Roles = "Admin")]
         [HttpGet("deleted")]
         public async Task<IActionResult> GetDeletedCourses()
         {
             var deleted = await _courseService.GetDeletedCoursesAsync();
             return Ok(deleted);
+        }
+
+        private async Task<int?> GetOwnTeacherIdAsync()
+        {
+            var username = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            if (string.IsNullOrEmpty(username)) return null;
+            return await _context.Teachers
+                .Where(t => t.User != null && t.User.Username == username)
+                .Select(t => (int?)t.Id)
+                .FirstOrDefaultAsync();
         }
 
         // Bir kursun Kategori'sinin sabit listeden olduğunu ve atanan öğretmenin branşının
@@ -170,7 +208,9 @@ namespace EdTechApi.API.Controllers
                 return (false, "Seçilen öğretmen bulunamadı.");
             }
 
-            if (!string.Equals(teacher.Branch, normalizedCategory, StringComparison.OrdinalIgnoreCase))
+            // Branch virgülle ayrılmış birden fazla branş tutabilir
+            var branches = (teacher.Branch ?? "").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            if (!branches.Contains(normalizedCategory, StringComparer.OrdinalIgnoreCase))
             {
                 var teacherBranch = string.IsNullOrWhiteSpace(teacher.Branch) ? "belirtilmemiş" : teacher.Branch;
                 return (false,

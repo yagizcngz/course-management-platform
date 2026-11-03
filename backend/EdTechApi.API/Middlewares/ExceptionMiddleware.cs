@@ -32,7 +32,10 @@ namespace EdTechApi.API.Middlewares
                     _ => StatusCodes.Status500InternalServerError
                 };
 
-                var response = new { error = ex.Message };
+                // 500'lerde iç hata ayrıntısını istemciye sızdırma; sadece logla
+                if (context.Response.StatusCode == StatusCodes.Status500InternalServerError)
+                    Console.Error.WriteLine(ex);
+                var response = new { error = ex is ArgumentException ? ex.Message : "Beklenmeyen bir hata oluştu." };
                 await context.Response.WriteAsync(JsonSerializer.Serialize(response));
             }
         }

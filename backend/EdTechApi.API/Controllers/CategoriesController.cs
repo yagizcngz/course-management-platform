@@ -81,6 +81,7 @@ namespace EdTechApi.API.Controllers
             return Ok(new { message = "Kategori başarıyla silindi." });
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("seed")]
         public async Task<IActionResult> SeedDefaultCategories()
         {

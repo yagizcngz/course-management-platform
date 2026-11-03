@@ -55,6 +55,9 @@ namespace EdTechApi.API.Controllers
                 return BadRequest($"Geçersiz branş. Lütfen şu değerlerden birini seçin: {string.Join(", ", allCategories)}");
             }
             newTeacher.Branch = category.Name;
+            // Gövdeden gelen ilişki/sistem alanlarını yok say (over-posting)
+            newTeacher.Id = 0; newTeacher.User = null; newTeacher.UserId = null; newTeacher.IsDeleted = false;
+            newTeacher.Courses = new List<Course>();
 
             await _teacherService.AddTeacherAsync(newTeacher);
             return CreatedAtAction(nameof(GetById), new { id = newTeacher.Id }, newTeacher);
@@ -66,13 +69,15 @@ namespace EdTechApi.API.Controllers
         {
             // Branş, kurs kategorileriyle eşleştirme yapılabilmesi için sabit listeden
             // seçilmiş olmalı — serbest metin artık kabul edilmiyor.
-            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Name.ToLower() == (updatedTeacher.Branch ?? "").ToLower());
-            if (category == null)
+            // Branch virgülle ayrılmış birden fazla branş olabilir; her biri listeden olmalı
+            var allCategoryNames = await _context.Categories.Select(c => c.Name).ToListAsync();
+            var requested = (updatedTeacher.Branch ?? "").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            var normalized = requested.Select(b => allCategoryNames.FirstOrDefault(n => string.Equals(n, b, StringComparison.OrdinalIgnoreCase))).ToList();
+            if (normalized.Count == 0 || normalized.Any(n => n == null))
             {
-                var allCategories = await _context.Categories.Select(c => c.Name).ToListAsync();
-                return BadRequest($"Geçersiz branş. Lütfen şu değerlerden birini seçin: {string.Join(", ", allCategories)}");
+                return BadRequest($"Geçersiz branş. Lütfen şu değerlerden birini seçin: {string.Join(", ", allCategoryNames)}");
             }
-            var normalizedBranch = category.Name;
+            var normalizedBranch = string.Join(", ", normalized);
             updatedTeacher.Branch = normalizedBranch;
 
             var existingTeacher = await _teacherService.GetTeacherByIdAsync(id);
@@ -84,13 +89,13 @@ namespace EdTechApi.API.Controllers
             // Branş fiilen değiştiriliyorsa ve öğretmenin mevcut (eski) branşıyla eşleşen,
             // hâlâ ona atanmış kurs(lar) varsa değişikliğe izin verme — aksi halde o kurslar
             // öğretmenin yeni branşıyla eşleşmeyen "yetim" kayıtlar haline gelir.
-            if (!string.Equals(existingTeacher.Branch, normalizedBranch, StringComparison.OrdinalIgnoreCase))
+            var removedBranches = (existingTeacher.Branch ?? "").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                .Where(b => !normalized.Contains(b, StringComparer.OrdinalIgnoreCase)).ToList();
+            if (removedBranches.Count > 0)
             {
-                var allCourses = await _courseService.GetAllCoursesAsync();
-                var coursesInCurrentBranch = allCourses
-                    .Where(c => c.TeacherId == id &&
-                                string.Equals(c.Category, existingTeacher.Branch, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
+                var coursesInCurrentBranch = await _context.Courses
+                    .Where(c => c.TeacherId == id && removedBranches.Contains(c.Category))
+                    .ToListAsync();
 
                 if (coursesInCurrentBranch.Any())
                 {
