@@ -24,8 +24,10 @@ namespace EdTechApi.Business.Services
             var email = _configuration["Smtp:Email"];
             var password = _configuration["Smtp:Password"];
 
-            // If SMTP settings are missing or not configured properly, skip sending or log it
-            if (string.IsNullOrEmpty(host) || password == "BURAYA_UYGULAMA_SIFRESI_GELECEK")
+            // SMTP ayarlanmamışsa (boş veya appsettings.example.json'daki örnek değerler) gerçek gönderim yerine konsola yaz
+            var notConfigured = string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password)
+                || password.StartsWith("YOUR_") || password == "BURAYA_UYGULAMA_SIFRESI_GELECEK" || email == "your-email@gmail.com";
+            if (notConfigured)
             {
                 Console.WriteLine($"[SIMULATED EMAIL] To: {toEmail}\nSubject: {subject}\nBody: {body}");
                 return; // Simulate success

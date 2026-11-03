@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 import { API_BASE } from "@/components/courseHelpers";
+import { readError } from "@/lib/auth";
 export const Route = createFileRoute("/register")({
   component: RegisterPage,
 });
@@ -50,8 +51,7 @@ function RegisterPage() {
       if (response.ok) {
         navigate({ to: "/login" });
       } else {
-        const errorText = await response.text();
-        setError(errorText || t("register.registerError"));
+        setError(await readError(response, t("register.registerError")));
       }
     } catch (err) {
       setError(t("register.serverError"));
@@ -79,8 +79,7 @@ function RegisterPage() {
         setIsEmailSent(true);
         setSuccessMsg(t("register.emailSentSuccess"));
       } else {
-        const errorText = await response.text();
-        setError(errorText || t("register.codeSendError"));
+        setError(await readError(response, t("register.codeSendError")));
       }
     } catch (err) {
       setError(t("register.serverError"));
