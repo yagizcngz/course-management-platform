@@ -48,6 +48,26 @@ namespace EdTechApi.Business.Services
             await _context.SaveChangesAsync();
         }
 
+        public async Task<Student?> GetOrCreateStudentForUserAsync(User user)
+        {
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.UserId == user.Id);
+            if (student != null || user.Role.ToLower() != "teacher") return student;
+
+            student = new Student
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email,
+                CreatedAt = DateTime.UtcNow,
+                UserId = user.Id
+            };
+            _context.Students.Add(student);
+            await _context.SaveChangesAsync();
+            student.StudentNumber = DateTime.UtcNow.ToString("yy") + student.Id.ToString().PadLeft(7, '0');
+            await _context.SaveChangesAsync();
+            return student;
+        }
+
         public async Task LeaveCourseAsync(int studentId, int courseId)
         {
             var enrollment = await _context.Enrollments

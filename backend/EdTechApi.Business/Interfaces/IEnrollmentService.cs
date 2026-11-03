@@ -13,5 +13,8 @@ namespace EdTechApi.Business.Interfaces
         Task<IEnumerable<EnrollmentDto>> GetStudentEnrollmentsAsync(int studentId);
 
         Task LeaveCourseAsync(int studentId, int courseId);
+
+        // Kullanıcının Student kaydını döner; öğretmense ilk seferde oluşturur. Yoksa null.
+        Task<EdTechApi.Core.Entities.Student?> GetOrCreateStudentForUserAsync(EdTechApi.Core.Entities.User user);
     }
 }

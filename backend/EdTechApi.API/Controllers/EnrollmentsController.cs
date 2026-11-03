@@ -14,11 +14,13 @@ namespace EdTechApi.API.Controllers
     public class EnrollmentsController : ControllerBase
     {
         private readonly IEnrollmentService _enrollmentService;
+        private readonly IWalletService _walletService;
         private readonly AppDbContext _context;
 
-        public EnrollmentsController(IEnrollmentService enrollmentService, AppDbContext context)
+        public EnrollmentsController(IEnrollmentService enrollmentService, IWalletService walletService, AppDbContext context)
         {
             _enrollmentService = enrollmentService;
+            _walletService = walletService;
             _context = context;
         }
 
@@ -34,30 +36,16 @@ namespace EdTechApi.API.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
             if (user == null || (user.Role.ToLower() != "student" && user.Role.ToLower() != "user" && user.Role.ToLower() != "teacher")) return StatusCode(403, "Only participants can join courses.");
 
-            var student = await _context.Students.FirstOrDefaultAsync(s => s.UserId == user.Id);
-            if (student == null)
-            {
-                if (user.Role.ToLower() == "teacher")
-                {
-                    student = new Student
-                    {
-                        FirstName = user.FirstName,
-                        LastName = user.LastName,
-                        Email = user.Email,
-                        CreatedAt = DateTime.UtcNow,
-                        UserId = user.Id
-                    };
-                    _context.Students.Add(student);
-                    await _context.SaveChangesAsync();
-                    string yearPrefix = DateTime.UtcNow.ToString("yy");
-                    student.StudentNumber = yearPrefix + student.Id.ToString().PadLeft(7, '0');
-                    await _context.SaveChangesAsync();
-                }
-                else
-                {
-                    return NotFound("Katılımcı profili bulunamadı.");
-                }
-            }
+            var course = await _context.Courses.Include(c => c.Teacher).FirstOrDefaultAsync(c => c.Id == courseId);
+            if (course == null) return NotFound("Kurs bulunamadı.");
+            if (course.Teacher?.UserId == user.Id) return BadRequest("Kendi kursunuza katılamazsınız.");
+
+            // Ücretli kurslar cüzdan üzerinden satın alınır; daha önce satın alınmışsa tekrar katılım ücretsiz
+            if (course.Price > 0 && !await _walletService.HasActivePurchaseAsync(user.Id, courseId))
+                return BadRequest("Bu kurs ücretli. Lütfen satın alın.");
+
+            var student = await _enrollmentService.GetOrCreateStudentForUserAsync(user);
+            if (student == null) return NotFound("Katılımcı profili bulunamadı.");
 
             await _enrollmentService.EnrollStudentAsync(student.Id, courseId);
             return Ok(new { message = "Kursa başarıyla katıldınız!" });

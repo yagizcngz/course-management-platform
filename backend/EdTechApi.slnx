@@ -3,4 +3,5 @@
   <Project Path="EdTechApi.Business/EdTechApi.Business.csproj" />
   <Project Path="EdTechApi.Core/EdTechApi.Core.csproj" />
   <Project Path="EdTechApi.DataAccess/EdTechApi.DataAccess.csproj" />
+  <Project Path="EdTechApi.Tests/EdTechApi.Tests.csproj" />
 </Solution>

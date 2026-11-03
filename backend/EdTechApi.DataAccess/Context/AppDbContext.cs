@@ -24,6 +24,8 @@ namespace EdTechApi.DataAccess.Context
         public DbSet<Announcement> Announcements { get; set; }
         public DbSet<TeachingRequest> TeachingRequests { get; set; }
         public DbSet<SupportRequest> SupportRequests { get; set; }
+        public DbSet<WalletTransaction> WalletTransactions { get; set; }
+        public DbSet<Lesson> Lessons { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -39,6 +41,18 @@ namespace EdTechApi.DataAccess.Context
             modelBuilder.Entity<Course>().HasQueryFilter(c => !c.IsDeleted);
             modelBuilder.Entity<Enrollment>().HasQueryFilter(e => !e.IsDeleted);
             modelBuilder.Entity<Teacher>().HasQueryFilter(t => !t.IsDeleted);
+            modelBuilder.Entity<Lesson>().HasQueryFilter(l => !l.IsDeleted);
+
+            modelBuilder.Entity<User>().Property(u => u.Balance).HasPrecision(18, 2);
+            modelBuilder.Entity<User>().HasIndex(u => u.Username).IsUnique();
+            modelBuilder.Entity<WalletTransaction>().Property(t => t.Amount).HasPrecision(18, 2);
+            modelBuilder.Entity<WalletTransaction>().HasIndex(t => new { t.UserId, t.CreatedAt });
+
+            // Aynı öğrenci aynı kursa yalnızca bir aktif kayıt (soft-delete edilenler hariç)
+            modelBuilder.Entity<Enrollment>()
+                .HasIndex(e => new { e.StudentId, e.CourseId })
+                .IsUnique()
+                .HasFilter("[IsDeleted] = 0");
 
             // 3. Course - Teacher ilişkisi (Course.TeacherId nullable FK):
             //    Bir öğretmen (hard-delete ile) silinirse buna bağlı kursların TeacherId'si

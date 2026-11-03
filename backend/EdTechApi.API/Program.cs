@@ -32,6 +32,7 @@ builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 builder.Services.AddScoped<ITeacherService, TeacherService>();
 builder.Services.AddScoped<IAnnouncementService, AnnouncementService>();
+builder.Services.AddScoped<IWalletService, WalletService>();
 // Arka plan görevini sisteme dahil ediyoruz
 // builder.Services.AddHostedService<EdTechApi.Business.BackgroundJobs.SoftDeleteCleanupService>();
 builder.Services.AddFluentValidationAutoValidation();
@@ -76,39 +77,21 @@ builder.Services.AddRateLimiter(options =>
         _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1) }));
 });
 
-
 var app = builder.Build();
 
 if (builder.Configuration["Jwt:Key"]?.StartsWith("YOUR_SECRET") == true)
     app.Logger.LogWarning("Jwt:Key hâlâ appsettings.example.json'daki örnek değer; herkes token üretebilir. appsettings.json'da değiştirin.");
 
-// İlk yönetici: hiç Admin yoksa Seed:AdminUsername/AdminPassword ayarından oluşturulur
 using (var scope = app.Services.CreateScope())
 {
-    var seedUser = builder.Configuration["Seed:AdminUsername"];
-    var seedPass = builder.Configuration["Seed:AdminPassword"];
-    if (!string.IsNullOrWhiteSpace(seedUser) && !string.IsNullOrWhiteSpace(seedPass))
+    try
     {
-        try
-        {
-            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            if (!db.Users.Any(u => u.Role == "Admin") && !db.Users.Any(u => u.Username == seedUser))
-            {
-                db.Users.Add(new EdTechApi.Core.Entities.User
-                {
-                    Username = seedUser,
-                    Password = BCrypt.Net.BCrypt.HashPassword(seedPass),
-                    Role = "Admin",
-                    FirstName = "Admin",
-                    Email = builder.Configuration["Seed:AdminEmail"] ?? ""
-                });
-                db.SaveChanges();
-            }
-        }
-        catch (Exception ex)
-        {
-            app.Logger.LogWarning(ex, "Admin seed atlandı (veritabanı hazır değil mi?)");
-        }
+        EdTechApi.API.Helpers.DataSeeder.Run(
+            scope.ServiceProvider.GetRequiredService<AppDbContext>(), builder.Configuration, app.Environment.IsDevelopment());
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning(ex, "Seed atlandı (veritabanı hazır değil mi?)");
     }
 }
 

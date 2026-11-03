@@ -18,5 +18,8 @@ namespace EdTechApi.Core.Entities
         // Yeni eklenen ayar alanları
         public bool IsProfilePublic { get; set; } = true;
         public bool ReceiveEmailNotifications { get; set; } = true;
+
+        // Cüzdan bakiyesi (simüle; gerçek ödeme yok). Hareketler WalletTransactions'da.
+        public decimal Balance { get; set; }
     }
 }

@@ -1,0 +1,112 @@
+using EdTechApi.API.Helpers;
+using EdTechApi.Business.Interfaces;
+using EdTechApi.DataAccess.Context;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace EdTechApi.API.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    [Authorize]
+    public class WalletController : ControllerBase
+    {
+        private readonly IWalletService _walletService;
+        private readonly AppDbContext _context;
+
+        public WalletController(IWalletService walletService, AppDbContext context)
+        {
+            _walletService = walletService;
+            _context = context;
+        }
+
+        public record TopUpRequest(decimal Amount);
+
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMine()
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == User.GetUsername());
+            if (user == null) return Unauthorized();
+            var transactions = await _walletService.GetTransactionsAsync(user.Id);
+            var purchasedCourseIds = await _walletService.GetActivePurchaseCourseIdsAsync(user.Id);
+            var refundSince = DateTime.UtcNow - EdTechApi.Business.Services.WalletService.RefundWindow;
+            var recentPurchaseIds = await _context.WalletTransactions
+                .Where(t => t.UserId == user.Id && t.Type == "Purchase" && t.CourseId != null && t.CreatedAt >= refundSince)
+                .Select(t => t.CourseId!.Value).Distinct().ToListAsync();
+            var refundableCourseIds = recentPurchaseIds.Intersect(purchasedCourseIds).ToList();
+            return Ok(new { balance = user.Balance, transactions, purchasedCourseIds, refundableCourseIds });
+        }
+
+        [HttpPost("top-up")]
+        public async Task<IActionResult> TopUp([FromBody] TopUpRequest request)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == User.GetUsername());
+            if (user == null) return Unauthorized();
+            var balance = await _walletService.TopUpAsync(user.Id, request.Amount);
+            return Ok(new { balance });
+        }
+
+        [HttpPost("purchase/{courseId}")]
+        public async Task<IActionResult> Purchase(int courseId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == User.GetUsername());
+            if (user == null) return Unauthorized();
+            var role = user.Role.ToLower();
+            if (role != "user" && role != "student" && role != "teacher")
+                return StatusCode(403, "Sadece katılımcılar kurs satın alabilir.");
+            var balance = await _walletService.PurchaseCourseAsync(user, courseId);
+            return Ok(new { balance, message = "Kurs satın alındı." });
+        }
+
+        [HttpPost("refund/{courseId}")]
+        public async Task<IActionResult> Refund(int courseId)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == User.GetUsername());
+            if (user == null) return Unauthorized();
+            var balance = await _walletService.RefundCourseAsync(user, courseId);
+            return Ok(new { balance, message = "İade edildi." });
+        }
+
+        // Yönetici özeti: satış adedi, toplam ciro, öğretmenlere ödenen ve platform payı
+        [Authorize(Roles = "Admin,SuperAdmin,superadmin")]
+        [HttpGet("summary")]
+        public async Task<IActionResult> Summary()
+        {
+            // Satış ve iadeler net hesaplanır: Purchase negatif, Refund pozitif tutar
+            var sales = _context.WalletTransactions.Where(t => t.Type == "Purchase" || t.Type == "Refund");
+            var gross = -(await sales.SumAsync(t => (decimal?)t.Amount) ?? 0);
+            var teacherEarnings = await _context.WalletTransactions
+                .Where(t => t.Type == "Earning" || t.Type == "EarningReversal").SumAsync(t => (decimal?)t.Amount) ?? 0;
+            var monthly = await sales
+                .GroupBy(t => new { t.CreatedAt.Year, t.CreatedAt.Month })
+                .Select(g => new
+                {
+                    g.Key.Year, g.Key.Month,
+                    Revenue = -g.Sum(t => t.Amount),
+                    Sales = g.Count(t => t.Type == "Purchase"),
+                    Refunds = g.Count(t => t.Type == "Refund")
+                })
+                .OrderBy(x => x.Year).ThenBy(x => x.Month)
+                .ToListAsync();
+            var topCourses = await _context.WalletTransactions
+                .Where(t => (t.Type == "Purchase" || t.Type == "Refund") && t.CourseId != null)
+                .GroupBy(t => new { t.CourseId, t.Description })
+                .Select(g => new { CourseId = g.Key.CourseId, Title = g.Key.Description, Revenue = -g.Sum(t => t.Amount), Sales = g.Count(t => t.Type == "Purchase") - g.Count(t => t.Type == "Refund") })
+                .Where(x => x.Sales > 0)
+                .OrderByDescending(x => x.Revenue).Take(5)
+                .ToListAsync();
+            return Ok(new
+            {
+                sales = await _context.WalletTransactions.CountAsync(t => t.Type == "Purchase"),
+                refunds = await _context.WalletTransactions.CountAsync(t => t.Type == "Refund"),
+                grossRevenue = gross,
+                teacherEarnings,
+                platformRevenue = gross - teacherEarnings,
+                totalBalances = await _context.Users.SumAsync(u => (decimal?)u.Balance) ?? 0,
+                monthly,
+                topCourses
+            });
+        }
+    }
+}
