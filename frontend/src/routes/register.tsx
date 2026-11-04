@@ -1,16 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-import { API_BASE } from "@/components/courseHelpers";
+import { API_BASE, fetchCategories } from "@/components/courseHelpers";
 import { readError } from "@/lib/auth";
+import { AuthShell, authButtonClass, authInputClass, authLabelClass } from "@/components/AuthShell";
+import { SolarSystem } from "@/components/effects/SolarSystem";
+import { SplitHeadline } from "@/components/motion";
 export const Route = createFileRoute("/register")({
   component: RegisterPage,
 });
 
 function RegisterPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate({ from: "/register" });
+  const [categories, setCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetchCategories().then(setCategories);
+  }, []);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -88,155 +96,176 @@ function RegisterPage() {
     }
   };
 
+  const categoryLabels = categories.map((c) =>
+    i18n.exists(`dynamic.categories.${c}`) ? t(`dynamic.categories.${c}`) : c,
+  );
+
   return (
-    <div className="fixed inset-0 z-100 bg-background flex flex-col items-center justify-center p-4">
-      {/* Container yüksekliğini artırmak için max-w-md kullandık */}
-      <div className="w-full max-w-md bg-card border border-border rounded-xl shadow-2xl p-8 animate-in fade-in zoom-in-95 duration-300">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-foreground text-background font-bold text-xl mb-4">
-            EK
+    <AuthShell
+      caption={t("register.panelTitle")}
+      panel={<SolarSystem categories={categoryLabels} />}
+    >
+      <h1 className="font-serif text-5xl leading-none">
+        <SplitHeadline text={t("register.heading")} />
+      </h1>
+
+      {error && (
+        <div
+          role="alert"
+          className="mt-6 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-center text-sm font-medium text-destructive"
+        >
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleRegister} className="mt-8 space-y-4">
+        <div className="grid grid-cols-2 items-end gap-3">
+          <div>
+            <label htmlFor="reg-first" className={authLabelClass}>
+              {t("register.firstName")}
+            </label>
+            <input
+              id="reg-first"
+              type="text"
+              required
+              autoComplete="given-name"
+              className={authInputClass}
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+            />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">{t("register.title")}</h1>
+          <div>
+            <label htmlFor="reg-last" className={authLabelClass}>
+              {t("register.lastName")}
+            </label>
+            <input
+              id="reg-last"
+              type="text"
+              required
+              autoComplete="family-name"
+              className={authInputClass}
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+            />
+          </div>
         </div>
 
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-sm p-3 rounded-md mb-6 text-center font-medium">
-            {error}
+        <div>
+          <label htmlFor="reg-email" className={authLabelClass}>
+            {t("register.email")}
+          </label>
+          <div className="flex gap-2">
+            <input
+              id="reg-email"
+              type="email"
+              required
+              autoComplete="email"
+              className={`${authInputClass} min-w-0 flex-1 disabled:opacity-60`}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isEmailSent}
+            />
+            <button
+              type="button"
+              onClick={handleSendVerificationEmail}
+              disabled={isSending || isEmailSent || !email}
+              className="whitespace-nowrap rounded-xl border border-border bg-secondary px-4 text-sm font-medium text-foreground transition-colors hover:border-gold/60 disabled:opacity-50"
+            >
+              {isSending
+                ? t("register.sending")
+                : isEmailSent
+                  ? t("register.sent")
+                  : t("register.sendCode")}
+            </button>
+          </div>
+        </div>
+
+        {isEmailSent && (
+          <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+            <label htmlFor="reg-code" className={authLabelClass}>
+              {t("register.verificationCode")}
+            </label>
+            <input
+              id="reg-code"
+              type="text"
+              required
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              placeholder={t("register.codePlaceholder")}
+              className={`${authInputClass} tracking-[0.3em]`}
+              value={verificationCode}
+              onChange={(e) => setVerificationCode(e.target.value)}
+            />
           </div>
         )}
 
-        <form onSubmit={handleRegister} className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">
-                {t("register.firstName")}
-              </label>
-              <input
-                type="text"
-                required
-                className="w-full p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-foreground transition-colors"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">
-                {t("register.lastName")}
-              </label>
-              <input
-                type="text"
-                required
-                className="w-full p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-foreground transition-colors"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-              />
-            </div>
+        {successMsg && (
+          <div
+            role="status"
+            className="rounded-xl border border-success/30 bg-success/10 p-3 text-center text-sm text-success animate-in fade-in duration-300"
+          >
+            {successMsg}
           </div>
+        )}
 
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">{t("register.email")}</label>
-            <div className="flex gap-2">
-              <input
-                type="email"
-                required
-                className="flex-1 p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-foreground transition-colors disabled:opacity-50"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isEmailSent}
-              />
-              <button
-                type="button"
-                onClick={handleSendVerificationEmail}
-                disabled={isSending || isEmailSent || !email}
-                className="px-4 py-2 bg-foreground text-background text-sm font-medium rounded-md hover:bg-foreground/90 transition-colors disabled:opacity-50 whitespace-nowrap"
-              >
-                {isSending
-                  ? t("register.sending")
-                  : isEmailSent
-                    ? t("register.sent")
-                    : t("register.sendCode")}
-              </button>
-            </div>
-          </div>
+        <div>
+          <label htmlFor="reg-username" className={authLabelClass}>
+            {t("register.username")}
+          </label>
+          <input
+            id="reg-username"
+            type="text"
+            required
+            autoComplete="username"
+            className={authInputClass}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </div>
 
-          {isEmailSent && (
-            <div className="space-y-1.5 animate-in slide-in-from-top-2 duration-300">
-              <label className="text-sm font-medium text-foreground">
-                {t("register.verificationCode")}
-              </label>
-              <input
-                type="text"
-                required
-                placeholder={t("register.codePlaceholder")}
-                className="w-full p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-foreground transition-colors"
-                value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value)}
-              />
-            </div>
-          )}
-
-          {successMsg && (
-            <div className="p-3 bg-green-50/50 border border-green-200/50 rounded-lg text-sm text-green-600 text-center animate-in fade-in zoom-in duration-300">
-              {successMsg}
-            </div>
-          )}
-
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">{t("register.username")}</label>
+        <div className="grid grid-cols-2 items-end gap-3">
+          <div>
+            <label htmlFor="reg-password" className={authLabelClass}>
+              {t("register.password")}
+            </label>
             <input
-              type="text"
+              id="reg-password"
+              type="password"
               required
-              className="w-full p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-foreground transition-colors"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              autoComplete="new-password"
+              className={authInputClass}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">
-                {t("register.password")}
-              </label>
-              <input
-                type="password"
-                required
-                className="w-full p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-foreground transition-colors"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground">
-                {t("register.teacherCode")}{" "}
-                <span className="text-muted-foreground text-xs font-normal">
-                  {t("register.optional")}
-                </span>
-              </label>
-              <input
-                type="text"
-                className="w-full p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-foreground transition-colors"
-                value={registrationCode}
-                onChange={(e) => setRegistrationCode(e.target.value)}
-              />
-            </div>
+          <div>
+            <label htmlFor="reg-teacher-code" className={authLabelClass}>
+              {t("register.teacherCode")}{" "}
+              <span className="text-xs font-normal text-muted-foreground">
+                {t("register.optional")}
+              </span>
+            </label>
+            <input
+              id="reg-teacher-code"
+              type="text"
+              className={authInputClass}
+              value={registrationCode}
+              onChange={(e) => setRegistrationCode(e.target.value)}
+            />
           </div>
-
-          <button
-            type="submit"
-            disabled={!isEmailSent}
-            className="w-full py-3 bg-foreground text-background font-medium rounded-md hover:bg-foreground/90 transition-all duration-300 disabled:opacity-50"
-          >
-            {t("register.createAccountButton")}
-          </button>
-        </form>
-
-        <div className="mt-6 text-center text-sm text-muted-foreground">
-          {t("register.alreadyHaveAccount")}{" "}
-          <Link to="/login" className="font-semibold text-foreground hover:underline">
-            {t("register.login")}
-          </Link>
         </div>
-      </div>
-    </div>
+
+        <button type="submit" disabled={!isEmailSent} className={`${authButtonClass} mt-2`}>
+          {t("register.createAccountButton")}
+        </button>
+      </form>
+
+      <p className="mt-8 text-center text-sm text-muted-foreground">
+        {t("register.alreadyHaveAccount")}{" "}
+        <Link to="/login" className="font-medium text-gold hover:underline">
+          {t("register.login")}
+        </Link>
+      </p>
+    </AuthShell>
   );
 }

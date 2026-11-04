@@ -106,6 +106,8 @@
       }
     },
     "login": {
+      "panelTitle": "Her beceri bir *yıldız*. Onları birleştirip kendi yolunu çiz.",
+      "welcomeBack": "Tekrar *hoş geldin*",
       "welcome": "Hoş Geldiniz!",
       "pleaseEnterDetails": "Lütfen bilgilerinizi giriniz",
       "usernameOrEmail": "Kullanıcı Adı veya E-posta",
@@ -121,6 +123,8 @@
       "serverError": "Sunucuya ulaşılamıyor. Backend (C# API) çalışıyor mu?"
     },
     "register": {
+      "panelTitle": "Hedefin *merkezde*, kursların onun etrafında.",
+      "heading": "Hesabını *oluştur*",
       "title": "Yeni Hesap Aç",
       "firstName": "Ad",
       "lastName": "Soyad",
@@ -650,6 +654,16 @@
       "required": "Lütfen bu alanı doldurun."
     },
     "guest": {
+      "learnersNow": "{{count}} öğrenci E-Kurs’ta öğreniyor",
+      "featured": "Öne çıkan kurs",
+      "howTitle": "Nasıl *çalışır?*",
+      "step1Title": "Kursunu bul",
+      "step1Desc": "Konuya göre ara ya da kategorilere göz at; karar vermeden önce içeriği incele.",
+      "step2Title": "Cüzdanınla öde",
+      "step2Desc": "Bakiyeni bir kez yükle, istediğin kursu tek adımda satın al. İadeler doğrudan cüzdanına döner.",
+      "step3Title": "Kendi hızında öğren",
+      "step3Desc": "Korumalı video derslerini istediğin zaman izle, kaldığın yerden devam et.",
+      "categoriesAria": "Kurs kategorileri",
       "heroTitle1": "Geleceğini Şekillendirmeye",
       "heroTitle2": "Bugün Başla",
       "heroSubtitle": "Yüzlerce nitelikli kurs, alanında uzman eğitmenler ve sana özel öğrenme araçlarıyla potansiyelini keşfet. Sınırları aş, hayallerine ulaş.",

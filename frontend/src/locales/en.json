@@ -106,6 +106,8 @@
       }
     },
     "login": {
+      "panelTitle": "Every skill is a *star*. Connect them into your own path.",
+      "welcomeBack": "Welcome *back*",
       "welcome": "Welcome!",
       "pleaseEnterDetails": "Please enter your details",
       "usernameOrEmail": "Username or Email",
@@ -121,6 +123,8 @@
       "serverError": "Cannot connect to server. Is Backend (C# API) running?"
     },
     "register": {
+      "panelTitle": "Your goal at the *centre*, your courses around it.",
+      "heading": "Create your *account*",
       "title": "Create New Account",
       "firstName": "First Name",
       "lastName": "Last Name",
@@ -652,6 +656,16 @@
       "required": "Please fill out this field."
     },
     "guest": {
+      "learnersNow": "{{count}} students are learning on E-Kurs",
+      "featured": "Featured course",
+      "howTitle": "How it *works*",
+      "step1Title": "Find your course",
+      "step1Desc": "Search by topic or browse the categories, then read the outline before you decide.",
+      "step2Title": "Pay from your wallet",
+      "step2Desc": "Top up your balance once and buy any course in one step. Refunds go straight back to your wallet.",
+      "step3Title": "Learn at your own pace",
+      "step3Desc": "Watch protected video lessons whenever you like and pick up where you left off.",
+      "categoriesAria": "Course categories",
       "heroTitle1": "Start Shaping Your Future",
       "heroTitle2": "Today",
       "heroSubtitle": "Discover your potential with hundreds of qualified courses, expert instructors in their fields, and learning tools tailored just for you. Exceed your limits, reach your dreams.",
