@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Facebook, Twitter, Instagram, MapPin, Mail, Phone } from "lucide-react";
+import { MapPin, Mail } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -196,35 +196,6 @@ function HelpPage() {
                 >
                   <Mail className="h-5 w-5" />
                   support@ekurs.com
-                </a>
-                <a
-                  href="tel:+902120000000"
-                  className="text-foreground flex items-center gap-3 hover:text-primary transition-colors font-medium"
-                >
-                  <Phone className="h-5 w-5" />
-                  +90 (212) 000 00 00
-                </a>
-              </div>
-
-              {/* Social Icons */}
-              <div className="flex items-center gap-4 mt-6">
-                <a
-                  href="#"
-                  className="h-10 w-10 flex items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all"
-                >
-                  <Facebook className="h-5 w-5" />
-                </a>
-                <a
-                  href="#"
-                  className="h-10 w-10 flex items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all"
-                >
-                  <Twitter className="h-5 w-5" />
-                </a>
-                <a
-                  href="#"
-                  className="h-10 w-10 flex items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all"
-                >
-                  <Instagram className="h-5 w-5" />
                 </a>
               </div>
             </div>

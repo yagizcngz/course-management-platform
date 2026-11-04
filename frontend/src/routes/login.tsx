@@ -554,22 +554,6 @@ function LoginPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-2">
-                  <label className="flex items-center text-xs text-gray-500 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="mr-2 rounded border-gray-300 text-black focus:ring-black"
-                    />
-                    {t("login.rememberMe")}
-                  </label>
-                  <a
-                    href="#"
-                    className="text-xs text-gray-500 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors"
-                  >
-                    {t("login.forgotPassword")}
-                  </a>
-                </div>
-
                 <button
                   type="submit"
                   className="w-full bg-black dark:bg-white text-white dark:text-black py-3 rounded-md font-semibold hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors shadow-lg hover:shadow-xl mt-4"

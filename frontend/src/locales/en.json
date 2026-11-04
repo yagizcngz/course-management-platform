@@ -1,7 +1,9 @@
 {
   "translation": {
+    "header": { "language": "Change language", "toggleTheme": "Toggle dark mode" },
     "searchPlaceholder": "Search in system...",
     "sidebar": {
+      "openMenu": "Open menu",
       "home": "Home",
       "myCourses": "My Courses",
       "taughtCourses": "Taught Courses",
@@ -110,8 +112,6 @@
       "password": "Password",
       "hidePassword": "Hide password",
       "showPassword": "Show password",
-      "rememberMe": "Remember me",
-      "forgotPassword": "Forgot password?",
       "loginButton": "Log In",
       "noAccount": "Don't have an account?",
       "register": "Register",

@@ -1,7 +1,9 @@
 {
   "translation": {
+    "header": { "language": "Dili değiştir", "toggleTheme": "Koyu modu aç/kapat" },
     "searchPlaceholder": "Sistemde ara...",
     "sidebar": {
+      "openMenu": "Menüyü aç",
       "home": "Ana Sayfa",
       "myCourses": "Kurslarım",
       "taughtCourses": "Verdiğim Kurslar",
@@ -110,8 +112,6 @@
       "password": "Şifre",
       "hidePassword": "Şifreyi gizle",
       "showPassword": "Şifreyi göster",
-      "rememberMe": "Beni hatırla",
-      "forgotPassword": "Şifremi unuttum?",
       "loginButton": "Giriş Yap",
       "noAccount": "Hesabınız yok mu?",
       "register": "Kayıt Ol",
@@ -324,7 +324,7 @@
       "teachCourse": "Ders Ver"
     },
     "students": {
-      "breadcrumb": "/ ogrenciler",
+      "breadcrumb": "/ öğrenciler",
       "deleteSelected": "Seçilenleri Sil ({{count}})",
       "cancel": "İptal",
       "editStudents": "Öğrencileri Düzenle",
@@ -386,7 +386,7 @@
       }
     },
     "teachers": {
-      "breadcrumb": "/ ogretmenler",
+      "breadcrumb": "/ öğretmenler",
       "deleteSelected": "Seçilenleri Sil ({{count}})",
       "cancel": "İptal",
       "editTeachers": "Öğretmenleri Düzenle",
@@ -450,7 +450,7 @@
       }
     },
     "courses": {
-      "breadcrumb": "/ kurslar ",
+      "breadcrumb": "/ kurslar",
       "unknown": "Bilinmiyor",
       "student": "Öğrenci",
       "unknownInstructor": "Bilinmeyen Eğitmen",
