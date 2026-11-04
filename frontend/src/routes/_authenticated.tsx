@@ -1,4 +1,5 @@
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import { AppSidebar } from "../components/AppSidebar";
 
@@ -31,6 +32,8 @@ const checkAndHandleExpiry = (navigate: ReturnType<typeof useNavigate>) => {
 
 function AuthenticatedLayout() {
   const navigate = useNavigate();
+  const pathname = useLocation({ select: (l) => l.pathname });
+  const reduceMotion = useReducedMotion();
 
   // "idle" -> henüz kontrol edilmedi (ilk render)
   // "authed" -> token var ve süresi dolmamış, sayfayı göster
@@ -74,7 +77,16 @@ function AuthenticatedLayout() {
     <div className="min-h-screen bg-background font-display text-foreground flex w-full">
       <AppSidebar />
       <main className="flex-1 flex flex-col min-w-0">
-        <Outlet />
+        {/* keyed on the path so each page fades in; no exit animation to keep navigation instant */}
+        <motion.div
+          key={pathname}
+          className="flex flex-1 flex-col min-w-0"
+          initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <Outlet />
+        </motion.div>
       </main>
     </div>
   );

@@ -39,9 +39,9 @@ export function PageHeader({ crumb, action, searchValue, onSearchChange }: PageH
   };
 
   return (
-    <header className="min-h-16 border-b border-border bg-card flex flex-wrap items-center justify-between gap-2 px-4 py-2 sm:px-8 sticky top-0 z-40">
-      <div className="min-w-0 truncate text-xs font-mono text-muted-foreground tracking-widest uppercase">
-        {crumb}
+    <header className="min-h-16 border-b border-border bg-background/75 backdrop-blur-md supports-[backdrop-filter]:bg-background/60 flex flex-wrap items-center justify-between gap-2 px-4 py-2 sm:px-8 sticky top-0 z-40">
+      <div className="min-w-0 truncate font-serif text-2xl text-foreground first-letter:uppercase">
+        {crumb.replace(/^\/\s*/, "")}
       </div>
       <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-4">
         {onSearchChange && (
@@ -50,7 +50,7 @@ export function PageHeader({ crumb, action, searchValue, onSearchChange }: PageH
             placeholder={t("searchPlaceholder")}
             value={searchValue || ""} // Kutudaki yazı
             onChange={(e) => onSearchChange(e.target.value)} // Yazı değiştikçe haber ver
-            className="bg-foreground/5 border-none text-xs px-4 py-2 rounded-full w-32 sm:w-64 focus:ring-1 focus:ring-accent outline-none"
+            className="bg-card border border-border text-sm px-4 py-2 rounded-full w-32 sm:w-64 transition-[box-shadow,border-color] focus:border-gold focus:ring-4 focus:ring-gold/15 outline-none"
           />
         )}
         <div className="relative">
@@ -58,7 +58,7 @@ export function PageHeader({ crumb, action, searchValue, onSearchChange }: PageH
             onClick={() => setLangMenuOpen(!langMenuOpen)}
             aria-label={t("header.language")}
             aria-expanded={langMenuOpen}
-            className="flex items-center gap-1 p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            className="flex items-center gap-1 p-2 rounded-full hover:bg-muted transition-colors"
           >
             <Globe className="h-5 w-5" />
             <span className="text-xs font-bold uppercase hidden sm:inline-block">
@@ -73,7 +73,7 @@ export function PageHeader({ crumb, action, searchValue, onSearchChange }: PageH
                   localStorage.setItem("i18nextLng", "tr");
                   setLangMenuOpen(false);
                 }}
-                className={`px-4 py-2 text-sm font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors ${
+                className={`px-4 py-2 text-sm font-bold hover:bg-muted transition-colors ${
                   i18n.language === "tr" ? "text-primary" : "text-muted-foreground"
                 }`}
               >
@@ -85,7 +85,7 @@ export function PageHeader({ crumb, action, searchValue, onSearchChange }: PageH
                   localStorage.setItem("i18nextLng", "en");
                   setLangMenuOpen(false);
                 }}
-                className={`px-4 py-2 text-sm font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors ${
+                className={`px-4 py-2 text-sm font-bold hover:bg-muted transition-colors ${
                   i18n.language === "en" ? "text-primary" : "text-muted-foreground"
                 }`}
               >
@@ -97,7 +97,7 @@ export function PageHeader({ crumb, action, searchValue, onSearchChange }: PageH
         <button
           onClick={toggleTheme}
           aria-label={t("header.toggleTheme")}
-          className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          className="p-2 rounded-full hover:bg-muted transition-colors"
         >
           {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
         </button>
@@ -109,8 +109,8 @@ export function PageHeader({ crumb, action, searchValue, onSearchChange }: PageH
 
 export function SectionHeader({ title, right }: { title: string; right?: ReactNode }) {
   return (
-    <div className="flex items-end justify-between border-b border-foreground/10 pb-2">
-      <h2 className="text-sm font-bold uppercase tracking-widest">{title}</h2>
+    <div className="flex items-end justify-between border-b border-border pb-2">
+      <h2 className="font-serif text-2xl">{title}</h2>
       {right}
     </div>
   );

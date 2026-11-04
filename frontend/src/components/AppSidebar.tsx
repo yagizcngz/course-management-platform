@@ -251,12 +251,13 @@ export function AppSidebar() {
 
   const content = (
     <>
-      <div className="flex items-center gap-2 px-4 py-4 border-b">
-        <BookOpen className="h-6 w-6 text-primary" />
-        <span className="font-bold text-lg">E-Kurs</span>
-      </div>
+      <Link to="/dashboard" className="flex items-center gap-2 px-5 py-5 border-b">
+        <span className="font-serif text-2xl leading-none">
+          E-<span className="text-gold-shimmer italic">Kurs</span>
+        </span>
+      </Link>
 
-      <nav className="flex-1 overflow-y-auto p-2 space-y-1">
+      <nav className="flex-1 overflow-y-auto p-3 space-y-0.5">
         {/* menuItems yerine visibleMenuItems map ediliyor */}
         {visibleMenuItems.map((item) => {
           const isActive = location.pathname === item.url;
@@ -265,13 +266,15 @@ export function AppSidebar() {
             <Link
               key={item.url}
               to={item.url}
-              className={`group flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-all ${
+              className={`group flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-[background-color,color,box-shadow] duration-200 ${
                 isActive
-                  ? "bg-neutral-900 text-white font-medium dark:bg-white dark:text-neutral-900"
-                  : "text-sidebar-foreground hover:bg-neutral-900/5 hover:text-neutral-900 dark:hover:bg-white/5 dark:hover:text-white"
+                  ? "bg-secondary text-foreground font-medium shadow-[inset_3px_0_0_var(--gold)]"
+                  : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
               }`}
             >
-              <Icon className="h-4 w-4" />
+              <Icon
+                className={`h-4 w-4 transition-colors ${isActive ? "text-gold" : "group-hover:text-gold"}`}
+              />
               {item.title}
             </Link>
           );
@@ -281,7 +284,7 @@ export function AppSidebar() {
       <div className="border-t p-2">
         <Popover open={menuOpen} onOpenChange={setMenuOpen}>
           <PopoverTrigger asChild>
-            <button className="flex w-full items-center gap-3 rounded-md p-2 hover:bg-sidebar-accent transition-colors">
+            <button className="flex w-full items-center gap-3 rounded-xl p-2 hover:bg-secondary transition-colors">
               {currentUser.photo ? (
                 <img
                   src={currentUser.photo}
@@ -289,7 +292,7 @@ export function AppSidebar() {
                   className="h-9 w-9 rounded-full object-cover"
                 />
               ) : (
-                <div className="h-9 w-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+                <div className="h-9 w-9 rounded-full bg-primary text-primary-foreground ring-2 ring-gold/40 flex items-center justify-center font-serif text-base">
                   {currentUser.initials}
                 </div>
               )}
@@ -318,8 +321,8 @@ export function AppSidebar() {
                   onClick={() => setMenuOpen(false)}
                   className={`flex items-center gap-2 rounded-md px-2 py-2 text-sm transition-all ${
                     isActive
-                      ? "bg-black text-white dark:bg-white dark:text-black font-medium"
-                      : "text-sidebar-foreground hover:bg-neutral-900/5 hover:text-neutral-900 dark:hover:bg-white/5 dark:hover:text-white"
+                      ? "bg-secondary text-foreground font-medium"
+                      : "text-sidebar-foreground hover:bg-secondary hover:text-foreground"
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -330,7 +333,7 @@ export function AppSidebar() {
             <div className="my-1 h-px bg-border" />
             <button
               onClick={handleLogout}
-              className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm text-destructive transition-all hover:bg-neutral-900/5 dark:hover:bg-white/5"
+              className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm text-destructive transition-all hover:bg-foreground/5"
             >
               <LogOut className="h-4 w-4" />
               {t("sidebar.logout")}
