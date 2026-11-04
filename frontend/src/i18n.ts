@@ -23,4 +23,9 @@ i18n
     },
   });
 
+// keep <html lang> in sync so CSS uppercase and screen readers use the right language
+i18n.on("languageChanged", (lng) => {
+  if (typeof document !== "undefined") document.documentElement.lang = lng;
+});
+
 export default i18n;

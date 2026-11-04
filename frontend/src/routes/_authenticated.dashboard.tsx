@@ -12,7 +12,7 @@ import {
 } from "../components/courseHelpers";
 import { toast } from "sonner";
 
-import { parseJwt } from "@/lib/auth";
+import { isAdminRole, parseJwt } from "@/lib/auth";
 import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -126,7 +126,8 @@ function HomePage() {
         const cats = await fetchCategories(token || undefined);
         setCategories(cats);
 
-        if (token) {
+        // admins see neither section, and these endpoints are participant-only
+        if (token && !isAdminRole(r)) {
           const [myRes, recRes] = await Promise.all([
             fetch(`${API_BASE}/api/enrollments/my-courses`, { headers }),
             fetch(`${API_BASE}/api/courses/recommended`, { headers }),

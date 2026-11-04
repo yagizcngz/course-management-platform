@@ -186,7 +186,6 @@ function ProfilePage() {
 
         if (crsRes.ok && tchRes.ok) {
           const allCourses = await crsRes.json();
-          const allTeachers = await tchRes.json();
           const teachers = await tchRes.json();
 
           const payload = parseJwt(token);
