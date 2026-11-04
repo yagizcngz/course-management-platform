@@ -1,26 +1,28 @@
-import { defineConfig } from "@lovable.dev/vite-tanstack-config";
-import { createLogger } from "vite";
+import { defineConfig } from "vite";
+import tailwindcss from "@tailwindcss/vite";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { nitro } from "nitro/vite";
+import viteReact from "@vitejs/plugin-react";
 
-// Vite'ın varsayılan log (çıktı) sistemini alıyoruz
-const logger = createLogger();
-const originalWarn = logger.warn;
-
-// Sadece bu özel uyarıyı filtrele, geri kalan her şeyi normal şekilde göster
-logger.warn = (msg, options) => {
-  if (msg.includes("vite-tsconfig-paths")) return;
-  originalWarn(msg, options);
-};
-
-export default defineConfig({
-  vite: {
-    customLogger: logger, // Özelleştirdiğimiz loglayıcıyı Vite'a veriyoruz
-    resolve: {
-      tsconfigPaths: true,
-    },
+export default defineConfig(({ command }) => ({
+  server: { host: "::", port: 8080 },
+  css: { transformer: "lightningcss" },
+  resolve: {
+    tsconfigPaths: true,
+    alias: { "@": `${process.cwd()}/src` },
+    dedupe: ["react", "react-dom", "@tanstack/react-query", "@tanstack/query-core"],
   },
-  tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
-    server: { entry: "server" },
-  },
-});
+  plugins: [
+    tailwindcss(),
+    tanstackStart({
+      importProtection: {
+        behavior: "error",
+        client: { files: ["**/server/**"], specifiers: ["server-only"] },
+      },
+      // src/server.ts is our SSR error wrapper
+      server: { entry: "server" },
+    }),
+    ...(command === "build" ? [nitro({ defaultPreset: "cloudflare-module" })] : []),
+    viteReact(),
+  ],
+}));
