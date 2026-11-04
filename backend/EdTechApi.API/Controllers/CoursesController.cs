@@ -33,7 +33,7 @@ namespace EdTechApi.API.Controllers
             if (string.IsNullOrEmpty(username)) return Unauthorized();
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-            if (user == null || (user.Role.ToLower() != "student" && user.Role.ToLower() != "user" && user.Role.ToLower() != "teacher")) return Forbid("Sadece katılımcılar önerilen kursları görebilir.");
+            if (user == null || (user.Role.ToLower() != "student" && user.Role.ToLower() != "user" && user.Role.ToLower() != "teacher")) return StatusCode(403, "Sadece katılımcılar önerilen kursları görebilir.");
 
             var student = await _context.Students.FirstOrDefaultAsync(s => s.UserId == user.Id);
             if (student == null) return Ok(new List<object>());
