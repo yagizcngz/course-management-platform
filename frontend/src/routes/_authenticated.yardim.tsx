@@ -157,7 +157,7 @@ function HelpPage() {
       </section>
 
       {/* 3. CONTACT SECTION */}
-      <section id="contact-section" className="py-24 px-6 bg-zinc-900">
+      <section id="contact-section" className="py-24 px-6 bg-primary">
         <div className="container mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
           {/* Left Box: Offices */}
           <div className="bg-card rounded-3xl p-10 md:p-14 shadow-lg flex flex-col border border-border">

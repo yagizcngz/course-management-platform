@@ -525,7 +525,7 @@ export function CourseDetailModal({
                     <div onClick={(e) => e.stopPropagation()}>
                       <Popover>
                         <PopoverTrigger asChild>
-                          <button className="flex items-center justify-center size-8 border border-border rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+                          <button className="flex items-center justify-center size-8 border border-border rounded-md hover:bg-muted transition-colors">
                             <MoreVertical className="size-4 text-muted-foreground" />
                           </button>
                         </PopoverTrigger>
@@ -559,7 +559,7 @@ export function CourseDetailModal({
                     <div onClick={(e) => e.stopPropagation()}>
                       <Popover>
                         <PopoverTrigger asChild>
-                          <button className="flex items-center justify-center size-8 border border-border rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors">
+                          <button className="flex items-center justify-center size-8 border border-border rounded-md hover:bg-muted transition-colors">
                             <MoreVertical className="size-4 text-muted-foreground" />
                           </button>
                         </PopoverTrigger>
@@ -649,7 +649,7 @@ export function CourseDetailModal({
                       <button
                         type="button"
                         onClick={handleRemoveImage}
-                        className="text-[11px] font-mono text-muted-foreground hover:text-red-600 transition-colors"
+                        className="text-[11px] font-mono text-muted-foreground hover:text-destructive transition-colors"
                       >
                         {t("courseModal.removePhoto")}
                       </button>
@@ -801,7 +801,7 @@ export function CourseDetailModal({
                       className="size-14 rounded-full object-cover border border-border shrink-0"
                     />
                   ) : (
-                    <div className="size-14 rounded-full bg-neutral-900 dark:bg-neutral-700 text-white flex items-center justify-center text-lg font-mono uppercase shrink-0">
+                    <div className="size-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-lg font-mono uppercase shrink-0">
                       {instructorInitials}
                     </div>
                   )}
@@ -873,7 +873,7 @@ export function CourseDetailModal({
       {statusMessage && (
         <div
           className={`fixed bottom-6 right-6 z-300 flex items-center gap-3 rounded-lg px-5 py-3.5 text-sm font-bold text-white shadow-lg ${
-            statusMessage.type === "success" ? "bg-emerald-600" : "bg-red-600"
+            statusMessage.type === "success" ? "bg-success" : "bg-destructive"
           }`}
         >
           {statusMessage.type === "success" ? (

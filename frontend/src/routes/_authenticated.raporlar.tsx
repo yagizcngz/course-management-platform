@@ -106,7 +106,7 @@ interface KpiCardProps {
 function KpiCard({ label, value, hint, hintTone = "muted", valueTone = "default" }: KpiCardProps) {
   const toneClass =
     hintTone === "up"
-      ? "text-emerald-600"
+      ? "text-success"
       : hintTone === "accent"
         ? "text-accent"
         : hintTone === "warn"
@@ -413,8 +413,8 @@ function ReportsPage() {
                             <span
                               className={`px-2 py-1 text-[10px] font-bold rounded-sm ${
                                 calculatedStatus === t("reports.active")
-                                  ? "bg-emerald-500/10 text-emerald-600"
-                                  : "bg-stone-500/10 text-stone-500"
+                                  ? "bg-success/10 text-success"
+                                  : "bg-muted text-muted-foreground"
                               }`}
                             >
                               {calculatedStatus}

@@ -279,7 +279,7 @@ function HomePage() {
         <div className="w-full aspect-video relative overflow-hidden bg-muted">
           <img src={getCourseImage(c, index)} alt={title} className="w-full h-full object-cover" />
           {isEnrolled && status && (
-            <div className="absolute top-2 right-2 bg-black text-white text-[10px] px-2 py-1 rounded-sm font-bold uppercase z-10">
+            <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-[10px] px-2 py-1 rounded-sm font-bold uppercase z-10">
               {i18n.exists(`dynamic.status.${status}`)
                 ? t(`dynamic.status.${status}`)
                 : status === "Devam Ediyor"

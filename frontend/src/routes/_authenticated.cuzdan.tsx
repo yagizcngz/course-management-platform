@@ -196,7 +196,7 @@ function WalletPage() {
                       </p>
                     </div>
                     <span
-                      className={`text-sm font-semibold tabular-nums ${x.amount < 0 ? "text-foreground" : "text-emerald-700 dark:text-emerald-400"}`}
+                      className={`text-sm font-semibold tabular-nums ${x.amount < 0 ? "text-foreground" : "text-success"}`}
                     >
                       {x.amount > 0 ? "+" : ""}
                       {formatTry(x.amount)}

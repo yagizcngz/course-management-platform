@@ -414,7 +414,7 @@ function CoursesPage() {
               {isEditMode && selectedCourseIds.length > 0 && (
                 <button
                   onClick={() => setIsConfirmOpen(true)}
-                  className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-md text-xs font-bold hover:bg-red-600 transition-colors animate-in fade-in"
+                  className="flex items-center gap-2 bg-destructive text-white px-4 py-2 rounded-md text-xs font-bold hover:bg-destructive transition-colors animate-in fade-in"
                 >
                   <Trash2 className="size-4" />
                   {t("courses.deleteSelected", { count: selectedCourseIds.length })}
@@ -542,7 +542,7 @@ function CoursesPage() {
                       : "border-border hover:border-accent"
                   }`}
                 >
-                  <div className="w-full aspect-video relative overflow-hidden bg-neutral-100">
+                  <div className="w-full aspect-video relative overflow-hidden bg-muted">
                     <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
                     {(() => {
                       const isStudent =
@@ -556,7 +556,7 @@ function CoursesPage() {
                         });
                         if (isEnrolled) {
                           return (
-                            <div className="absolute top-2 right-2 bg-black text-white text-[10px] px-2 py-1 rounded-sm font-bold uppercase z-10">
+                            <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-[10px] px-2 py-1 rounded-sm font-bold uppercase z-10">
                               {t("dashboard.inProgress", "Devam Ediyor")}
                             </div>
                           );
@@ -604,7 +604,7 @@ function CoursesPage() {
                       >
                         <input
                           type="checkbox"
-                          className="size-4 rounded border-gray-300 text-foreground focus:ring-foreground cursor-pointer"
+                          className="size-4 rounded border-border text-foreground focus:ring-foreground cursor-pointer"
                           checked={isSelected}
                           onChange={() => handleSelectCourse(currentId)}
                         />
@@ -789,8 +789,8 @@ function CoursesPage() {
             className="bg-card border border-border rounded-xl shadow-lg w-full max-w-md p-6 animate-in zoom-in-95 duration-200"
           >
             <div className="flex items-start gap-4">
-              <div className="size-10 rounded-full bg-red-100 grid place-items-center shrink-0">
-                <Trash2 className="size-5 text-red-600" />
+              <div className="size-10 rounded-full bg-destructive/10 grid place-items-center shrink-0">
+                <Trash2 className="size-5 text-destructive" />
               </div>
               <div className="flex-1">
                 <h3 className="font-bold text-lg tracking-tight">
@@ -809,7 +809,7 @@ function CoursesPage() {
               <button
                 onClick={handleConfirmBulkDelete}
                 disabled={isDeleting}
-                className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-bold hover:bg-red-700 transition-colors disabled:opacity-60"
+                className="px-4 py-2 bg-destructive text-white rounded-md text-sm font-bold hover:bg-destructive/90 transition-colors disabled:opacity-60"
               >
                 {isDeleting ? t("courses.deleting") : t("courses.yes")}
               </button>

@@ -367,10 +367,7 @@ function ProfilePage() {
                   </h3>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {branch.map((b) => (
-                      <span
-                        key={b}
-                        className="bg-zinc-100 dark:bg-zinc-800 text-sm px-2 py-1 rounded-md"
-                      >
+                      <span key={b} className="bg-muted text-sm px-2 py-1 rounded-md">
                         {i18n.exists(`dynamic.categories.${b}`) ? t(`dynamic.categories.${b}`) : b}
                       </span>
                     ))}
@@ -506,7 +503,7 @@ function ProfilePage() {
                     {categories.map((c) => (
                       <label
                         key={c}
-                        className="flex items-center gap-2 text-sm bg-zinc-50 dark:bg-zinc-800/50 p-2 rounded-md cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                        className="flex items-center gap-2 text-sm bg-background p-2 rounded-md cursor-pointer hover:bg-muted transition-colors"
                       >
                         <input
                           type="checkbox"

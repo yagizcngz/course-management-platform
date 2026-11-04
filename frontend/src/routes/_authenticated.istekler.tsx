@@ -213,7 +213,7 @@ function RequestsPage() {
             {isEditMode && totalSelected > 0 && (
               <button
                 onClick={handleDeleteSelected}
-                className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-md text-xs font-bold hover:bg-red-600 transition-colors animate-in fade-in"
+                className="flex items-center gap-2 bg-destructive text-white px-4 py-2 rounded-md text-xs font-bold hover:bg-destructive transition-colors animate-in fade-in"
               >
                 <Trash2 className="size-4" />
                 {t("requests.deleteSelected", { count: totalSelected })}
@@ -279,14 +279,14 @@ function RequestsPage() {
                           .map((request) => (
                             <Card
                               key={request.id}
-                              className={`transition-colors ${selectedTeachingIds.includes(request.id) ? "border-red-500 bg-red-500/5" : ""}`}
+                              className={`transition-colors ${selectedTeachingIds.includes(request.id) ? "border-destructive bg-destructive/10" : ""}`}
                             >
                               <CardContent className="p-6 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                   {isEditMode && (
                                     <input
                                       type="checkbox"
-                                      className="size-4 rounded border-gray-300 text-foreground focus:ring-foreground cursor-pointer shrink-0"
+                                      className="size-4 rounded border-border text-foreground focus:ring-foreground cursor-pointer shrink-0"
                                       checked={selectedTeachingIds.includes(request.id)}
                                       onChange={() => handleSelectTeaching(request.id)}
                                     />
@@ -319,7 +319,7 @@ function RequestsPage() {
                                       <Button
                                         size="sm"
                                         variant="default"
-                                        className="bg-green-600 hover:bg-green-700"
+                                        className="bg-success hover:bg-success/90"
                                         onClick={() => handleApprove(request.id)}
                                       >
                                         <Check className="h-4 w-4 mr-1" />{" "}
@@ -394,16 +394,16 @@ function RequestsPage() {
                           .map((request) => (
                             <Card
                               key={request.id}
-                              className={`overflow-hidden transition-colors ${selectedSupportIds.includes(request.id) ? "border-red-500" : ""}`}
+                              className={`overflow-hidden transition-colors ${selectedSupportIds.includes(request.id) ? "border-destructive" : ""}`}
                             >
                               <div
-                                className={`p-4 border-b border-border flex items-center justify-between ${selectedSupportIds.includes(request.id) ? "bg-red-500/10" : "bg-muted/50"}`}
+                                className={`p-4 border-b border-border flex items-center justify-between ${selectedSupportIds.includes(request.id) ? "bg-destructive/10" : "bg-muted/50"}`}
                               >
                                 <div className="flex items-center gap-4">
                                   {isEditMode && (
                                     <input
                                       type="checkbox"
-                                      className="size-4 rounded border-gray-300 text-foreground focus:ring-foreground cursor-pointer shrink-0"
+                                      className="size-4 rounded border-border text-foreground focus:ring-foreground cursor-pointer shrink-0"
                                       checked={selectedSupportIds.includes(request.id)}
                                       onChange={() => handleSelectSupport(request.id)}
                                     />

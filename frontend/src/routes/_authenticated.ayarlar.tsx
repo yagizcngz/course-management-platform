@@ -442,8 +442,8 @@ function SettingsPage() {
                 </button>
               </form>
             </div>
-            <div className="rounded-xl border border-red-200 bg-card text-card-foreground shadow p-6 mt-6 max-w-2xl">
-              <h3 className="font-bold text-lg text-red-600 flex items-center gap-2 mb-2">
+            <div className="rounded-xl border border-destructive/30 bg-card text-card-foreground shadow p-6 mt-6 max-w-2xl">
+              <h3 className="font-bold text-lg text-destructive flex items-center gap-2 mb-2">
                 <AlertCircle className="h-5 w-5" /> {t("settings.profile.manageAccount")}
               </h3>
               <p className="text-sm text-muted-foreground mb-6">
@@ -496,7 +496,7 @@ function SettingsPage() {
                       },
                     })
                   }
-                  className="w-full sm:w-auto px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md transition-colors flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-6 py-2.5 bg-destructive hover:bg-destructive/90 text-white font-semibold rounded-md transition-colors flex items-center justify-center gap-2"
                 >
                   <Trash2 className="h-4 w-4" />
                   {t("settings.profile.deleteAccount")}
@@ -607,7 +607,7 @@ function SettingsPage() {
                   </div>
                   <button
                     onClick={() => setDeleteSettingConfirm(setting.settingKey)}
-                    className="p-2 text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
+                    className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
                   >
                     <Trash2 className="size-4" />
                   </button>
@@ -722,7 +722,7 @@ function SettingsPage() {
                   </div>
                   <button
                     onClick={() => setDeleteCategoryConfirm(String(cat.id))}
-                    className="p-2 text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
+                    className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
                   >
                     <Trash2 className="size-4" />
                   </button>
@@ -782,8 +782,8 @@ function SettingsPage() {
           <div className="bg-background rounded-2xl shadow-lg w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-6">
               <div className="flex gap-4">
-                <div className="size-10 rounded-full bg-red-100 grid place-items-center shrink-0">
-                  <Trash2 className="size-5 text-red-600" />
+                <div className="size-10 rounded-full bg-destructive/10 grid place-items-center shrink-0">
+                  <Trash2 className="size-5 text-destructive" />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-bold text-lg tracking-tight">
@@ -829,7 +829,7 @@ function SettingsPage() {
                     setDeleteSettingConfirm(null);
                   }
                 }}
-                className="px-4 py-2 font-semibold text-sm rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2 font-semibold text-sm rounded-md bg-destructive text-white hover:bg-destructive/90 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 {isDeleting ? (
                   <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -849,8 +849,8 @@ function SettingsPage() {
           <div className="bg-background rounded-2xl shadow-lg w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="p-6">
               <div className="flex gap-4">
-                <div className="size-10 rounded-full bg-red-100 grid place-items-center shrink-0">
-                  <Trash2 className="size-5 text-red-600" />
+                <div className="size-10 rounded-full bg-destructive/10 grid place-items-center shrink-0">
+                  <Trash2 className="size-5 text-destructive" />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-bold text-lg tracking-tight">
@@ -893,7 +893,7 @@ function SettingsPage() {
                     setDeleteCategoryConfirm(null);
                   }
                 }}
-                className="px-4 py-2 font-semibold text-sm rounded-md bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2 font-semibold text-sm rounded-md bg-destructive text-white hover:bg-destructive/90 transition-colors disabled:opacity-50 flex items-center gap-2"
               >
                 {isDeleting ? (
                   <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

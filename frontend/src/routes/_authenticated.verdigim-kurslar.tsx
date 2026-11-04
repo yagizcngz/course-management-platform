@@ -239,7 +239,7 @@ function TaughtCoursesPage() {
                     onClick={() => setSelectedCourse(c)}
                     className="group bg-card border border-border hover:border-accent transition-colors rounded-md overflow-hidden shadow-sm flex flex-col cursor-pointer"
                   >
-                    <div className="w-full aspect-video relative overflow-hidden bg-neutral-100">
+                    <div className="w-full aspect-video relative overflow-hidden bg-muted">
                       <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
                     </div>
                     <div className="p-5 flex-1 flex flex-col">
@@ -309,7 +309,7 @@ function TaughtCoursesPage() {
                           }
                           className={
                             r.status === "Accepted" || r.Status === "Accepted"
-                              ? "bg-emerald-500 hover:bg-emerald-600 text-white border-transparent"
+                              ? "bg-success hover:bg-success text-white border-transparent"
                               : ""
                           }
                         >

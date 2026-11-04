@@ -413,7 +413,7 @@ function StudentsPage() {
             {isEditMode && selectedStudentIds.length > 0 && (
               <button
                 onClick={() => setIsDeleteModalOpen(true)}
-                className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-md text-xs font-bold hover:bg-red-600 transition-colors animate-in fade-in"
+                className="flex items-center gap-2 bg-destructive text-white px-4 py-2 rounded-md text-xs font-bold hover:bg-destructive transition-colors animate-in fade-in"
               >
                 <Trash2 className="size-4" />
                 {t("students.deleteSelected", { count: selectedStudentIds.length })}
@@ -465,7 +465,7 @@ function StudentsPage() {
                   <th className="px-6 py-4 text-[10px] font-mono uppercase text-muted-foreground text-right">
                     <input
                       type="checkbox"
-                      className="size-4 rounded border-gray-300 text-foreground focus:ring-foreground cursor-pointer"
+                      className="size-4 rounded border-border text-foreground focus:ring-foreground cursor-pointer"
                       onChange={handleSelectAll}
                       checked={
                         selectedStudentIds.length === filteredStudents.length &&
@@ -548,8 +548,8 @@ function StudentsPage() {
                         <span
                           className={`px-2 py-1 text-[10px] font-bold rounded-sm ${
                             calculatedStatus === t("students.active")
-                              ? "bg-emerald-500/10 text-emerald-600"
-                              : "bg-stone-500/10 text-stone-500"
+                              ? "bg-success/10 text-success"
+                              : "bg-muted text-muted-foreground"
                           }`}
                         >
                           {calculatedStatus}
@@ -559,7 +559,7 @@ function StudentsPage() {
                         <td className="px-6 py-4 text-right">
                           <input
                             type="checkbox"
-                            className="size-4 rounded border-gray-300 text-foreground focus:ring-foreground cursor-pointer"
+                            className="size-4 rounded border-border text-foreground focus:ring-foreground cursor-pointer"
                             checked={selectedStudentIds.includes(currentId as string | number)}
                             onChange={() => handleSelectStudent(currentId)}
                           />
@@ -622,7 +622,7 @@ function StudentsPage() {
                       className="size-20 rounded-full object-cover border border-border"
                     />
                   ) : (
-                    <div className="size-20 rounded-full bg-neutral-900 dark:bg-neutral-700 text-white flex items-center justify-center text-2xl font-mono uppercase">
+                    <div className="size-20 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-2xl font-mono uppercase">
                       {`${editFirstName || ""} ${editLastName || ""}`
                         .trim()
                         .slice(0, 2)
@@ -684,7 +684,7 @@ function StudentsPage() {
                     <button
                       type="button"
                       onClick={handleRemoveProfileImage}
-                      className="text-[11px] font-mono text-muted-foreground hover:text-red-600 transition-colors"
+                      className="text-[11px] font-mono text-muted-foreground hover:text-destructive transition-colors"
                     >
                       {t("students.removePhoto")}
                     </button>
@@ -765,7 +765,7 @@ function StudentsPage() {
                       className="size-24 rounded-full object-cover shadow-md border border-border"
                     />
                   ) : (
-                    <div className="size-24 rounded-full bg-neutral-900 dark:bg-neutral-700 text-white flex items-center justify-center text-3xl font-mono uppercase shadow-md">
+                    <div className="size-24 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-3xl font-mono uppercase shadow-md">
                       {(
                         selectedProfileStudent.name ||
                         `${selectedProfileStudent.firstName || selectedProfileStudent.FirstName || ""} ${selectedProfileStudent.lastName || selectedProfileStudent.LastName || ""}`
@@ -962,7 +962,7 @@ function StudentsPage() {
         <div className="fixed inset-0 z-200 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-card border border-border rounded-xl shadow-lg w-full max-w-md p-6 animate-in zoom-in-95 duration-200">
             <div className="flex items-start gap-4">
-              <div className="size-10 shrink-0 rounded-full bg-red-500/10 flex items-center justify-center text-red-500">
+              <div className="size-10 shrink-0 rounded-full bg-destructive/10 flex items-center justify-center text-destructive">
                 <Trash2 className="size-5" />
               </div>
               <div className="flex-1">
@@ -977,7 +977,7 @@ function StudentsPage() {
                 <div className="flex justify-end gap-3">
                   <button
                     onClick={confirmDelete}
-                    className="px-4 py-2 text-sm font-semibold bg-red-600 text-white hover:bg-red-700 rounded-md transition-colors"
+                    className="px-4 py-2 text-sm font-semibold bg-destructive text-white hover:bg-destructive/90 rounded-md transition-colors"
                   >
                     {t("students.yes")}
                   </button>

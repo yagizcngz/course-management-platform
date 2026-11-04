@@ -267,7 +267,7 @@ function EnrollmentsPage() {
             {isEditMode && selectedEnrollmentIds.length > 0 && (
               <button
                 onClick={() => setIsConfirmOpen(true)}
-                className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600 animate-in fade-in"
+                className="inline-flex items-center gap-2 rounded-lg bg-destructive px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-destructive animate-in fade-in"
               >
                 <Trash2 className="h-4 w-4" />
                 {t("enrollments.deleteSelected", { count: selectedEnrollmentIds.length })}
@@ -310,7 +310,7 @@ function EnrollmentsPage() {
                     <th className="px-6 py-3 text-right font-medium">
                       <input
                         type="checkbox"
-                        className="size-4 rounded border-gray-300 text-foreground focus:ring-foreground cursor-pointer"
+                        className="size-4 rounded border-border text-foreground focus:ring-foreground cursor-pointer"
                         onChange={handleSelectAll}
                         checked={
                           selectedEnrollmentIds.length === filteredEnrollments.length &&
@@ -375,7 +375,7 @@ function EnrollmentsPage() {
                           <td className="px-6 py-4 text-right">
                             <input
                               type="checkbox"
-                              className="size-4 rounded border-gray-300 text-foreground focus:ring-foreground cursor-pointer"
+                              className="size-4 rounded border-border text-foreground focus:ring-foreground cursor-pointer"
                               checked={selectedEnrollmentIds.includes(Number(id))}
                               onChange={() => handleSelectEnrollment(Number(id))}
                             />
@@ -492,7 +492,7 @@ function EnrollmentsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-lg">
             <div className="mb-4 flex items-center gap-3">
-              <div className="rounded-full bg-red-500/10 p-2 text-red-600">
+              <div className="rounded-full bg-destructive/10 p-2 text-destructive">
                 <AlertCircle className="h-6 w-6" />
               </div>
 
@@ -513,7 +513,7 @@ function EnrollmentsPage() {
             <div className="flex justify-end gap-2">
               <button
                 onClick={confirmDeleteEnrollment}
-                className="px-4 py-2 text-sm font-semibold bg-red-600 text-white hover:bg-red-700 rounded-md transition-colors"
+                className="px-4 py-2 text-sm font-semibold bg-destructive text-white hover:bg-destructive/90 rounded-md transition-colors"
               >
                 {t("enrollments.yes")}
               </button>
