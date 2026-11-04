@@ -306,7 +306,7 @@ function SettingsPage() {
   }
 
   return (
-    <div className="flex-1 space-y-6 p-8 pt-6">
+    <div className="flex-1 space-y-6 p-4 pt-6 sm:p-8 sm:pt-6">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
           <Settings className="h-8 w-8 text-primary" />
@@ -352,7 +352,7 @@ function SettingsPage() {
 
       <div className="mt-6 max-w-4xl">
         {activeTab === "account" && (
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
               <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
                 <UserIcon className="size-5 text-primary" />
@@ -368,7 +368,7 @@ function SettingsPage() {
                   <div className="flex gap-3 mt-1.5">
                     <input
                       type="text"
-                      className="flex-1 p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-primary transition-colors"
+                      className="min-w-0 flex-1 p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-primary transition-colors"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                     />
@@ -389,7 +389,7 @@ function SettingsPage() {
                   <div className="flex gap-3 mt-1.5">
                     <input
                       type="email"
-                      className="flex-1 p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-primary transition-colors"
+                      className="min-w-0 flex-1 p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-primary transition-colors"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
@@ -507,7 +507,7 @@ function SettingsPage() {
         )}
 
         {activeTab === "preferences" && (
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
               <h3 className="font-semibold leading-none tracking-tight flex items-center gap-2 text-lg mb-2">
                 <Mail className="h-5 w-5 text-primary" />

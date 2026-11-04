@@ -17,8 +17,10 @@ import {
   Bell,
   CheckCircle,
   Wallet,
+  Menu,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 import type { TFunction } from "i18next";
 
@@ -213,6 +215,9 @@ export function AppSidebar() {
   ];
 
   // YENİ EKLENEN KISIM: Rol tabanlı menü filtreleme
+  const [mobileOpen, setMobileOpen] = useState(false);
+  useEffect(() => setMobileOpen(false), [location.pathname]);
+
   const visibleMenuItems = getMenuItems(t).filter((item) => {
     const role = currentUser.rawRole?.toLowerCase();
 
@@ -244,8 +249,8 @@ export function AppSidebar() {
     return false;
   });
 
-  return (
-    <aside className="sticky top-0 flex h-screen w-64 flex-col border-r bg-sidebar text-sidebar-foreground">
+  const content = (
+    <>
       <div className="flex items-center gap-2 px-4 py-4 border-b">
         <BookOpen className="h-6 w-6 text-primary" />
         <span className="font-bold text-lg">E-Kurs</span>
@@ -333,6 +338,34 @@ export function AppSidebar() {
           </PopoverContent>
         </Popover>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r bg-sidebar text-sidebar-foreground md:flex">
+        {content}
+      </aside>
+      {/* below md the sidebar becomes a drawer so the page keeps the full width */}
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetTrigger asChild>
+          <button
+            type="button"
+            aria-label={t("sidebar.openMenu")}
+            className="fixed bottom-4 left-4 z-40 rounded-full border bg-card p-3 shadow-lg md:hidden"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        </SheetTrigger>
+        <SheetContent
+          side="left"
+          aria-describedby={undefined}
+          className="flex w-64 flex-col gap-0 bg-sidebar p-0 text-sidebar-foreground md:hidden"
+        >
+          <SheetTitle className="sr-only">{t("sidebar.openMenu")}</SheetTitle>
+          {content}
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }

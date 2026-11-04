@@ -39,23 +39,25 @@ export function PageHeader({ crumb, action, searchValue, onSearchChange }: PageH
   };
 
   return (
-    <header className="h-16 border-b border-border bg-card flex items-center justify-between px-8 sticky top-0 z-40">
-      <div className="text-xs font-mono text-muted-foreground tracking-widest uppercase">
+    <header className="min-h-16 border-b border-border bg-card flex flex-wrap items-center justify-between gap-2 px-4 py-2 sm:px-8 sticky top-0 z-40">
+      <div className="min-w-0 truncate text-xs font-mono text-muted-foreground tracking-widest uppercase">
         {crumb}
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-4">
         {onSearchChange && (
           <input
             type="text"
             placeholder={t("searchPlaceholder")}
             value={searchValue || ""} // Kutudaki yazı
             onChange={(e) => onSearchChange(e.target.value)} // Yazı değiştikçe haber ver
-            className="bg-foreground/5 border-none text-xs px-4 py-2 rounded-full w-64 focus:ring-1 focus:ring-accent outline-none"
+            className="bg-foreground/5 border-none text-xs px-4 py-2 rounded-full w-32 sm:w-64 focus:ring-1 focus:ring-accent outline-none"
           />
         )}
         <div className="relative">
           <button
             onClick={() => setLangMenuOpen(!langMenuOpen)}
+            aria-label={t("header.language")}
+            aria-expanded={langMenuOpen}
             className="flex items-center gap-1 p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
           >
             <Globe className="h-5 w-5" />
@@ -94,6 +96,7 @@ export function PageHeader({ crumb, action, searchValue, onSearchChange }: PageH
         </div>
         <button
           onClick={toggleTheme}
+          aria-label={t("header.toggleTheme")}
           className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
         >
           {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
