@@ -1,8 +1,8 @@
+import { pillButton } from "@/lib/utils";
 import { readError } from "@/lib/auth";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { MapPin, Mail } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -52,200 +52,137 @@ function HelpPage() {
     }
   };
 
-  const handleEstimateClick = () => {
-    document.getElementById("contact-section")?.scrollIntoView({ behavior: "smooth" });
-  };
+  const faq = [1, 2, 3, 4, 5].map((n) => ({
+    q: t(`help.questions.q${n}`),
+    a: t(`help.questions.a${n}`),
+  }));
 
   return (
-    <div className="flex flex-col min-w-0 bg-background w-full">
-      <PageHeader crumb={t("help.title", "Yardım")} />
+    <div className="flex min-w-0 w-full flex-col">
+      <PageHeader crumb={t("help.title")} />
 
-      {/* 1. HERO SECTION */}
-      <section className="relative w-full bg-primary/10 dark:bg-primary/5 py-32 px-6 flex items-center overflow-hidden border-b border-border">
-        <div className="container mx-auto max-w-7xl relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
-          <div className="flex-1">
-            <h1 className="text-foreground text-6xl md:text-8xl font-bold tracking-tight">
-              {t("help.heroTitle", "S.S.S.")}
+      <section className="border-b border-border">
+        <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-16 sm:px-8 lg:grid-cols-[1.2fr_1fr] lg:py-24">
+          <div>
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gold">
+              {t("help.eyebrow")}
+            </p>
+            <h1 className="mt-4 font-serif text-[clamp(2.75rem,6vw,4.75rem)] leading-[0.95] tracking-tight">
+              {t("help.heroTitle")} <em className="text-gold">{t("help.heroAccent")}</em>
             </h1>
           </div>
-          <div className="flex-1 max-w-md flex flex-col gap-6">
-            <p className="text-muted-foreground text-lg leading-relaxed">
-              {t(
-                "help.heroSubtitle",
-                "Sıkça Sorulan Sorular bölümünde cevabını bulamadığınız sorular için uzman destek ekibimize ulaşabilirsiniz.",
-              )}
+          <div className="flex flex-col justify-end gap-6">
+            <p className="text-lg leading-relaxed text-muted-foreground">
+              {t("help.heroSubtitle")}
             </p>
-            <div>
+            <div className="flex flex-wrap gap-3">
               <button
-                onClick={handleEstimateClick}
-                className="rounded-full bg-primary text-primary-foreground px-8 py-3 text-sm font-semibold tracking-wider hover:bg-primary/90 transition-colors shadow-sm"
+                onClick={() =>
+                  document
+                    .getElementById("contact-section")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                }
+                className={pillButton.primary}
               >
-                {t("help.freeEstimate", "DESTEK İSTE")}
+                {t("help.freeEstimate")}
               </button>
+              <Link to="/yardim-taleplerim" className={pillButton.outline}>
+                {t("help.myRequests")}
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. FAQ SECTION (Facts & Questions) */}
-      <section className="py-24 px-6 bg-muted/30">
-        <div className="container mx-auto max-w-4xl flex flex-col items-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-center">
-            {t("help.faqTitle", "Sıkça Sorulan Sorular")}
+      <section className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-16 sm:px-8 lg:grid-cols-[1fr_1.6fr] lg:py-24">
+        <div>
+          <h2 className="font-serif text-4xl leading-none sm:text-5xl lg:sticky lg:top-28">
+            {t("help.faqTitle")}
           </h2>
-          <p className="text-muted-foreground mb-12 text-center max-w-2xl">
-            {t(
-              "help.faqDesc",
-              "Aşağıdaki sorulardan birine tıklayarak cevabı görüntüleyebilirsiniz.",
-            )}
-          </p>
-
-          <Accordion
-            type="single"
-            collapsible
-            className="w-full bg-card rounded-2xl shadow-sm border border-border p-2 md:p-6"
-          >
-            <AccordionItem value="item-1" className="border-b-border px-4">
-              <AccordionTrigger className="text-lg font-semibold text-foreground hover:text-primary hover:no-underline py-6">
-                {t("help.questions.q1", "Kursa nasıl kayıt olabilirim?")}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground text-base leading-relaxed pb-6">
-                {t(
-                  "help.questions.a1",
-                  "Platforma üye olduktan sonra 'Kurslar' sayfasından dilediğiniz kursa girip 'Kayıt Ol' butonuna tıklayabilirsiniz.",
-                )}
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-2" className="border-b-border px-4">
-              <AccordionTrigger className="text-lg font-semibold text-foreground hover:text-primary hover:no-underline py-6">
-                {t("help.questions.q2", "Öğretmen olmak için başvuru sürecim nedir?")}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground text-base leading-relaxed pb-6">
-                {t(
-                  "help.questions.a2",
-                  "Öğretmen olarak kayıt olduğunuzda, yetkinliklerinize uygun branşları seçerek admin onayına sunulursunuz.",
-                )}
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-3" className="border-b-border px-4">
-              <AccordionTrigger className="text-lg font-semibold text-foreground hover:text-primary hover:no-underline py-6">
-                {t("help.questions.q3", "Şifremi unuttum, ne yapmalıyım?")}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground text-base leading-relaxed pb-6">
-                {t(
-                  "help.questions.a3",
-                  "Giriş ekranındaki 'Şifremi Unuttum' bağlantısına tıklayarak kayıtlı e-posta adresinize sıfırlama bağlantısı gönderebilirsiniz.",
-                )}
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="item-4" className="border-b-transparent px-4">
-              <AccordionTrigger className="text-lg font-semibold text-foreground hover:text-primary hover:no-underline py-6">
-                {t("help.questions.q4", "Sertifika alabiliyor muyum?")}
-              </AccordionTrigger>
-              <AccordionContent className="text-muted-foreground text-base leading-relaxed pb-6">
-                {t(
-                  "help.questions.a4",
-                  "Evet, kursları %100 başarıyla tamamladığınızda profilinize tanımlanmış dijital sertifikanızı alabilirsiniz.",
-                )}
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+          <p className="mt-4 max-w-sm text-muted-foreground">{t("help.faqDesc")}</p>
         </div>
+        <Accordion type="single" collapsible className="border-t border-border">
+          {faq.map((item, i) => (
+            <AccordionItem key={i} value={`q${i + 1}`} className="border-b border-border">
+              <AccordionTrigger className="gap-4 py-6 text-left hover:no-underline [&[data-state=open]>span:last-of-type]:text-gold">
+                <span className="w-8 shrink-0 font-mono text-xs tabular-nums text-muted-foreground">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span className="flex-1 font-serif text-xl leading-snug sm:text-2xl">{item.q}</span>
+              </AccordionTrigger>
+              <AccordionContent className="pb-6 pl-12 text-base leading-relaxed text-muted-foreground">
+                {item.a}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
       </section>
 
-      {/* 3. CONTACT SECTION */}
-      <section id="contact-section" className="py-24 px-6 bg-primary">
-        <div className="container mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
-          {/* Left Box: Offices */}
-          <div className="bg-card rounded-3xl p-10 md:p-14 shadow-lg flex flex-col border border-border">
-            <h3 className="text-3xl font-bold text-foreground mb-10">
-              {t("help.offices", "İletişim Bilgileri")}
-            </h3>
-
-            <div className="flex flex-col gap-10 flex-1">
-              {/* HQ */}
-              <div>
-                <h4 className="text-xl font-bold text-foreground mb-2">
-                  {t("help.hq", "Merkez Ofis")}
-                </h4>
-                <p className="text-muted-foreground flex items-start gap-2">
-                  <MapPin className="h-5 w-5 shrink-0 mt-0.5 text-primary" />
-                  {t("help.hqAddr", "Teknopark İstanbul, Pendik, Türkiye")}
-                </p>
-              </div>
-
-              {/* Branch */}
-              <div>
-                <h4 className="text-xl font-bold text-foreground mb-2">
-                  {t("help.branch", "Şube")}
-                </h4>
-                <p className="text-muted-foreground flex items-start gap-2">
-                  <MapPin className="h-5 w-5 shrink-0 mt-0.5 text-primary" />
-                  {t("help.branchAddr", "Bilişim Vadisi, Gebze, Türkiye")}
-                </p>
-              </div>
-
-              {/* Contact Direct */}
-              <div className="flex flex-col gap-3 mt-auto pt-8 border-t border-border">
-                <a
-                  href="mailto:support@ekurs.com"
-                  className="text-foreground flex items-center gap-3 hover:text-primary transition-colors font-medium"
-                >
-                  <Mail className="h-5 w-5" />
-                  support@ekurs.com
-                </a>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Box: Contact Us Form */}
-          <div className="bg-card rounded-3xl p-10 md:p-14 shadow-lg border border-border">
-            <h3 className="text-3xl font-bold text-foreground mb-8">
-              {t("help.contactUs", "Bize Ulaşın")}
-            </h3>
-
-            <form onSubmit={handleContactSubmit} className="flex flex-col gap-6">
-              {/* Ad, soyad ve e-posta arka uçtan otomatik çekiliyor. */}
-              {/* Telefon alanı kaldırıldı. */}
-
-              <textarea
-                name="message"
-                placeholder={t("help.formMessage", "Mesajınız...")}
-                className="w-full bg-transparent border-b border-border py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors resize-none h-24 mt-4"
-                required
-              />
-
-              <label className="flex items-center gap-3 cursor-pointer mt-4 group">
-                <div className="relative flex items-center justify-center">
-                  <input type="checkbox" required className="peer sr-only" />
-                  <div className="h-5 w-5 rounded border-2 border-border peer-checked:bg-primary peer-checked:border-primary transition-all flex items-center justify-center">
-                    <svg
-                      className="h-3 w-3 text-primary-foreground opacity-0 peer-checked:opacity-100 transition-opacity"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth={3}
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
+      <section id="contact-section" className="scroll-mt-20 border-t border-border bg-card/40">
+        <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-16 sm:px-8 lg:grid-cols-2 lg:py-24">
+          <div className="min-w-0">
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gold">
+              {t("help.contactEyebrow")}
+            </p>
+            <h2 className="mt-4 font-serif text-4xl leading-none sm:text-5xl">
+              {t("help.contactUs")}
+            </h2>
+            <p className="mt-4 max-w-md text-muted-foreground">{t("help.contactDesc")}</p>
+            <dl className="mt-10 divide-y divide-border border-y border-border">
+              {[
+                {
+                  k: t("help.emailLabel"),
+                  v: "support@ekurs.com",
+                  href: "mailto:support@ekurs.com",
+                },
+                { k: t("help.hq"), v: t("help.hqAddr") },
+                { k: t("help.branch"), v: t("help.branchAddr") },
+                { k: t("help.responseLabel"), v: t("help.responseTime") },
+              ].map((row) => (
+                <div key={row.k} className="grid grid-cols-[8rem_1fr] gap-4 py-4">
+                  <dt className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    {row.k}
+                  </dt>
+                  <dd className="text-sm">
+                    {row.href ? (
+                      <a
+                        href={row.href}
+                        className="underline decoration-gold decoration-1 underline-offset-4 hover:text-gold"
+                      >
+                        {row.v}
+                      </a>
+                    ) : (
+                      row.v
+                    )}
+                  </dd>
                 </div>
-                <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-                  {t("help.formTerms", "Hizmet Şartlarını kabul ediyorum")}
-                </span>
-              </label>
-
-              <button
-                type="submit"
-                className="w-full bg-primary text-primary-foreground font-semibold py-4 rounded-xl mt-6 hover:bg-primary/90 transition-colors tracking-wide shadow-sm"
-              >
-                {t("help.sendMessage", "MESAJ GÖNDER")}
-              </button>
-            </form>
+              ))}
+            </dl>
           </div>
+
+          <form
+            onSubmit={handleContactSubmit}
+            className="flex min-w-0 flex-col gap-5 rounded-xl border border-border bg-card p-6 sm:p-8"
+          >
+            <label htmlFor="help-message" className="font-serif text-2xl">
+              {t("help.formMessageLabel")}
+            </label>
+            <textarea
+              id="help-message"
+              name="message"
+              required
+              rows={6}
+              placeholder={t("help.formMessage")}
+              className="w-full resize-none rounded-lg border border-border bg-background p-3 text-sm outline-none transition-[border-color,box-shadow] focus:border-gold focus:ring-4 focus:ring-gold/15"
+            />
+            <label className="flex cursor-pointer items-center gap-3 text-sm text-muted-foreground">
+              <input type="checkbox" required className="size-4 accent-[var(--gold)]" />
+              {t("help.formTerms")}
+            </label>
+            <button type="submit" className={`${pillButton.primary} self-start`}>
+              {t("help.sendMessage")}
+            </button>
+          </form>
         </div>
       </section>
     </div>
