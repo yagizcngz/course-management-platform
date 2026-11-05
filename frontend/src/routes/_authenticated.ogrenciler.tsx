@@ -5,11 +5,11 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { translateBackendError } from "../lib/errorTranslator";
-import { useAdminGuard } from "../hooks/useAdminGuard";
+import { adminOnly } from "../hooks/useAdminGuard";
 
 import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/_authenticated/ogrenciler")({
-  component: StudentsPage,
+  component: adminOnly(StudentsPage),
 });
 
 interface StudentData {
@@ -59,7 +59,6 @@ interface EnrollmentData {
 }
 
 function StudentsPage() {
-  useAdminGuard();
   const { t, i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [dbStudents, setDbStudents] = useState<StudentData[]>([]);
@@ -179,20 +178,23 @@ function StudentsPage() {
         Authorization: `Bearer ${token}`,
       };
 
-      await Promise.all(
+      const results = await Promise.all(
         selectedStudentIds.map((id) =>
           fetch(`${API_BASE}/api/students/${id}`, {
             method: "DELETE",
             headers,
-          }),
+          }).then((res) => (res.ok ? id : null)),
         ),
       );
+      const deleted = results.filter((id): id is string | number => id !== null);
 
       setDbStudents((prevStudents) =>
-        prevStudents.filter((s) => !selectedStudentIds.includes(s.id || (s.Id as string | number))),
+        prevStudents.filter((s) => !deleted.includes(s.id || (s.Id as string | number))),
       );
 
-      showToast(t("students.errors.deleteSuccess", { count: selectedStudentIds.length }));
+      if (deleted.length < selectedStudentIds.length)
+        showToast(t("students.errors.deleteFailed"), "error");
+      else showToast(t("students.errors.deleteSuccess", { count: deleted.length }));
       setIsDeleteModalOpen(false);
       setSelectedStudentIds([]);
       setIsEditMode(false);
@@ -407,7 +409,11 @@ function StudentsPage() {
       <PageHeader
         crumb={t("students.breadcrumb")}
         searchValue={searchTerm}
-        onSearchChange={setSearchTerm}
+        onSearchChange={(v) => {
+          // a hidden row must never stay selected for bulk delete
+          setSearchTerm(v);
+          setSelectedStudentIds([]);
+        }}
         action={
           <div className="flex gap-2">
             {isEditMode && selectedStudentIds.length > 0 && (

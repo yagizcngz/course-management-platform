@@ -17,13 +17,12 @@ import {
 import { CourseDetailModal } from "@/components/CourseDetailModal";
 
 import { API_BASE } from "@/components/courseHelpers";
-import { useTeacherGuard } from "@/hooks/useAdminGuard";
+import { teacherOnly } from "@/hooks/useAdminGuard";
 export const Route = createFileRoute("/_authenticated/verdigim-kurslar")({
-  component: TaughtCoursesPage,
+  component: teacherOnly(TaughtCoursesPage),
 });
 
 function TaughtCoursesPage() {
-  useTeacherGuard();
   const { t, i18n } = useTranslation();
   const [courses, setCourses] = useState<CourseData[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -45,7 +44,10 @@ function TaughtCoursesPage() {
   const fetchData = async () => {
     try {
       const token = localStorage.getItem("jwt_token");
-      if (!token) return;
+      if (!token) {
+        setLoading(false);
+        return;
+      }
 
       const profileRes = await fetch(`${API_BASE}/api/profile/me`, {
         headers: { Authorization: `Bearer ${token}` },

@@ -5,7 +5,7 @@ import { PageHeader } from "../components/PageHeader";
 import type { FormEvent } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useAdminGuard } from "../hooks/useAdminGuard";
+import { adminOnly } from "../hooks/useAdminGuard";
 
 import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/_authenticated/kayitlar")({
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/_authenticated/kayitlar")({
       { name: "description", content: "Öğrenci kayıtlarını görüntüle ve yönet." },
     ],
   }),
-  component: EnrollmentsPage,
+  component: adminOnly(EnrollmentsPage),
 });
 
 const API = `${API_BASE}/api`;
@@ -55,7 +55,6 @@ const pick = <T,>(...vals: (T | undefined | null)[]) =>
   vals.find((v) => v !== undefined && v !== null);
 
 function EnrollmentsPage() {
-  useAdminGuard();
   const { t, i18n } = useTranslation();
   const [enrollments, setEnrollments] = useState<EnrollmentDto[]>([]);
   const [students, setStudents] = useState<StudentLite[]>([]);
@@ -214,19 +213,24 @@ function EnrollmentsPage() {
     setIsConfirmOpen(false);
 
     try {
-      await Promise.all(
+      const results = await Promise.all(
         selectedEnrollmentIds.map((id) =>
           fetch(`${API}/enrollments/${id}`, {
             method: "DELETE",
             headers: authHeaders(),
-          }),
+          }).then((res) => (res.ok ? id : null)),
         ),
       );
+      const deletedIds = results.filter((id): id is number => id !== null);
 
-      showToast(t("enrollments.errors.deleteSuccess", { count: selectedEnrollmentIds.length }));
+      if (deletedIds.length < results.length) {
+        showToast(t("enrollments.errors.serverError"), "error");
+      } else {
+        showToast(t("enrollments.errors.deleteSuccess", { count: deletedIds.length }));
+        setIsEditMode(false);
+      }
       fetchEnrollments();
-      setSelectedEnrollmentIds([]);
-      setIsEditMode(false);
+      setSelectedEnrollmentIds((prev) => prev.filter((id) => !deletedIds.includes(id)));
     } catch (err) {
       console.error(err);
       showToast(t("enrollments.errors.serverError"), "error");

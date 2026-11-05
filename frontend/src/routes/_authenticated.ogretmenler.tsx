@@ -5,12 +5,12 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { translateBackendError } from "../lib/errorTranslator";
-import { useAdminGuard } from "../hooks/useAdminGuard";
+import { adminOnly } from "../hooks/useAdminGuard";
 import { fetchCategories } from "../components/courseHelpers";
 
 import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/_authenticated/ogretmenler")({
-  component: TeachersPage,
+  component: adminOnly(TeachersPage),
 });
 
 interface TeacherData {
@@ -44,7 +44,6 @@ interface CourseData {
 }
 
 function TeachersPage() {
-  useAdminGuard();
   const { t, i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [dbTeachers, setDbTeachers] = useState<TeacherData[]>([]);
@@ -465,7 +464,11 @@ function TeachersPage() {
       <PageHeader
         crumb={t("teachers.breadcrumb")}
         searchValue={searchTerm}
-        onSearchChange={setSearchTerm}
+        onSearchChange={(v) => {
+          // a hidden row must never stay selected for bulk delete
+          setSearchTerm(v);
+          setSelectedTeacherIds([]);
+        }}
         action={
           <div className="flex gap-2">
             {isEditMode && selectedTeacherIds.length > 0 && (

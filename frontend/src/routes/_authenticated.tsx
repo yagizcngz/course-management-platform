@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, useLocation, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import { AppSidebar } from "../components/AppSidebar";
@@ -32,7 +32,9 @@ const checkAndHandleExpiry = (navigate: ReturnType<typeof useNavigate>) => {
 
 function AuthenticatedLayout() {
   const navigate = useNavigate();
-  const pathname = useLocation({ select: (l) => l.pathname });
+  // keyed on the resolved location: the pending one changes first, which remounted the
+  // old page mid-navigation (on logout it refetched without a token and got 401s)
+  const pathname = useRouterState({ select: (s) => s.resolvedLocation?.pathname });
   const reduceMotion = useReducedMotion();
 
   // "idle" -> henüz kontrol edilmedi (ilk render)

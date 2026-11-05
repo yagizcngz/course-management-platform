@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader, SectionHeader } from "../components/PageHeader";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useAdminGuard } from "../hooks/useAdminGuard";
+import { adminOnly } from "../hooks/useAdminGuard";
 
 import { API_BASE } from "@/components/courseHelpers";
 import { formatTry } from "@/lib/utils";
@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_authenticated/raporlar")({
       { name: "description", content: "Platformun performans ve gelir raporları." },
     ],
   }),
-  component: ReportsPage,
+  component: adminOnly(ReportsPage),
 });
 
 interface SalesSummary {
@@ -126,7 +126,6 @@ function KpiCard({ label, value, hint, hintTone = "muted", valueTone = "default"
 }
 
 function ReportsPage() {
-  useAdminGuard();
   const { t, i18n } = useTranslation();
   const [dbStudents, setDbStudents] = useState<StudentData[]>([]);
   const [dbCourses, setDbCourses] = useState<CourseData[]>([]);
@@ -364,7 +363,12 @@ function ReportsPage() {
                           .filter(Boolean);
 
                         if (validDates.length > 0) {
-                          const latestDateRaw = validDates[validDates.length - 1];
+                          const latestDateRaw = validDates.reduce((max, d) => {
+                            const maxTime = new Date(max as string).getTime();
+                            return isNaN(maxTime) || new Date(d as string).getTime() > maxTime
+                              ? d
+                              : max;
+                          });
                           const dateObj = new Date(latestDateRaw as string);
                           displayDate = isNaN(dateObj.getTime())
                             ? (latestDateRaw as string)
