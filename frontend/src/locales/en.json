@@ -1330,6 +1330,45 @@
       "completedBadge": "Completed",
       "lessonsDone": "{{done}}/{{total}} lessons",
       "completedOn": "Completed on {{date}}"
+    },
+    "badges": {
+      "title": "Badges & Achievements",
+      "earnedCount": "{{earned}} of {{total}} badges earned",
+      "earned": "Earned",
+      "earnedOn": "Earned on {{date}}",
+      "locked": "In progress",
+      "viewAll": "All badges",
+      "graduate": {
+        "title": "First Milestone",
+        "criteria": "Finish every lesson of a course."
+      },
+      "specialist": {
+        "title": "{{field}} Specialist",
+        "criteria": "Complete {{count}} courses in {{field}}."
+      },
+      "master": {
+        "title": "{{field}} Master"
+      },
+      "polymath": {
+        "title": "Polymath",
+        "criteria": "Complete a course in {{count}} different fields."
+      },
+      "scholar": {
+        "title": "Dedicated Scholar",
+        "criteria": "Complete {{count}} lessons across the platform."
+      },
+      "senior": {
+        "title": "Senior Faculty",
+        "criteria": "Teach on the platform for {{count}} days."
+      },
+      "mentor": {
+        "title": "Popular Mentor",
+        "criteria": "Have {{count}} students enrol in your courses."
+      },
+      "architect": {
+        "title": "Curriculum Architect",
+        "criteria": "Publish {{count}} lessons across your courses."
+      }
     }
   }
 }

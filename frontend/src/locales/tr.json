@@ -1245,6 +1245,45 @@
       "completedBadge": "Tamamlandı",
       "lessonsDone": "{{done}}/{{total}} ders",
       "completedOn": "{{date}} tarihinde tamamlandı"
+    },
+    "badges": {
+      "title": "Rozetler ve Başarımlar",
+      "earnedCount": "{{earned}}/{{total}} rozet kazanıldı",
+      "earned": "Kazanıldı",
+      "earnedOn": "{{date}} tarihinde kazanıldı",
+      "locked": "Devam ediyor",
+      "viewAll": "Tüm rozetler",
+      "graduate": {
+        "title": "İlk Mezuniyet",
+        "criteria": "Bir kursun tüm derslerini tamamla."
+      },
+      "specialist": {
+        "title": "{{field}} Uzmanı",
+        "criteria": "{{field}} alanında {{count}} kurs tamamla."
+      },
+      "master": {
+        "title": "{{field}} Ustası"
+      },
+      "polymath": {
+        "title": "Çok Yönlü Bilgin",
+        "criteria": "{{count}} farklı alanda birer kurs tamamla."
+      },
+      "scholar": {
+        "title": "Maraton Öğrencisi",
+        "criteria": "Platformda toplam {{count}} ders tamamla."
+      },
+      "senior": {
+        "title": "Kıdemli Eğitmen",
+        "criteria": "{{count}} gündür platformda ders ver."
+      },
+      "mentor": {
+        "title": "Yüksek Katılımlı Eğitmen",
+        "criteria": "Kurslarına {{count}} öğrenci kaydolsun."
+      },
+      "architect": {
+        "title": "Müfredat Mimarı",
+        "criteria": "Kurslarında toplam {{count}} ders yayımla."
+      }
     }
   }
 }

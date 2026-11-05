@@ -15,6 +15,7 @@ import { CourseProgressBar } from "@/components/CourseProgressBar";
 import { formatDate } from "@/lib/utils";
 
 import { API_BASE } from "@/components/courseHelpers";
+import { BadgeStrip, useBadges } from "@/components/Badges";
 export const Route = createFileRoute("/_authenticated/kurslarim")({
   component: MyCoursesPage,
 });
@@ -24,6 +25,7 @@ function MyCoursesPage() {
   const navigate = useNavigate();
   const [courses, setCourses] = useState<EnrollmentDto[]>([]);
   const [loading, setLoading] = useState(true);
+  const badges = useBadges();
 
   const [selectedCourse, setSelectedCourse] = useState<CourseData | null>(null);
   const [dbTeachers, setDbTeachers] = useState<TeacherLiteDto[]>([]);
@@ -175,6 +177,11 @@ function MyCoursesPage() {
 
       <div className="p-4 md:p-8 animate-reveal">
         <h2 className="text-xl font-bold mb-6">{t("dashboard.myCourses")}</h2>
+        {badges && (
+          <div className="mb-10">
+            <BadgeStrip badges={badges} />
+          </div>
+        )}
 
         {loading ? (
           <div className="text-center py-12 text-muted-foreground">

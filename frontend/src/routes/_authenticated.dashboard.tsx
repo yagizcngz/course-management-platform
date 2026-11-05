@@ -14,6 +14,7 @@ import { toast } from "sonner";
 
 import { isAdminRole, parseJwt } from "@/lib/auth";
 import { API_BASE } from "@/components/courseHelpers";
+import { BadgeStrip, useBadges } from "@/components/Badges";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
@@ -68,6 +69,7 @@ interface EnrollmentData {
 
 function HomePage() {
   const { t, i18n } = useTranslation();
+  const badges = useBadges();
   const [dbStudents, setDbStudents] = useState<StudentData[]>([]);
   const [dbTeachers, setDbTeachers] = useState<TeacherLiteDto[]>([]);
   const [dbCourses, setDbCourses] = useState<CourseData[]>([]);
@@ -324,6 +326,7 @@ function HomePage() {
       <PageHeader crumb={t("dashboard.breadcrumb")} />
 
       <div className="p-8 space-y-8 animate-reveal">
+        {badges && <BadgeStrip badges={badges} />}
         {!isAdmin && (
           <>
             <section className="space-y-4">

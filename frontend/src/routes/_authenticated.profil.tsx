@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 import { parseJwt } from "@/lib/auth";
 import { API_BASE } from "@/components/courseHelpers";
+import { BadgeShowcase, useBadges } from "@/components/Badges";
 export const Route = createFileRoute("/_authenticated/profil")({
   head: () => ({
     meta: [
@@ -57,6 +58,7 @@ const translateRole = (role: string, t: TFunction) => {
 
 function ProfilePage() {
   const { t, i18n } = useTranslation();
+  const badges = useBadges();
   const [name, setName] = useState("");
   const [role, setRole] = useState(t("profile.roles.student"));
   const [photoUrl, setPhotoUrl] = useState("");
@@ -357,7 +359,7 @@ function ProfilePage() {
         <SectionHeader title={t("profile.title")} />
 
         <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-          <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+          <div className="min-w-0 bg-card border border-border rounded-xl p-6 shadow-sm">
             <div className="flex flex-col items-center gap-4 text-center">
               <div className="relative">
                 {photoUrl ? (
@@ -373,7 +375,9 @@ function ProfilePage() {
                 )}
               </div>
               <div>
-                <h2 className="text-xl font-bold">{name || t("profile.defaultUser")}</h2>
+                <h2 className="text-xl font-bold break-words [overflow-wrap:anywhere]">
+                  {name || t("profile.defaultUser")}
+                </h2>
                 <p className="text-sm text-muted-foreground uppercase tracking-[0.2em]">{role}</p>
               </div>
             </div>
@@ -383,7 +387,7 @@ function ProfilePage() {
                 <h3 className="text-sm font-bold text-muted-foreground mb-1">
                   {t("profile.aboutMe")}
                 </h3>
-                <p className="mt-2 text-sm text-foreground leading-6 wrap-break-words overflow-hidden max-h-32 overflow-y-auto">
+                <p className="mt-2 text-sm text-foreground leading-6 break-words [overflow-wrap:anywhere] max-h-32 overflow-y-auto">
                   {!profileLoaded ? t("profile.loading") : bio || t("profile.noBio")}
                 </p>
               </div>
@@ -451,7 +455,7 @@ function ProfilePage() {
             </div>
           </div>
 
-          <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+          <div className="min-w-0 bg-card border border-border rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-sm font-bold text-muted-foreground">
@@ -588,6 +592,8 @@ function ProfilePage() {
             </form>
           </div>
         </div>
+
+        {badges && <BadgeShowcase badges={badges} />}
       </div>
     </>
   );
