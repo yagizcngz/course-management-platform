@@ -102,7 +102,26 @@ export interface TeacherLiteDto {
   ProfilePictureUrl?: string;
   aboutMe?: string;
   AboutMe?: string;
+  /** Only on /api/teachers/public: the courses this teacher gives. */
+  courses?: { id: number; title: string; category: string }[];
 }
+
+/** A teacher's branches; `Branch` may hold several, comma-separated ("Yazılım, Matematik"). */
+export const getTeacherBranches = (t: TeacherLiteDto) =>
+  (t.branch || t.Branch || "")
+    .split(",")
+    .map((b) => b.trim())
+    .filter(Boolean);
+
+/** Guest-safe teacher list (no e-mail), with each teacher's courses. [] on failure. */
+export const fetchPublicTeachers = async (): Promise<TeacherLiteDto[]> => {
+  try {
+    const res = await fetch(`${API_BASE}/api/teachers/public`);
+    return res.ok ? await res.json() : [];
+  } catch {
+    return [];
+  }
+};
 
 export const getTeacherFullName = (t: TeacherLiteDto) =>
   `${t.firstName || t.FirstName || ""} ${t.lastName || t.LastName || ""}`.trim();
@@ -112,7 +131,7 @@ export const getTeacherFullName = (t: TeacherLiteDto) =>
 export const getTeachersInBranch = (teachers: TeacherLiteDto[], category: string) => {
   const target = category.trim().toLowerCase();
   if (!target) return [];
-  return teachers.filter((t) => (t.branch || t.Branch || "").trim().toLowerCase() === target);
+  return teachers.filter((t) => getTeacherBranches(t).some((b) => b.toLowerCase() === target));
 };
 
 export const resolveImageSrc = (url: string) =>
@@ -133,6 +152,7 @@ export const getCourseImage = (c: CourseData, index: number) => {
     { keywords: ["biyoloji", "molekul", "biyo"], seed: "biology" },
     { keywords: ["react", "frontend", "javascript", "typescript"], seed: "programming" },
     { keywords: ["c#", "csharp", "dotnet", "backend"], seed: "code" },
+    { keywords: ["coğrafya", "jeomorfoloji", "harita", "cbs"], seed: "geography" },
     { keywords: ["tarih"], seed: "history" },
     { keywords: ["sanat", "tasar", "tasarım"], seed: "art" },
     { keywords: ["ekonomi"], seed: "economics" },
@@ -168,9 +188,15 @@ export const getCourseImage = (c: CourseData, index: number) => {
 };
 
 export const getCourseEnrollments = (course: CourseData, enrollments: EnrollmentDto[]) => {
+  const courseId = course.id ?? course.Id;
   const title = (course.title || course.Title || "").trim().toLowerCase();
-  if (!title) return [];
   return enrollments.filter((e) => {
+    const enrCourseId = e.courseId ?? e.CourseId;
+    // Id ile eşleşme; enrollment'ta courseId yoksa başlığa düşülür.
+    if (enrCourseId != null && courseId != null) {
+      return String(enrCourseId) === String(courseId);
+    }
+    if (!title) return false;
     const enrTitle = (e.courseTitle || e.CourseTitle || "").trim().toLowerCase();
     return enrTitle === title;
   });
