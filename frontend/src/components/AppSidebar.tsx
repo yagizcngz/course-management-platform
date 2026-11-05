@@ -49,7 +49,7 @@ const getMenuItems = (t: TFunction) => [
   { title: t("sidebar.taughtCourses"), url: "/verdigim-kurslar", icon: BookOpen },
   { title: t("sidebar.students"), url: "/ogrenciler", icon: Users },
   { title: t("sidebar.teachers"), url: "/ogretmenler", icon: UserCog },
-  { title: t("sidebar.courses"), url: "/kurslar", icon: BookOpen },
+  { title: t("sidebar.courses"), url: "/katalog", icon: BookOpen },
   { title: t("sidebar.pendingRequests"), url: "/istekler", icon: CheckCircle },
   { title: t("sidebar.enrollments"), url: "/kayitlar", icon: ClipboardList },
   { title: t("sidebar.reports"), url: "/raporlar", icon: BarChart3 },
@@ -229,7 +229,7 @@ export function AppSidebar() {
     const role = currentUser.rawRole?.toLowerCase();
 
     // Everyone sees Home, Announcements, and Courses
-    if (item.url === "/dashboard" || item.url === "/duyurular" || item.url === "/kurslar") {
+    if (item.url === "/dashboard" || item.url === "/duyurular" || item.url === "/katalog") {
       return true;
     }
 

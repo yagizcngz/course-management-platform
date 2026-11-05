@@ -1,4 +1,5 @@
 import type { FormEvent, ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
 import { Search, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { TeacherLiteDto } from "../courseHelpers";
@@ -14,6 +15,8 @@ export interface LandingCourse {
   imageUrl: string;
   description?: string;
   teacherId?: number | null;
+  level?: string | null;
+  createdAt?: string;
   enrollments: unknown[];
 }
 
@@ -31,9 +34,9 @@ export interface LandingProps {
   /** Guest-safe teacher profiles, with the courses each one gives. */
   teachers: TeacherLiteDto[];
   stats: GuestStats | null;
-  /** The list the course section shows: search matches, all courses or the popular ones. */
+  /** The list the course section shows: search matches or the popular ones. */
   list: LandingCourse[];
-  listMode: "results" | "all" | "popular";
+  listMode: "results" | "popular";
   /** Search matches, or null when no filter is active. */
   matches: LandingCourse[] | null;
   matchIds: Set<number> | null;
@@ -44,9 +47,10 @@ export interface LandingProps {
   onSubmit: (e: FormEvent) => void;
   scrollToCourses: () => void;
   onClear: () => void;
-  showAll: () => void;
   onOpen: (course: LandingCourse) => void;
   label: (kind: "categories" | "courses", value: string) => string;
+  /** A course's description in the current language. */
+  describe: (course: LandingCourse) => string;
 }
 
 /**
@@ -128,8 +132,8 @@ export function CategoryToken({ p, className }: { p: LandingProps; className: st
 }
 
 /**
- * Title row of the course section. Switches between popular, all and search results,
- * and always offers the way back.
+ * Title row of the course section. Switches between popular and search results; the full
+ * catalogue lives on /kurslar, which opens with the same filter.
  */
 export function ListHeader({
   p,
@@ -156,32 +160,30 @@ export function ListHeader({
       <div>
         {children}
         <h2 className={titleClass}>
-          {p.listMode === "results"
-            ? t("guest.resultsTitle")
-            : p.listMode === "all"
-              ? t("guest.allCourses")
-              : t("guest.popularCourses")}
+          {p.listMode === "results" ? t("guest.resultsTitle") : t("guest.popularCourses")}
         </h2>
         <p className={metaClass}>
           {p.listMode === "results"
             ? `${filterText} — ${t("guest.matchCount", { count: p.list.length })}`
-            : p.listMode === "all"
-              ? t("guest.catalogCount", { count: p.list.length })
-              : t("guest.popularCoursesDesc")}
+            : t("guest.popularCoursesDesc")}
         </p>
       </div>
-      {p.listMode === "popular" ? (
-        p.courses &&
-        p.courses.length > p.popular.length && (
-          <button type="button" onClick={p.showAll} className={actionClass}>
-            {t("guest.viewAllCourses")} ({p.courses.length})
+      <div className="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-2 self-start md:self-auto">
+        {p.listMode === "results" && (
+          <button type="button" onClick={p.onClear} className={actionClass}>
+            {t("guest.clearSearch")}
           </button>
-        )
-      ) : (
-        <button type="button" onClick={p.onClear} className={actionClass}>
-          {p.listMode === "results" ? t("guest.clearSearch") : t("guest.showPopular")}
-        </button>
-      )}
+        )}
+        <Link
+          to="/kurslar"
+          search={{ q: p.query.trim() || undefined, category: p.category ?? undefined }}
+          className={actionClass}
+        >
+          {p.listMode === "results"
+            ? t("guest.openInCatalog")
+            : `${t("guest.viewAllCourses")}${p.courses ? ` (${p.courses.length})` : ""}`}
+        </Link>
+      </div>
     </div>
   );
 }

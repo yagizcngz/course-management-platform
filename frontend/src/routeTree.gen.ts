@@ -12,7 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as KurslarRouteImport } from './routes/kurslar'
+import { Route as KategorilerRouteImport } from './routes/kategoriler'
 import { Route as HakkimizdaRouteImport } from './routes/hakkimizda'
+import { Route as EgitmenlerRouteImport } from './routes/egitmenler'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedYardimTaleplerimRouteImport } from './routes/_authenticated.yardim-taleplerim'
@@ -23,8 +26,8 @@ import { Route as AuthenticatedProfilRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedOgretmenlerRouteImport } from './routes/_authenticated.ogretmenler'
 import { Route as AuthenticatedOgrencilerRouteImport } from './routes/_authenticated.ogrenciler'
 import { Route as AuthenticatedKurslarimRouteImport } from './routes/_authenticated.kurslarim'
-import { Route as AuthenticatedKurslarRouteImport } from './routes/_authenticated.kurslar'
 import { Route as AuthenticatedKayitlarRouteImport } from './routes/_authenticated.kayitlar'
+import { Route as AuthenticatedKatalogRouteImport } from './routes/_authenticated.katalog'
 import { Route as AuthenticatedIsteklerRouteImport } from './routes/_authenticated.istekler'
 import { Route as AuthenticatedDuyurularRouteImport } from './routes/_authenticated.duyurular'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
@@ -47,9 +50,24 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KurslarRoute = KurslarRouteImport.update({
+  id: '/kurslar',
+  path: '/kurslar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KategorilerRoute = KategorilerRouteImport.update({
+  id: '/kategoriler',
+  path: '/kategoriler',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HakkimizdaRoute = HakkimizdaRouteImport.update({
   id: '/hakkimizda',
   path: '/hakkimizda',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EgitmenlerRoute = EgitmenlerRouteImport.update({
+  id: '/egitmenler',
+  path: '/egitmenler',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -104,14 +122,14 @@ const AuthenticatedKurslarimRoute = AuthenticatedKurslarimRouteImport.update({
   path: '/kurslarim',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedKurslarRoute = AuthenticatedKurslarRouteImport.update({
-  id: '/kurslar',
-  path: '/kurslar',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedKayitlarRoute = AuthenticatedKayitlarRouteImport.update({
   id: '/kayitlar',
   path: '/kayitlar',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedKatalogRoute = AuthenticatedKatalogRouteImport.update({
+  id: '/katalog',
+  path: '/katalog',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedIsteklerRoute = AuthenticatedIsteklerRouteImport.update({
@@ -147,7 +165,10 @@ const AuthenticatedKursIdRoute = AuthenticatedKursIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/egitmenler': typeof EgitmenlerRoute
   '/hakkimizda': typeof HakkimizdaRoute
+  '/kategoriler': typeof KategorilerRoute
+  '/kurslar': typeof KurslarRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -156,8 +177,8 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/duyurular': typeof AuthenticatedDuyurularRoute
   '/istekler': typeof AuthenticatedIsteklerRoute
+  '/katalog': typeof AuthenticatedKatalogRoute
   '/kayitlar': typeof AuthenticatedKayitlarRoute
-  '/kurslar': typeof AuthenticatedKurslarRoute
   '/kurslarim': typeof AuthenticatedKurslarimRoute
   '/ogrenciler': typeof AuthenticatedOgrencilerRoute
   '/ogretmenler': typeof AuthenticatedOgretmenlerRoute
@@ -170,7 +191,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/egitmenler': typeof EgitmenlerRoute
   '/hakkimizda': typeof HakkimizdaRoute
+  '/kategoriler': typeof KategorilerRoute
+  '/kurslar': typeof KurslarRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -179,8 +203,8 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/duyurular': typeof AuthenticatedDuyurularRoute
   '/istekler': typeof AuthenticatedIsteklerRoute
+  '/katalog': typeof AuthenticatedKatalogRoute
   '/kayitlar': typeof AuthenticatedKayitlarRoute
-  '/kurslar': typeof AuthenticatedKurslarRoute
   '/kurslarim': typeof AuthenticatedKurslarimRoute
   '/ogrenciler': typeof AuthenticatedOgrencilerRoute
   '/ogretmenler': typeof AuthenticatedOgretmenlerRoute
@@ -195,7 +219,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/egitmenler': typeof EgitmenlerRoute
   '/hakkimizda': typeof HakkimizdaRoute
+  '/kategoriler': typeof KategorilerRoute
+  '/kurslar': typeof KurslarRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -204,8 +231,8 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/duyurular': typeof AuthenticatedDuyurularRoute
   '/_authenticated/istekler': typeof AuthenticatedIsteklerRoute
+  '/_authenticated/katalog': typeof AuthenticatedKatalogRoute
   '/_authenticated/kayitlar': typeof AuthenticatedKayitlarRoute
-  '/_authenticated/kurslar': typeof AuthenticatedKurslarRoute
   '/_authenticated/kurslarim': typeof AuthenticatedKurslarimRoute
   '/_authenticated/ogrenciler': typeof AuthenticatedOgrencilerRoute
   '/_authenticated/ogretmenler': typeof AuthenticatedOgretmenlerRoute
@@ -220,7 +247,10 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/egitmenler'
     | '/hakkimizda'
+    | '/kategoriler'
+    | '/kurslar'
     | '/login'
     | '/register'
     | '/sitemap.xml'
@@ -229,8 +259,8 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/duyurular'
     | '/istekler'
+    | '/katalog'
     | '/kayitlar'
-    | '/kurslar'
     | '/kurslarim'
     | '/ogrenciler'
     | '/ogretmenler'
@@ -243,7 +273,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/egitmenler'
     | '/hakkimizda'
+    | '/kategoriler'
+    | '/kurslar'
     | '/login'
     | '/register'
     | '/sitemap.xml'
@@ -252,8 +285,8 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/duyurular'
     | '/istekler'
+    | '/katalog'
     | '/kayitlar'
-    | '/kurslar'
     | '/kurslarim'
     | '/ogrenciler'
     | '/ogretmenler'
@@ -267,7 +300,10 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/egitmenler'
     | '/hakkimizda'
+    | '/kategoriler'
+    | '/kurslar'
     | '/login'
     | '/register'
     | '/sitemap.xml'
@@ -276,8 +312,8 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/duyurular'
     | '/_authenticated/istekler'
+    | '/_authenticated/katalog'
     | '/_authenticated/kayitlar'
-    | '/_authenticated/kurslar'
     | '/_authenticated/kurslarim'
     | '/_authenticated/ogrenciler'
     | '/_authenticated/ogretmenler'
@@ -292,7 +328,10 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  EgitmenlerRoute: typeof EgitmenlerRoute
   HakkimizdaRoute: typeof HakkimizdaRoute
+  KategorilerRoute: typeof KategorilerRoute
+  KurslarRoute: typeof KurslarRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -321,11 +360,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kurslar': {
+      id: '/kurslar'
+      path: '/kurslar'
+      fullPath: '/kurslar'
+      preLoaderRoute: typeof KurslarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kategoriler': {
+      id: '/kategoriler'
+      path: '/kategoriler'
+      fullPath: '/kategoriler'
+      preLoaderRoute: typeof KategorilerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/hakkimizda': {
       id: '/hakkimizda'
       path: '/hakkimizda'
       fullPath: '/hakkimizda'
       preLoaderRoute: typeof HakkimizdaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/egitmenler': {
+      id: '/egitmenler'
+      path: '/egitmenler'
+      fullPath: '/egitmenler'
+      preLoaderRoute: typeof EgitmenlerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -398,18 +458,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedKurslarimRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/kurslar': {
-      id: '/_authenticated/kurslar'
-      path: '/kurslar'
-      fullPath: '/kurslar'
-      preLoaderRoute: typeof AuthenticatedKurslarRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/kayitlar': {
       id: '/_authenticated/kayitlar'
       path: '/kayitlar'
       fullPath: '/kayitlar'
       preLoaderRoute: typeof AuthenticatedKayitlarRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/katalog': {
+      id: '/_authenticated/katalog'
+      path: '/katalog'
+      fullPath: '/katalog'
+      preLoaderRoute: typeof AuthenticatedKatalogRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/istekler': {
@@ -463,8 +523,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDuyurularRoute: typeof AuthenticatedDuyurularRoute
   AuthenticatedIsteklerRoute: typeof AuthenticatedIsteklerRoute
+  AuthenticatedKatalogRoute: typeof AuthenticatedKatalogRoute
   AuthenticatedKayitlarRoute: typeof AuthenticatedKayitlarRoute
-  AuthenticatedKurslarRoute: typeof AuthenticatedKurslarRoute
   AuthenticatedKurslarimRoute: typeof AuthenticatedKurslarimRoute
   AuthenticatedOgrencilerRoute: typeof AuthenticatedOgrencilerRoute
   AuthenticatedOgretmenlerRoute: typeof AuthenticatedOgretmenlerRoute
@@ -482,8 +542,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDuyurularRoute: AuthenticatedDuyurularRoute,
   AuthenticatedIsteklerRoute: AuthenticatedIsteklerRoute,
+  AuthenticatedKatalogRoute: AuthenticatedKatalogRoute,
   AuthenticatedKayitlarRoute: AuthenticatedKayitlarRoute,
-  AuthenticatedKurslarRoute: AuthenticatedKurslarRoute,
   AuthenticatedKurslarimRoute: AuthenticatedKurslarimRoute,
   AuthenticatedOgrencilerRoute: AuthenticatedOgrencilerRoute,
   AuthenticatedOgretmenlerRoute: AuthenticatedOgretmenlerRoute,
@@ -502,7 +562,10 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  EgitmenlerRoute: EgitmenlerRoute,
   HakkimizdaRoute: HakkimizdaRoute,
+  KategorilerRoute: KategorilerRoute,
+  KurslarRoute: KurslarRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

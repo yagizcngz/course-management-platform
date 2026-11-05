@@ -19,7 +19,7 @@ import {
 
 import { parseJwt, isAdminRole, isStudentRole, isTeacherRole } from "@/lib/auth";
 import { API_BASE } from "@/components/courseHelpers";
-export const Route = createFileRoute("/_authenticated/kurslar")({
+export const Route = createFileRoute("/_authenticated/katalog")({
   component: CoursesPage,
   validateSearch: (search: Record<string, unknown>) => ({
     category: (search.category as string) || "",
@@ -396,7 +396,7 @@ function CoursesPage() {
     const newCat = cat === selectedCategory ? "" : cat;
     setSelectedCategory(newCat);
     navigate({
-      to: "/kurslar",
+      to: "/katalog",
       search: { category: newCat || "" },
       replace: true,
     });

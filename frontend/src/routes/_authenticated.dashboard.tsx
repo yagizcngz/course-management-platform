@@ -388,7 +388,7 @@ function HomePage() {
                             : group.category}
                         </h3>
                         <Link
-                          to="/kurslar"
+                          to="/katalog"
                           search={{ category: group.category }}
                           className="text-xs font-mono text-accent hover:underline transition-all"
                         >

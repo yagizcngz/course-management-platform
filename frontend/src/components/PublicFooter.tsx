@@ -19,9 +19,9 @@ export function PublicFooter() {
         </div>
 
         <FooterColumn title={t("footer.explore")}>
-          {PUBLIC_LINKS.filter((l) => l.hash).map((l) => (
+          {PUBLIC_LINKS.filter((l) => l.key !== "about").map((l) => (
             <li key={l.key}>
-              <Link to={l.to} hash={l.hash} className={linkClass}>
+              <Link to={l.to} className={linkClass}>
                 {t(`publicNav.${l.key}`)}
               </Link>
             </li>
@@ -40,7 +40,7 @@ export function PublicFooter() {
             </Link>
           </li>
           <li>
-            <Link to="/hakkimizda" hash="faculty" className={linkClass}>
+            <Link to="/egitmenler" className={linkClass}>
               {t("footer.faculty")}
             </Link>
           </li>

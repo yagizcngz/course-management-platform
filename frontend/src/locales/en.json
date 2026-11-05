@@ -901,8 +901,6 @@
       "catalogCount_one": "{{count}} course in the catalogue",
       "catalogCount_other": "{{count}} courses in the catalogue",
       "removeCategory": "Remove the {{name}} filter",
-      "allCourses": "All courses",
-      "showPopular": "Back to most popular",
       "noCourses": "No courses to show right now.",
       "peakAria": "{{name}}, {{count}} courses — filter by this category",
       "contents": "Contents",
@@ -933,8 +931,15 @@
       "teacherOf": "{{branch}} teacher",
       "teacherCount_one": "{{count}} teacher",
       "teacherCount_other": "{{count}} teachers",
-      "showAllTeachers": "Show all {{count}} instructors",
-      "showFewerTeachers": "Show fewer"
+      "bookTop": "Top {{count}} featured courses",
+      "bookMatches_one": "First {{count}} of {{total}} matches",
+      "bookMatches_other": "First {{count}} of {{total}} matches",
+      "fullCatalog": "Full catalogue",
+      "openInCatalog": "Open in the catalogue",
+      "allCategoriesLink_one": "Explore the discipline",
+      "allCategoriesLink_other": "Explore all {{count}} disciplines",
+      "allTeachersLink_one": "Meet our instructor",
+      "allTeachersLink_other": "Meet all {{count}} instructors"
     },
     "help": {
       "title": "Help",
@@ -1047,7 +1052,8 @@
       "courses": "Courses",
       "categories": "Categories",
       "teachers": "Instructors",
-      "about": "About"
+      "about": "About",
+      "dashboard": "My dashboard"
     },
     "footer": {
       "tagline": "Video courses from instructors who work in their field. Read the full syllabus before you buy, pay from your wallet, and get a refund within 7 days.",
@@ -1101,13 +1107,66 @@
         }
       },
       "guaranteeNote": "Instructors receive a share of every sale (70% by default), so your purchase directly supports the people who teach you.",
-      "disciplinesTitle": "Disciplines",
-      "disciplinesDesc": "From mathematics and software to film and philosophy, each discipline is taught by specialists in that field.",
-      "facultyTitle": "Our faculty",
-      "facultyDesc": "A few of the instructors behind the catalogue. Every profile lists their background and the courses they teach.",
-      "facultyAll": "Meet all instructors",
       "ctaTitle": "Read a syllabus. Start when it feels right.",
-      "ctaBrowse": "Browse courses"
+      "ctaBrowse": "Browse courses",
+      "ctaFaculty": "Meet the instructors"
+    },
+    "catalog": {
+      "eyebrow": "Catalogue",
+      "title": "Every course, *one* shelf.",
+      "lead": "Search by title, topic, lesson or instructor, then narrow by discipline, level and price. Every course shows its full syllabus before you buy.",
+      "categoryFilter": "Filter by discipline",
+      "allCategories": "All",
+      "level": "Level",
+      "allLevels": "All levels",
+      "levels": {
+        "Beginner": "Beginner",
+        "Intermediate": "Intermediate",
+        "Advanced": "Advanced"
+      },
+      "price": "Price",
+      "anyPrice": "Any price",
+      "prices": {
+        "under500": "Under ₺500",
+        "500to1000": "₺500 – ₺1,000",
+        "over1000": "Over ₺1,000"
+      },
+      "sort": "Sort",
+      "sorts": {
+        "popular": "Most popular",
+        "newest": "Newest",
+        "priceAsc": "Price: low to high",
+        "priceDesc": "Price: high to low",
+        "title": "Title A–Z"
+      },
+      "view": "Layout",
+      "viewGrid": "Card view",
+      "viewIndex": "Index view",
+      "clearFilters": "Clear filters",
+      "empty": "No course fits these filters. Try another level or price, or clear the search."
+    },
+    "directory": {
+      "eyebrow": "Disciplines",
+      "title": "Where would you like to *begin*?",
+      "lead": "Each discipline with what it covers, how deep its courses go and who teaches them. Pick one to open its courses in the catalogue.",
+      "jump": "Jump to a discipline",
+      "sample": "From the shelf",
+      "seeCourses_one": "See the course",
+      "seeCourses_other": "See all {{count}} courses"
+    },
+    "faculty": {
+      "eyebrow": "Faculty",
+      "title": "The people who *teach*.",
+      "lead": "Engineers, researchers, artists and teachers. Read their background, then open any of their courses.",
+      "searchPlaceholder": "Search by name, field or biography",
+      "branchFilter": "Filter by discipline",
+      "allBranches": "All disciplines",
+      "empty": "No instructor matches this search.",
+      "more": "Read more",
+      "less": "Show less",
+      "moreCourses_one": "+{{count}} more course",
+      "moreCourses_other": "+{{count}} more courses",
+      "fewerCourses": "Show fewer"
     }
   }
 }

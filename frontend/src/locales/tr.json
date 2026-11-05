@@ -845,8 +845,6 @@
       "noMatch": "Eşleşen kurs yok",
       "catalogCount": "Katalogda {{count}} kurs",
       "removeCategory": "{{name}} filtresini kaldır",
-      "allCourses": "Tüm kurslar",
-      "showPopular": "En çok seçilenlere dön",
       "noCourses": "Şu an gösterilecek kurs yok.",
       "peakAria": "{{name}}, {{count}} kurs — bu kategoriye göre filtrele",
       "contents": "İçindekiler",
@@ -875,8 +873,12 @@
       "teacherCourses": "Verdiği kurslar",
       "teacherOf": "{{branch}} eğitmeni",
       "teacherCount": "{{count}} eğitmen",
-      "showAllTeachers": "{{count}} eğitmenin tümünü göster",
-      "showFewerTeachers": "Daha az göster"
+      "bookTop": "Öne çıkan {{count}} kurs",
+      "bookMatches": "{{total}} sonuçtan ilk {{count}}",
+      "fullCatalog": "Tüm katalog",
+      "openInCatalog": "Katalogda aç",
+      "allCategoriesLink": "{{count}} alanın tamamını keşfedin",
+      "allTeachersLink": "{{count}} eğitmenin tamamıyla tanışın"
     },
     "help": {
       "title": "Yardım",
@@ -989,7 +991,8 @@
       "courses": "Kurslar",
       "categories": "Kategoriler",
       "teachers": "Eğitmenler",
-      "about": "Hakkımızda"
+      "about": "Hakkımızda",
+      "dashboard": "Panelim"
     },
     "footer": {
       "tagline": "İşini yapan eğitmenlerden video kurslar. Satın almadan önce müfredatın tamamını okuyun, cüzdanınızdan ödeyin, 7 gün içinde iade alın.",
@@ -1043,13 +1046,64 @@
         }
       },
       "guaranteeNote": "Eğitmenler her satıştan pay alır (varsayılan %70); yani satın alımınız size ders veren kişiyi doğrudan destekler.",
-      "disciplinesTitle": "Disiplinler",
-      "disciplinesDesc": "Matematik ve yazılımdan sinema ve felsefeye, her disiplini o alanın uzmanları anlatır.",
-      "facultyTitle": "Eğitmen kadromuz",
-      "facultyDesc": "Kataloğun arkasındaki eğitmenlerden birkaçı. Her profilde eğitmenin geçmişi ve verdiği kurslar yer alır.",
-      "facultyAll": "Tüm eğitmenlerle tanışın",
       "ctaTitle": "Bir müfredat okuyun. Hazır hissettiğinizde başlayın.",
-      "ctaBrowse": "Kurslara göz atın"
+      "ctaBrowse": "Kurslara göz atın",
+      "ctaFaculty": "Eğitmenlerle tanışın"
+    },
+    "catalog": {
+      "eyebrow": "Katalog",
+      "title": "Bütün kurslar, *tek* rafta.",
+      "lead": "Başlığa, konuya, derse ya da eğitmene göre arayın; sonra alana, seviyeye ve fiyata göre daraltın. Her kursun müfredatının tamamı satın almadan önce açık.",
+      "categoryFilter": "Alana göre süz",
+      "allCategories": "Tümü",
+      "level": "Seviye",
+      "allLevels": "Tüm seviyeler",
+      "levels": {
+        "Beginner": "Başlangıç",
+        "Intermediate": "Orta",
+        "Advanced": "İleri"
+      },
+      "price": "Fiyat",
+      "anyPrice": "Tüm fiyatlar",
+      "prices": {
+        "under500": "₺500 altı",
+        "500to1000": "₺500 – ₺1.000",
+        "over1000": "₺1.000 üzeri"
+      },
+      "sort": "Sırala",
+      "sorts": {
+        "popular": "En popüler",
+        "newest": "En yeni",
+        "priceAsc": "Fiyat: artan",
+        "priceDesc": "Fiyat: azalan",
+        "title": "Ada göre (A–Z)"
+      },
+      "view": "Görünüm",
+      "viewGrid": "Kart görünümü",
+      "viewIndex": "Liste görünümü",
+      "clearFilters": "Süzgeçleri temizle",
+      "empty": "Bu süzgeçlere uyan kurs yok. Başka bir seviye ya da fiyat deneyin veya aramayı temizleyin."
+    },
+    "directory": {
+      "eyebrow": "Alanlar",
+      "title": "Nereden *başlamak* istersiniz?",
+      "lead": "Her alanın neleri kapsadığı, kurslarının ne kadar derine indiği ve kimlerin ders verdiği. Birini seçin, kursları katalogda açılsın.",
+      "jump": "Bir alana atla",
+      "sample": "Raftan",
+      "seeCourses": "{{count}} kursun tamamını görün"
+    },
+    "faculty": {
+      "eyebrow": "Eğitmenler",
+      "title": "Ders veren *insanlar*.",
+      "lead": "Mühendisler, araştırmacılar, sanatçılar ve öğretmenler. Geçmişlerini okuyun, sonra kurslarından birini açın.",
+      "searchPlaceholder": "Ada, alana veya özgeçmişe göre arayın",
+      "branchFilter": "Alana göre süz",
+      "allBranches": "Tüm alanlar",
+      "empty": "Bu aramaya uyan eğitmen yok.",
+      "more": "Devamını oku",
+      "less": "Daha az göster",
+      "moreCourses": "+{{count}} kurs daha",
+      "fewerCourses": "Daha az göster"
     }
   }
 }

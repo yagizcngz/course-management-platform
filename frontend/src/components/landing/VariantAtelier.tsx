@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -25,6 +25,9 @@ import { groupByCategory, price } from "./catalog";
 
 const AUTO_TURN_MS = 7000;
 const FACULTY_PREVIEW = 9;
+const CATEGORY_PREVIEW = 8;
+// the book is a showcase, not the catalogue: a few spreads are enough and keep it light
+const BOOK_LIMIT = 10;
 
 const accent = (text: string) =>
   text
@@ -52,7 +55,8 @@ export function VariantAtelier(p: LandingProps) {
 function AtelierHero(p: LandingProps) {
   const { t } = useTranslation();
   const reduce = useReducedMotion();
-  const book = p.matches ?? p.courses ?? [];
+  // the ten most popular courses (the API sorts by enrolment), or the first ten matches
+  const book = (p.matches ?? p.courses ?? []).slice(0, BOOK_LIMIT);
   const bookKey = book.map((c) => c.id).join(",");
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -175,6 +179,27 @@ function AtelierHero(p: LandingProps) {
           onFocus={() => setPaused(true)}
           onBlur={() => setPaused(false)}
         >
+          <div className="mx-auto flex w-full max-w-lg items-baseline justify-between gap-4 border-b border-border pb-2">
+            <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-gold">
+              {p.matches
+                ? p.matches.length > BOOK_LIMIT
+                  ? t("guest.bookMatches", { count: book.length, total: p.matches.length })
+                  : t("guest.matchCount", { count: p.matches.length })
+                : t("guest.bookTop", { count: BOOK_LIMIT })}
+            </span>
+            <Link
+              to="/kurslar"
+              search={{ q: p.query.trim() || undefined, category: p.category ?? undefined }}
+              className="group inline-flex shrink-0 items-center gap-1.5 text-sm underline decoration-gold decoration-1 underline-offset-4 transition-colors hover:text-gold"
+            >
+              {t("guest.fullCatalog")}
+              {p.courses && ` (${p.courses.length})`}
+              <ArrowRight
+                aria-hidden="true"
+                className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+              />
+            </Link>
+          </div>
           <div className="relative h-[320px] sm:h-[420px] lg:h-[470px]">
             <BookScene
               pages={pages}
@@ -313,42 +338,72 @@ function AtelierCourses(p: LandingProps) {
         >
           {p.list.map((course, i) => (
             <StaggerItem key={course.id}>
-              <button
-                type="button"
-                onClick={() => p.onOpen(course)}
-                className="group flex h-full w-full flex-col text-left"
-              >
-                <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-                  <img
-                    src={getCourseImage(course as unknown as CourseData, i)}
-                    alt=""
-                    loading="lazy"
-                    className="h-full w-full object-cover grayscale-[35%] transition-[transform,filter] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04] group-hover:grayscale-0"
-                  />
-                </div>
-                <div className="mt-4 flex items-baseline justify-between gap-4 text-[11px] font-medium uppercase tracking-[0.14em]">
-                  <span className="truncate text-gold">
-                    {p.label("categories", course.category)}
-                  </span>
-                  <span className="shrink-0 text-sm normal-case tracking-normal tabular-nums">
-                    {price(course.price)}
-                  </span>
-                </div>
-                <h3 className="mt-2 line-clamp-2 font-serif text-2xl leading-tight decoration-gold decoration-1 underline-offset-4 group-hover:underline">
-                  {p.label("courses", course.title)}
-                </h3>
-                {course.description && (
-                  <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
-                    {course.description}
-                  </p>
-                )}
-                <CardInstructor course={course} teachers={p.teachers} />
-              </button>
+              <CourseCard
+                course={course}
+                index={i}
+                teachers={p.teachers}
+                label={p.label}
+                description={p.describe(course)}
+                onOpen={p.onOpen}
+              />
             </StaggerItem>
           ))}
         </Stagger>
       )}
     </section>
+  );
+}
+
+/** A course as a catalogue card: cover, category, price, title, summary and teacher. */
+export function CourseCard({
+  course,
+  index,
+  teachers,
+  label,
+  description,
+  onOpen,
+  meta,
+}: {
+  course: LandingCourse;
+  index: number;
+  teachers: TeacherLiteDto[];
+  label: LandingProps["label"];
+  description: string;
+  onOpen: (course: LandingCourse) => void;
+  /** Extra line under the category, such as the level. */
+  meta?: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(course)}
+      className="group flex h-full w-full flex-col text-left"
+    >
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+        <img
+          src={getCourseImage(course as unknown as CourseData, index)}
+          alt=""
+          loading="lazy"
+          className="h-full w-full object-cover grayscale-[35%] transition-[transform,filter] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04] group-hover:grayscale-0"
+        />
+      </div>
+      <div className="mt-4 flex items-baseline justify-between gap-4 text-[11px] font-medium uppercase tracking-[0.14em]">
+        <span className="truncate text-gold">{label("categories", course.category)}</span>
+        <span className="shrink-0 text-sm normal-case tracking-normal tabular-nums">
+          {price(course.price)}
+        </span>
+      </div>
+      {meta}
+      <h3 className="mt-2 line-clamp-2 font-serif text-2xl leading-tight decoration-gold decoration-1 underline-offset-4 group-hover:underline">
+        {label("courses", course.title)}
+      </h3>
+      {description && (
+        <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+          {description}
+        </p>
+      )}
+      <CardInstructor course={course} teachers={teachers} />
+    </button>
   );
 }
 
@@ -361,7 +416,7 @@ function teacherOf(course: LandingCourse, teachers: TeacherLiteDto[]) {
   return byId ?? teachers.find((t) => getTeacherFullName(t).toLowerCase() === name);
 }
 
-function Portrait({
+export function Portrait({
   teacher,
   name,
   className,
@@ -425,15 +480,17 @@ function CardInstructor({
   );
 }
 
-/** Every category as a ruled index: name, what it covers, how many courses and teachers. */
+/**
+ * The largest categories as a ruled index: name, what it covers, how many courses and
+ * teachers. Each opens the catalogue filtered to it; the full directory is /kategoriler.
+ */
 function AtelierCategories(p: LandingProps) {
   const { t } = useTranslation();
-  const groups = groupByCategory(p.courses ?? [], p.categories);
-  if (!groups.length) return null;
-  const pick = (name: string) => {
-    p.setCategory(name);
-    p.scrollToCourses();
-  };
+  const all = groupByCategory(p.courses ?? [], p.categories);
+  if (!all.length) return null;
+  const groups = [...all]
+    .sort((a, b) => b.courses.length - a.courses.length)
+    .slice(0, CATEGORY_PREVIEW);
   return (
     <section id="categories" className="scroll-mt-16 border-y border-border bg-card/40">
       <div className="mx-auto w-full max-w-7xl px-4 py-24 sm:px-6">
@@ -445,16 +502,14 @@ function AtelierCategories(p: LandingProps) {
         </Reveal>
         <ol className="grid gap-x-12 md:grid-cols-2">
           {groups.map((g, i) => {
-            const on = p.category === g.name;
             const teacherCount = p.teachers.filter((tc) =>
               getTeacherBranches(tc).some((b) => b.toLowerCase() === g.name.toLowerCase()),
             ).length;
             return (
               <li key={g.name} className="border-t border-border">
-                <button
-                  type="button"
-                  aria-pressed={on}
-                  onClick={() => pick(g.name)}
+                <Link
+                  to="/kurslar"
+                  search={{ category: g.name }}
                   className="group grid w-full grid-cols-[3rem_1fr] gap-x-4 py-6 text-left"
                 >
                   <span className="pt-2 font-mono text-xs tabular-nums text-gold">
@@ -462,9 +517,7 @@ function AtelierCategories(p: LandingProps) {
                   </span>
                   <span>
                     <span className="flex items-baseline justify-between gap-4">
-                      <span
-                        className={`font-serif text-3xl leading-tight decoration-gold decoration-1 underline-offset-4 group-hover:underline ${on ? "italic text-gold" : ""}`}
-                      >
+                      <span className="font-serif text-3xl leading-tight decoration-gold decoration-1 underline-offset-4 group-hover:underline">
                         {p.label("categories", g.name)}
                       </span>
                       <ArrowRight
@@ -480,27 +533,53 @@ function AtelierCategories(p: LandingProps) {
                       {teacherCount > 0 && ` · ${t("guest.teacherCount", { count: teacherCount })}`}
                     </span>
                   </span>
-                </button>
+                </Link>
               </li>
             );
           })}
         </ol>
+        <SeeAll to="/kategoriler">{t("guest.allCategoriesLink", { count: all.length })}</SeeAll>
       </div>
     </section>
   );
 }
 
-/** The teachers, each with a short biography and the courses they give. */
+/** Ruled "see all" link that closes a preview section and opens its full page. */
+function SeeAll({
+  to,
+  children,
+}: {
+  to: "/kurslar" | "/kategoriler" | "/egitmenler";
+  children: ReactNode;
+}) {
+  return (
+    <div className="mt-14 flex items-center gap-6">
+      <span aria-hidden="true" className="h-px flex-1 bg-border" />
+      <Link
+        to={to}
+        className="group inline-flex items-center gap-2 font-serif text-xl italic decoration-gold underline-offset-4 hover:underline"
+      >
+        {children}
+        <ArrowRight
+          aria-hidden="true"
+          className="h-4 w-4 text-gold transition-transform group-hover:translate-x-1"
+        />
+      </Link>
+      <span aria-hidden="true" className="h-px flex-1 bg-border" />
+    </div>
+  );
+}
+
+/** A few teachers with a short biography and their courses; all of them are on /egitmenler. */
 function AtelierTeachers(p: LandingProps) {
   const { t } = useTranslation();
   const byId = useMemo(() => new Map((p.courses ?? []).map((c) => [c.id, c])), [p.courses]);
   // teachers who give courses first; sort is stable, so the API's alphabetical order stays
-  const [all, setAll] = useState(false);
   const sorted = [...p.teachers].sort(
     (a, b) => Number(!!b.courses?.length) - Number(!!a.courses?.length),
   );
   if (!sorted.length) return null;
-  const list = all ? sorted : sorted.slice(0, FACULTY_PREVIEW);
+  const list = sorted.slice(0, FACULTY_PREVIEW);
   return (
     <section id="teachers" className="mx-auto w-full max-w-7xl scroll-mt-20 px-4 pb-24 sm:px-6">
       <Reveal className="mb-12 grid gap-6 border-b border-border pb-6 lg:grid-cols-[1fr_1.6fr] lg:items-end">
@@ -564,26 +643,7 @@ function AtelierTeachers(p: LandingProps) {
           );
         })}
       </Stagger>
-      {sorted.length > FACULTY_PREVIEW && (
-        <div className="mt-14 flex items-center gap-6">
-          <span aria-hidden="true" className="h-px flex-1 bg-border" />
-          <button
-            type="button"
-            aria-expanded={all}
-            onClick={() => setAll((v) => !v)}
-            className="group inline-flex items-center gap-2 font-serif text-xl italic decoration-gold underline-offset-4 hover:underline"
-          >
-            {all
-              ? t("guest.showFewerTeachers")
-              : t("guest.showAllTeachers", { count: sorted.length })}
-            <ArrowRight
-              aria-hidden="true"
-              className={`h-4 w-4 text-gold transition-transform ${all ? "-rotate-90" : "rotate-90"}`}
-            />
-          </button>
-          <span aria-hidden="true" className="h-px flex-1 bg-border" />
-        </div>
-      )}
+      <SeeAll to="/egitmenler">{t("guest.allTeachersLink", { count: sorted.length })}</SeeAll>
     </section>
   );
 }
