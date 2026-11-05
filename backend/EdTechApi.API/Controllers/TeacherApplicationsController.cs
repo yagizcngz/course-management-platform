@@ -76,6 +76,15 @@ namespace EdTechApi.API.Controllers
                 if (string.IsNullOrWhiteSpace(teacher.AboutMe)) teacher.AboutMe = app.AboutMe;
             }
 
+            // a hesap tek rollü: başvuru sırasında açılan öğrenci profili emekliye ayrılır ve hesaptan ayrılır,
+            // yoksa hesabı silmek (öğretmen silme User'ı da kaldırır) Students -> Users FK'sına takılır
+            foreach (var s in await _context.Students.IgnoreQueryFilters().Where(s => s.UserId == user.Id).ToListAsync())
+            {
+                s.UserId = null;
+                s.IsDeleted = true;
+                s.DeletedAt ??= DateTime.UtcNow;
+            }
+
             app.Status = "Approved";
             app.ReviewedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();

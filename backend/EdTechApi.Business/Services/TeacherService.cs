@@ -69,6 +69,9 @@ namespace EdTechApi.Business.Services
                         // FK constraint'e takılmamak için önce bağlantıyı kaldırıyoruz,
                         // sonra User'ı siliyoruz.
                         teacher.UserId = null;
+                        // aynı hesaba bağlı kalmış bir öğrenci profili (ör. eğitmenliğe geçmiş öğrenci) silmeyi engellemesin
+                        foreach (var s in await _context.Students.IgnoreQueryFilters().Where(s => s.UserId == user.Id).ToListAsync())
+                            s.UserId = null;
                         _context.Users.Remove(user);
                     }
                 }
