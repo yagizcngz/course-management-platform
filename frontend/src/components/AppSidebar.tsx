@@ -113,6 +113,23 @@ export function AppSidebar() {
         }
       }
 
+      // Token'dan türetilen varsayılan kullanıcı (profil alınamazsa)
+      const applyTokenFallback = () => {
+        const initials = currentName
+          .split(" ")
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((n) => n[0])
+          .join("")
+          .toUpperCase();
+        setCurrentUser({
+          name: currentName,
+          role: currentRole,
+          initials,
+          rawRole: currentRawRole,
+        });
+      };
+
       const loadProfileData = async () => {
         try {
           const res = await fetch(`${API_BASE}/api/profile/me`, {
@@ -142,21 +159,11 @@ export function AppSidebar() {
               photo: photo || undefined,
               rawRole: currentRawRole,
             });
+          } else {
+            applyTokenFallback();
           }
         } catch (err) {
-          const initials = currentName
-            .split(" ")
-            .filter(Boolean)
-            .slice(0, 2)
-            .map((n) => n[0])
-            .join("")
-            .toUpperCase();
-          setCurrentUser({
-            name: currentName,
-            role: currentRole,
-            initials,
-            rawRole: currentRawRole,
-          });
+          applyTokenFallback();
         }
       };
 
@@ -253,7 +260,7 @@ export function AppSidebar() {
     <>
       <Link to="/dashboard" className="flex items-center gap-2 px-5 py-5 border-b">
         <span className="font-serif text-2xl leading-none">
-          E-<span className="text-gold-shimmer italic">Kurs</span>
+          E-<span className="text-gold italic">Kurs</span>
         </span>
       </Link>
 

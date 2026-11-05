@@ -166,64 +166,6 @@
   }
 }
 
-/* Champagne gold text with a slow sheen, used for the accent word in headings. */
-/* stylelint-disable-next-line at-rule-no-unknown */
-@utility text-gold-shimmer {
-  background: linear-gradient(
-    100deg,
-    hsl(40 55% 38%) 15%,
-    hsl(43 70% 76%) 38%,
-    hsl(40 52% 47%) 58%,
-    hsl(40 55% 38%) 80%
-  );
-  background-size: 250% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: goldSheen 6s linear infinite;
-}
-
-@keyframes goldSheen {
-  to {
-    background-position: -250% 0;
-  }
-}
-
-@keyframes floatY {
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-/* stylelint-disable-next-line at-rule-no-unknown */
-@utility animate-float {
-  animation: floatY 6s ease-in-out infinite;
-}
-
-@keyframes marquee {
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-/* stylelint-disable-next-line at-rule-no-unknown */
-@utility animate-marquee {
-  animation: marquee 32s linear infinite;
-}
-
-/* Hover lift for interactive cards. */
-/* stylelint-disable-next-line at-rule-no-unknown */
-@utility card-hover {
-  transition-property: transform, box-shadow, border-color;
-  transition-duration: 400ms;
-  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lift);
-    border-color: color-mix(in srgb, var(--gold) 45%, var(--border));
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -233,14 +175,4 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-}
-
-.dark .text-gold-shimmer {
-  background-image: linear-gradient(
-    100deg,
-    hsl(42 60% 62%) 15%,
-    hsl(45 80% 88%) 38%,
-    hsl(42 60% 66%) 58%,
-    hsl(42 60% 62%) 80%
-  );
 }

@@ -3,6 +3,10 @@ import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
+// The server cannot know the visitor's motion preference, so `initial` must be the same on
+// both sides (branching it on useReducedMotion broke hydration). Reduced motion instead
+// gets an instant transition.
+const INSTANT = { duration: 0 } as const;
 
 /** Fades and lifts its content into place the first time it scrolls into view. */
 export function Reveal({
@@ -18,10 +22,10 @@ export function Reveal({
   return (
     <motion.div
       className={className}
-      initial={reduce ? false : { opacity: 0, y: 18, filter: "blur(6px)" }}
+      initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
       whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       viewport={{ once: true, amount: 0.15 }}
-      transition={{ duration: 0.8, ease: EASE, delay }}
+      transition={reduce ? INSTANT : { duration: 0.8, ease: EASE, delay }}
     >
       {children}
     </motion.div>
@@ -34,10 +38,10 @@ export function Stagger({ children, className }: { children: ReactNode; classNam
   return (
     <motion.div
       className={className}
-      initial={reduce ? false : "hidden"}
+      initial="hidden"
       whileInView="show"
       viewport={{ once: true, amount: 0.1 }}
-      variants={{ show: { transition: { staggerChildren: 0.07 } } }}
+      variants={{ show: { transition: reduce ? INSTANT : { staggerChildren: 0.07 } } }}
     >
       {children}
     </motion.div>
@@ -45,12 +49,13 @@ export function Stagger({ children, className }: { children: ReactNode; classNam
 }
 
 export function StaggerItem({ children, className }: { children: ReactNode; className?: string }) {
+  const reduce = useReducedMotion();
   return (
     <motion.div
       className={className}
       variants={{
         hidden: { opacity: 0, y: 16 },
-        show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE } },
+        show: { opacity: 1, y: 0, transition: reduce ? INSTANT : { duration: 0.7, ease: EASE } },
       }}
     >
       {children}
@@ -70,10 +75,10 @@ export function SplitHeadline({ text, className }: { text: string; className?: s
         return (
           <motion.span
             key={i}
-            className={accent ? "text-gold-shimmer inline-block italic" : "inline-block"}
-            initial={reduce ? false : { opacity: 0, y: 28, rotate: 2, filter: "blur(8px)" }}
+            className={accent ? "text-gold inline-block italic" : "inline-block"}
+            initial={{ opacity: 0, y: 28, rotate: 2, filter: "blur(8px)" }}
             animate={{ opacity: 1, y: 0, rotate: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.9, ease: EASE, delay: 0.1 + i * 0.07 }}
+            transition={reduce ? INSTANT : { duration: 0.9, ease: EASE, delay: 0.1 + i * 0.07 }}
           >
             {clean}
             {i < words.length - 1 ? " " : ""}
@@ -95,7 +100,7 @@ export function CountUp({
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true });
   const reduce = useReducedMotion();
-  const [shown, setShown] = useState(reduce ? value : 0);
+  const [shown, setShown] = useState(0); // same first render on server and client
 
   useEffect(() => {
     if (!inView) return;
