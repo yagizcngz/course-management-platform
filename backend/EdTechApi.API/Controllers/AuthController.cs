@@ -1,3 +1,4 @@
+using EdTechApi.API.Helpers;
 using Microsoft.AspNetCore.RateLimiting;
 using EdTechApi.DataAccess.Context;
 using EdTechApi.Core.Entities;
@@ -73,7 +74,7 @@ namespace EdTechApi.API.Controllers
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             // Admin olan yetkililer kullanıcı/öğretmen eklerken OTP'yi atlayabilir
-            bool isAdmin = User?.IsInRole("Admin") == true || User?.IsInRole("superadmin") == true;
+            bool isAdmin = User?.IsAdmin() == true;
 
             // E-posta OTP doğrulaması (Admin değilse zorunlu)
             if (!isAdmin)
@@ -180,14 +181,14 @@ namespace EdTechApi.API.Controllers
                         FirstName = request.FirstName,
                         LastName = request.LastName,
                         Email = request.Email, 
-                        CreatedAt = DateTime.Now,
+                        CreatedAt = DateTime.UtcNow,
                         UserId = newUser.Id 
                     };
 
                     await _context.Students.AddAsync(newStudent);
                     await _context.SaveChangesAsync();
 
-                    string yearPrefix = DateTime.Now.ToString("yy");
+                    string yearPrefix = DateTime.UtcNow.ToString("yy");
                     newStudent.StudentNumber = yearPrefix + newStudent.Id.ToString().PadLeft(7, '0');
                     await _context.SaveChangesAsync();
 
@@ -209,7 +210,7 @@ namespace EdTechApi.API.Controllers
                          FirstName = request.FirstName,
                          LastName = request.LastName,
                          Email = request.Email,
-                         CreatedAt = DateTime.Now,
+                         CreatedAt = DateTime.UtcNow,
                          UserId = newUser.Id,
                          // yalnızca yukarıda doğrulanan başvuru alanları kullanılır
                          Branch = request.ApplyAsTeacher ? branch : null,
@@ -218,7 +219,7 @@ namespace EdTechApi.API.Controllers
                      await _context.Teachers.AddAsync(newTeacher);
                      await _context.SaveChangesAsync();
 
-                     string teacherYearPrefix = DateTime.Now.ToString("yy");
+                     string teacherYearPrefix = DateTime.UtcNow.ToString("yy");
                      newTeacher.TeacherNumber = teacherYearPrefix + newTeacher.Id.ToString().PadLeft(7, '0');
                      await _context.SaveChangesAsync();
                 }
@@ -258,7 +259,7 @@ namespace EdTechApi.API.Controllers
 
             // kapatılmış hesabın parolası yoktur; doğrulamaya hiç girmez
             if (user == null || user.Role == EdTechApi.Business.Services.AccountRetirement.DeletedRole
-                || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
+                || !BCrypt.Net.BCrypt.Verify(request.Password ?? "", user.Password))
             {
                 _memoryCache.Set(lockKey, failures + 1, LoginLockout);
                 return Unauthorized("Geçersiz kullanıcı adı veya şifre.");
@@ -324,7 +325,7 @@ namespace EdTechApi.API.Controllers
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(180),
+                expires: DateTime.UtcNow.AddMinutes(180),
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

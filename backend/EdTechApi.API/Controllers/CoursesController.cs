@@ -78,7 +78,9 @@ namespace EdTechApi.API.Controllers
         public async Task<IActionResult> CreateCourse([FromBody] Course newCourse)
         {
             // Gövdeden gelen ilişki/sistem alanlarını yok say (over-posting)
-            newCourse.Id = 0; newCourse.Teacher = null; newCourse.IsDeleted = false;
+            newCourse.Id = 0; newCourse.Teacher = null; newCourse.IsDeleted = false; newCourse.DeletedAt = null;
+            newCourse.CreatedAt = DateTime.UtcNow;
+            if (!User.IsAdmin()) newCourse.IsFeatured = false; // öne çıkarma yönetici kararı
             newCourse.Enrollments = new List<Enrollment>();
 
             // Öğretmen yalnızca kendi adına kurs açabilir
@@ -188,7 +190,8 @@ namespace EdTechApi.API.Controllers
         // listedeki kanonik yazıma normalize eder (örn. "fen bilimleri" -> "Fen Bilimleri").
         private async Task<(bool IsValid, string? Error)> ValidateCategoryAndTeacherAsync(Course course)
         {
-            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Name.ToLower() == course.Category.ToLower());
+            var categoryName = (course.Category ?? "").ToLower();
+            var category = await _context.Categories.FirstOrDefaultAsync(c => c.Name.ToLower() == categoryName);
             if (category == null)
             {
                 var allCategories = await _context.Categories.Select(c => c.Name).ToListAsync();

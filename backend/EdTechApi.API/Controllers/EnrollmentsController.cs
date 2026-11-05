@@ -72,7 +72,7 @@ namespace EdTechApi.API.Controllers
                 await _enrollmentService.LeaveCourseAsync(student.Id, courseId);
                 return Ok(new { message = "Kurstan başarıyla ayrıldınız." });
             }
-            catch (System.Exception ex)
+            catch (ArgumentException ex) // beklenmeyen hatalar ExceptionMiddleware'e gider
             {
                 return BadRequest(ex.Message);
             }

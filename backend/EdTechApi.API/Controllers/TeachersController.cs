@@ -83,6 +83,9 @@ namespace EdTechApi.API.Controllers
             newTeacher.Courses = new List<Course>();
 
             await _teacherService.AddTeacherAsync(newTeacher);
+            // kayıt ve başvuru onayıyla aynı numara biçimi: yıl + 7 haneli kimlik
+            newTeacher.TeacherNumber = DateTime.UtcNow.ToString("yy") + newTeacher.Id.ToString().PadLeft(7, '0');
+            await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetById), new { id = newTeacher.Id }, newTeacher);
         }
 

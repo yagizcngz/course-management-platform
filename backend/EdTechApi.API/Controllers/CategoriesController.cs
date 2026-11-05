@@ -42,6 +42,7 @@ namespace EdTechApi.API.Controllers
             var exists = await _context.Categories.AnyAsync(c => c.Name.ToLower() == request.Name.ToLower());
             if (exists) return BadRequest("Bu kategori adı zaten mevcut.");
 
+            request.Id = 0; // kimlik veritabanında üretilir
             _context.Categories.Add(request);
             await _context.SaveChangesAsync();
 

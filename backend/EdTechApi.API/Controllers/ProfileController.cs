@@ -78,7 +78,7 @@ namespace EdTechApi.API.Controllers
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
             if (user == null) return NotFound();
-            if (user.Role == "Admin" || user.Role == "SuperAdmin" || user.Role == "superadmin")
+            if (user.Role.ToLowerInvariant() is "admin" or "superadmin")
                 return BadRequest("Yönetici hesapları buradan silinemez.");
 
             var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == user.Id);
@@ -217,7 +217,7 @@ namespace EdTechApi.API.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
             if (user == null) return NotFound("Kullanıcı bulunamadı.");
 
-            if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.Password))
+            if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword ?? "", user.Password))
             {
                 return BadRequest("Mevcut şifre hatalı.");
             }
