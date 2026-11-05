@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace EdTechApi.Core.Entities
 {
     public class Course
@@ -15,8 +17,11 @@ namespace EdTechApi.Core.Entities
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsFeatured { get; set; } = false;
         // Beginner, Intermediate, Advanced; boşsa "tüm seviyeler" sayılır
+        // sınırlı uzunluk: nvarchar(max) sütunlar kurs listesindeki sıralamanın bellek ihtiyacını büyütüyor
+        [MaxLength(20)]
         public string? Level { get; set; }
         // BranchOptions.SubCategories içinden, kategorisine ait bir alt kategori; boşsa "genel"
+        [MaxLength(100)]
         public string? SubCategory { get; set; }
 
         // --- YENİ EKLENEN SÜTUN ---

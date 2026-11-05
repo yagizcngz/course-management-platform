@@ -105,7 +105,8 @@ namespace EdTechApi.DataAccess.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Level")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<int>("MaxCapacity")
                         .HasColumnType("int");
@@ -114,7 +115,8 @@ namespace EdTechApi.DataAccess.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("SubCategory")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int?>("TeacherId")
                         .HasColumnType("int");
