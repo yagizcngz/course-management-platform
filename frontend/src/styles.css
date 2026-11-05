@@ -142,6 +142,24 @@
   * {
     border-color: var(--color-border);
   }
+  /* long names, e-mails and bios wrap inside their box instead of pushing the page sideways;
+     table cells only break-word so columns keep their natural width inside overflow-x-auto */
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  li,
+  dd,
+  dt,
+  label,
+  blockquote {
+    overflow-wrap: anywhere;
+  }
+  td,
+  th {
+    overflow-wrap: break-word;
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);

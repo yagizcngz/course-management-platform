@@ -570,7 +570,9 @@
       "subCategory": "Alt kategori",
       "selectSubCategory": "Alt kategori (isteğe bağlı)",
       "level": "Seviye",
-      "selectLevel": "Tüm seviyeler"
+      "selectLevel": "Tüm seviyeler",
+      "leaveConfirmTitle": "Kurstan ayrılmak istiyor musunuz?",
+      "leaveConfirmBody": "„{{course}}” kursundaki kaydınız kaldırılacak ve kurs Kurslarım listesinden çıkacak. Ders ilerlemeniz saklanır; satın aldığınız bir kursa daha sonra ücretsiz olarak yeniden katılabilirsiniz."
     },
     "students": {
       "breadcrumb": "/ öğrenciler",
@@ -854,7 +856,9 @@
       "walletBalances": "Cüzdan Bakiyeleri",
       "walletBalancesHint": "Tüm kullanıcıların harcanmamış bakiyesi",
       "topCourses": "En Çok Satan Kurslar",
-      "salesCount": "{{count}} satış"
+      "salesCount": "{{count}} satış",
+      "revenueTrendTitle": "Aylık Net Gelir",
+      "revenueTrendUnit": "Birim: satışlar − iadeler (₺)"
     },
     "requests": {
       "accepted": "Kabul Edildi",
@@ -897,7 +901,11 @@
       "applications": "Eğitmen Başvuruları",
       "noApplications": "Henüz eğitmen başvurusu yok.",
       "applicationApproved": "Başvuru onaylandı. Kullanıcı bir sonraki girişinde eğitmen olur.",
-      "applicationRejected": "Başvuru reddedildi."
+      "applicationRejected": "Başvuru reddedildi.",
+      "deleteConfirmTitle": "Seçili {{count}} istek silinsin mi?",
+      "deleteConfirmBody": "Silinen istekler listeden kalkar ve geri alınamaz.",
+      "cancelConfirmTitle": "Ders verme isteği geri alınsın mı?",
+      "cancelConfirmBody": "İstek yöneticinin onay listesinden kalkar. Dilerseniz daha sonra yeniden gönderebilirsiniz."
     },
     "backendErrors": {
       "emailInUse": "Bu e-posta adresi zaten kullanımda.",

@@ -14,6 +14,7 @@ import { Trash, Trash2, Edit2 } from "lucide-react";
 
 import { API_BASE } from "@/components/courseHelpers";
 import { adminOnly } from "@/hooks/useAdminGuard";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 export const Route = createFileRoute("/_authenticated/istekler")({
   component: adminOnly(RequestsPage),
 });
@@ -229,13 +230,17 @@ function RequestsPage() {
         action={
           <div className="flex gap-2">
             {isEditMode && totalSelected > 0 && (
-              <button
-                onClick={handleDeleteSelected}
-                className="flex items-center gap-2 bg-destructive text-white px-4 py-2 rounded-md text-xs font-bold hover:bg-destructive transition-colors animate-in fade-in"
+              <ConfirmDialog
+                title={t("requests.deleteConfirmTitle", { count: totalSelected })}
+                description={t("requests.deleteConfirmBody")}
+                confirmLabel={t("requests.deleteSelected", { count: totalSelected })}
+                onConfirm={handleDeleteSelected}
               >
-                <Trash2 className="size-4" />
-                {t("requests.deleteSelected", { count: totalSelected })}
-              </button>
+                <button className="flex items-center gap-2 bg-destructive text-white px-4 py-2 rounded-md text-xs font-bold hover:bg-destructive transition-colors animate-in fade-in">
+                  <Trash2 className="size-4" />
+                  {t("requests.deleteSelected", { count: totalSelected })}
+                </button>
+              </ConfirmDialog>
             )}
 
             <button

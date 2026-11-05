@@ -13,6 +13,16 @@ import {
   ListOrdered,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useEffect, useState } from "react";
 import { CourseTaxonomyFields } from "./CourseTaxonomyFields";
 import { useNavigate } from "@tanstack/react-router";
@@ -64,6 +74,7 @@ export function CourseDetailModal({
 }: CourseDetailModalProps) {
   const { t, i18n } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
+  const [leaveOpen, setLeaveOpen] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editCategory, setEditCategory] = useState("");
   const [editSubCategory, setEditSubCategory] = useState("");
@@ -231,7 +242,9 @@ export function CourseDetailModal({
   };
 
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    // Escape in a confirmation closes only the confirmation
+    const onKey = (e: KeyboardEvent) =>
+      e.key === "Escape" && !document.querySelector('[role="alertdialog"]') && onClose();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
@@ -607,7 +620,7 @@ export function CourseDetailModal({
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              onLeave();
+                              setLeaveOpen(true);
                             }}
                             className="flex w-full items-center gap-1.5 text-xs font-bold text-destructive rounded-md px-3 py-2 hover:bg-destructive/10 transition-colors"
                           >
@@ -615,6 +628,27 @@ export function CourseDetailModal({
                           </button>
                         </PopoverContent>
                       </Popover>
+                      <AlertDialog open={leaveOpen} onOpenChange={setLeaveOpen}>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              {t("courseModal.leaveConfirmTitle")}
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              {t("courseModal.leaveConfirmBody", { course: title })}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => onLeave()}
+                              className="bg-destructive text-white hover:bg-destructive/90"
+                            >
+                              {t("courseModal.leaveCourse")}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   )}
                 </div>
@@ -866,7 +900,7 @@ export function CourseDetailModal({
                   <BookOpen className="size-4" />
                   {t("courseModal.contentTitle")}
                 </h3>
-                <p className="text-sm text-muted-foreground leading-6">
+                <p className="text-sm text-muted-foreground leading-6 whitespace-pre-line break-words [overflow-wrap:anywhere]">
                   {description || t("courseModal.noDescription", { category })}
                 </p>
               </div>
@@ -896,10 +930,12 @@ export function CourseDetailModal({
                         <span className="pt-0.5 font-mono text-xs tabular-nums text-muted-foreground">
                           {String(i + 1).padStart(2, "0")}
                         </span>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-foreground">{l.title}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-foreground break-words [overflow-wrap:anywhere]">
+                            {l.title}
+                          </p>
                           {l.description && (
-                            <p className="mt-0.5 text-sm leading-6 text-muted-foreground">
+                            <p className="mt-0.5 text-sm leading-6 text-muted-foreground break-words [overflow-wrap:anywhere]">
                               {l.description}
                             </p>
                           )}
@@ -927,8 +963,8 @@ export function CourseDetailModal({
                       {instructorInitials}
                     </div>
                   )}
-                  <div className="min-w-0">
-                    <p className="font-bold">{instructor}</p>
+                  <div className="min-w-0 flex-1 overflow-hidden">
+                    <p className="font-bold break-words [overflow-wrap:anywhere]">{instructor}</p>
                     <p className="text-[11px] text-muted-foreground uppercase tracking-widest mb-2">
                       {instructorProfile?.branches.length
                         ? instructorProfile.branches
@@ -940,7 +976,7 @@ export function CourseDetailModal({
                             .join(" · ")
                         : t("courseModal.instructorRole")}
                     </p>
-                    <p className="text-sm text-muted-foreground leading-6 whitespace-pre-line">
+                    <p className="text-sm text-muted-foreground leading-6 whitespace-pre-line break-words [overflow-wrap:anywhere]">
                       {instructorProfile?.bio || t("courseModal.noInstructorBio")}
                     </p>
                     {!!instructorProfile?.courses.length && (

@@ -645,7 +645,9 @@
       "subCategory": "Sub-category",
       "selectSubCategory": "Sub-category (optional)",
       "level": "Level",
-      "selectLevel": "All levels"
+      "selectLevel": "All levels",
+      "leaveConfirmTitle": "Leave this course?",
+      "leaveConfirmBody": "Your enrolment in “{{course}}” will be removed and it will leave My Courses. Your lesson progress is kept, and you can rejoin a course you bought later at no cost."
     },
     "students": {
       "breadcrumb": "/ students",
@@ -929,7 +931,9 @@
       "walletBalances": "Wallet Balances",
       "walletBalancesHint": "Total unspent balance across all users",
       "topCourses": "Top Selling Courses",
-      "salesCount": "{{count}} sales"
+      "salesCount": "{{count}} sales",
+      "revenueTrendTitle": "Monthly Net Revenue",
+      "revenueTrendUnit": "Unit: sales − refunds (₺)"
     },
     "requests": {
       "accepted": "Accepted",
@@ -972,7 +976,11 @@
       "applications": "Instructor Applications",
       "noApplications": "No instructor applications yet.",
       "applicationApproved": "Application approved. The user becomes an instructor at their next sign-in.",
-      "applicationRejected": "Application rejected."
+      "applicationRejected": "Application rejected.",
+      "deleteConfirmTitle": "Delete {{count}} selected requests?",
+      "deleteConfirmBody": "Deleted requests leave the list and cannot be restored.",
+      "cancelConfirmTitle": "Withdraw this teaching request?",
+      "cancelConfirmBody": "The request leaves the admin approval list. You can send it again later."
     },
     "backendErrors": {
       "emailInUse": "This email address is already in use.",

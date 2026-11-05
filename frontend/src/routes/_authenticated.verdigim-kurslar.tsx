@@ -20,6 +20,7 @@ import { CourseDetailModal } from "@/components/CourseDetailModal";
 import { API_BASE } from "@/components/courseHelpers";
 import { CourseTaxonomyFields } from "@/components/CourseTaxonomyFields";
 import { teacherOnly } from "@/hooks/useAdminGuard";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 export const Route = createFileRoute("/_authenticated/verdigim-kurslar")({
   component: teacherOnly(TaughtCoursesPage),
 });
@@ -330,14 +331,20 @@ function TaughtCoursesPage() {
                               : t("requests.rejected", "Reddedildi")}
                         </Badge>
                         {(r.status === "Pending" || r.Status === "Pending") && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleCancelRequest(r.id)}
-                            className="text-xs h-7 px-2 border-destructive text-destructive hover:bg-destructive hover:text-white transition-colors"
+                          <ConfirmDialog
+                            title={t("requests.cancelConfirmTitle")}
+                            description={t("requests.cancelConfirmBody")}
+                            confirmLabel={t("requests.cancel")}
+                            onConfirm={() => handleCancelRequest(r.id)}
                           >
-                            {t("requests.cancel", "İsteği Geri Al")}
-                          </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-xs h-7 px-2 border-destructive text-destructive hover:bg-destructive hover:text-white transition-colors"
+                            >
+                              {t("requests.cancel")}
+                            </Button>
+                          </ConfirmDialog>
                         )}
                       </div>
                     </div>
