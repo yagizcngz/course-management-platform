@@ -27,6 +27,7 @@ namespace EdTechApi.DataAccess.Context
         public DbSet<WalletTransaction> WalletTransactions { get; set; }
         public DbSet<Lesson> Lessons { get; set; }
         public DbSet<TeacherApplication> TeacherApplications { get; set; }
+        public DbSet<LessonCompletion> LessonCompletions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -54,6 +55,10 @@ namespace EdTechApi.DataAccess.Context
                 .HasIndex(e => new { e.StudentId, e.CourseId })
                 .IsUnique()
                 .HasFilter("[IsDeleted] = 0");
+
+            // Bir ders öğrenci başına bir kez tamamlanır
+            modelBuilder.Entity<LessonCompletion>().HasIndex(c => new { c.StudentId, c.LessonId }).IsUnique();
+            modelBuilder.Entity<LessonCompletion>().HasOne<Student>().WithMany().HasForeignKey(c => c.StudentId);
 
             // 3. Course - Teacher ilişkisi (Course.TeacherId nullable FK):
             //    Bir öğretmen (hard-delete ile) silinirse buna bağlı kursların TeacherId'si

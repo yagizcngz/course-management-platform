@@ -1,3 +1,4 @@
+using EdTechApi.Business.Services;
 using EdTechApi.Core.Constants;
 using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
@@ -220,6 +221,81 @@ namespace EdTechApi.API.Helpers
             }
             db.SaveChanges();
             SeedWallet(db, students, courses, enrollments, refunded);
+            foreach (var st in students)
+                SeedProgress(db, st.Id, enrollments.Where(e => e.StudentId == st.Id && !e.IsDeleted).ToList(), new[] { 100, 75, 25, 100, 50 });
+            db.SaveChanges();
+        }
+
+        // Kayıtların bir kısmı bitmiş, kalanı %25-75 ilerlemiş olur (en eski kayıt ilk yüzdeyi alır). Öğrencinin hiç
+        // tamamladığı ders yoksa yazılır; gerçek ilerleme ezilmez.
+        private static void SeedProgress(AppDbContext db, int studentId, List<Enrollment> active, int[] percents)
+        {
+            if (active.Count == 0 || db.LessonCompletions.Any(c => c.StudentId == studentId)) return;
+            var courseIds = active.Select(e => e.CourseId).ToList();
+            var lessons = db.Lessons.Where(l => courseIds.Contains(l.CourseId)).OrderBy(l => l.Order).ThenBy(l => l.Id).ToList();
+            var now = DateTime.UtcNow;
+            var ordered = active.OrderBy(e => e.EnrollmentDate).ToList();
+            for (var k = 0; k < ordered.Count; k++)
+            {
+                var e = ordered[k];
+                var own = lessons.Where(l => l.CourseId == e.CourseId).ToList();
+                var count = own.Count * percents[k % percents.Length] / 100;
+                var hours = Math.Max(1, (now - e.EnrollmentDate).TotalHours);
+                for (var n = 0; n < count; n++)
+                    db.LessonCompletions.Add(new LessonCompletion
+                    {
+                        StudentId = studentId, LessonId = own[n].Id, CompletedAt = e.EnrollmentDate.AddHours(hours * (n + 1) / (count + 1))
+                    });
+                e.Status = own.Count > 0 && count == own.Count ? EnrollmentService.Completed : EnrollmentService.InProgress;
+            }
+        }
+
+        /// <summary>
+        /// Demo hesaplar ilk girişte dolu görünsün: demo_student 2-5 kursa kayıtlı (bir kısmı bitmiş, satın almaları
+        /// cüzdanda), demo_teacher kendi branşında kurs veriyor. Rozetler bu verilerden hesaplanır.
+        /// </summary>
+        public static void SeedDemoLearning(AppDbContext db)
+        {
+            var teacher = db.Teachers.Include(t => t.Courses).FirstOrDefault(t => t.User != null && t.User.Username == "demo_teacher");
+            if (teacher != null && teacher.Courses.Count == 0)
+            {
+                var branches = Branches(teacher);
+                foreach (var c in db.Courses.Where(c => branches.Contains(c.Category)).OrderBy(c => c.Id).Take(3).ToList())
+                {
+                    c.TeacherId = teacher.Id;
+                    c.Instructor = FullName(teacher);
+                }
+                db.SaveChanges();
+            }
+
+            var student = db.Students.FirstOrDefault(s => s.User != null && s.User.Username == "demo_student");
+            if (student == null) return;
+            var now = DateTime.UtcNow;
+            var active = db.Enrollments.Where(e => e.StudentId == student.Id).OrderByDescending(e => e.EnrollmentDate).ToList();
+            // en fazla 5 kurs: fazlası kurstan ayrılmış sayılır; satın alması durduğu için tekrar ücretsiz katılabilir
+            foreach (var e in active.Skip(5)) { e.IsDeleted = true; e.DeletedAt = now; }
+            active = active.Take(5).ToList();
+
+            var courses = db.Courses.ToList();
+            if (active.Count < 2)
+            {
+                var ever = db.Enrollments.IgnoreQueryFilters().Where(e => e.StudentId == student.Id).Select(e => e.CourseId).ToList();
+                var pool = courses.Where(c => c.Price > 0 && c.TeacherId != teacher?.Id && !ever.Contains(c.Id)).OrderBy(c => c.Id)
+                    .GroupBy(c => c.Category).OrderByDescending(g => g.Count()).ToList();
+                // bir alanda üç kurs (uzmanlık rozetine yakın), iki farklı alanda birer kurs
+                var picks = pool.Take(1).SelectMany(g => g.Take(3)).Concat(pool.Skip(1).Take(2).Select(g => g.First()))
+                    .Take(5 - active.Count).ToList();
+                for (var k = 0; k < picks.Count; k++)
+                {
+                    var e = new Enrollment { StudentId = student.Id, CourseId = picks[k].Id, EnrollmentDate = now.AddDays(-(150 - k * 30)) };
+                    db.Enrollments.Add(e);
+                    active.Add(e);
+                }
+                db.SaveChanges();
+            }
+            SeedWallet(db, new List<Student> { student }, courses, active, new());
+            SeedProgress(db, student.Id, active, new[] { 100, 100, 50, 75, 25 });
+            db.SaveChanges();
         }
 
         // Bir öğrencinin seed kursları: katalog sırasına göre deterministik ve tekrarsız

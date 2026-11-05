@@ -1,4 +1,5 @@
 using EdTechApi.API.Helpers;
+using EdTechApi.Business.Interfaces;
 using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
 using Microsoft.AspNetCore.Authorization;
@@ -15,12 +16,14 @@ namespace EdTechApi.API.Controllers
         private readonly AppDbContext _context;
         private readonly IConfiguration _config;
         private readonly IWebHostEnvironment _env;
+        private readonly IEnrollmentService _enrollments;
 
-        public LessonsController(AppDbContext context, IConfiguration config, IWebHostEnvironment env)
+        public LessonsController(AppDbContext context, IConfiguration config, IWebHostEnvironment env, IEnrollmentService enrollments)
         {
             _context = context;
             _config = config;
             _env = env;
+            _enrollments = enrollments;
         }
 
         // İmzalı video akışı; <video> etiketi Authorization başlığı gönderemediği için imza ile korunur.
@@ -58,7 +61,8 @@ namespace EdTechApi.API.Controllers
             if (course == null) return NotFound("Kurs bulunamadı.");
 
             var canEdit = await CanEditAsync(course);
-            var hasAccess = canEdit || await IsEnrolledAsync(courseId);
+            var studentId = await EnrolledStudentIdAsync(courseId);
+            var hasAccess = canEdit || studentId != null;
             var key = _config["Jwt:Key"]!;
             var lessons = (await _context.Lessons
                 .Where(l => l.CourseId == courseId)
@@ -72,10 +76,17 @@ namespace EdTechApi.API.Controllers
                     // Düzenleme formu için saklanan ham değer
                     StoredVideoUrl = canEdit ? l.VideoUrl : null
                 });
+            // ilerleme yalnızca kayıtlı öğrenciye döner
+            var completed = studentId == null ? new List<int>() : await _context.LessonCompletions
+                .Where(c => c.StudentId == studentId && c.Lesson!.CourseId == courseId).Select(c => c.LessonId).ToListAsync();
+            var progress = studentId == null ? null : (await _enrollments.GetProgressAsync(studentId.Value, new[] { courseId }))[courseId];
             return Ok(new
             {
                 hasAccess,
                 canEdit,
+                isEnrolled = studentId != null,
+                completedLessonIds = completed,
+                progressPercent = progress?.Percent ?? 0,
                 course = new { course.Id, course.Title, course.Description, course.Instructor, course.ImageUrl, course.Price, course.Category },
                 lessons
             });
@@ -101,6 +112,23 @@ namespace EdTechApi.API.Controllers
             _context.Lessons.Add(lesson);
             await _context.SaveChangesAsync();
             return Ok(new { lesson.Id, lesson.Title, lesson.Description, lesson.VideoUrl, lesson.Order });
+        }
+
+        // Kayıtlı öğrenci dersi bitirdi (düğmeyle veya video sonunda); ilerleme döner
+        [HttpPost("{id}/complete")]
+        public async Task<IActionResult> Complete(int courseId, int id)
+        {
+            var studentId = await EnrolledStudentIdAsync(courseId);
+            if (studentId == null) return StatusCode(403, "Bu kursa kayıtlı değilsiniz.");
+            try
+            {
+                var p = await _enrollments.CompleteLessonAsync(studentId.Value, courseId, id);
+                return Ok(new { completedLessons = p.Done, totalLessons = p.Total, progressPercent = p.Percent, completed = p.IsComplete });
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpPut("{id}")]
@@ -144,11 +172,14 @@ namespace EdTechApi.API.Controllers
             return await _context.Users.AnyAsync(u => u.Id == teacherUserId && u.Username == username);
         }
 
-        private async Task<bool> IsEnrolledAsync(int courseId)
+        // Kursa etkin kaydı olan öğrenci profili; yoksa null
+        private async Task<int?> EnrolledStudentIdAsync(int courseId)
         {
             var username = User.GetUsername();
-            if (username == null) return false;
-            return await _context.Enrollments.AnyAsync(e => e.CourseId == courseId && e.Student.User != null && e.Student.User.Username == username);
+            if (username == null) return null;
+            return await _context.Enrollments
+                .Where(e => e.CourseId == courseId && e.Student.User != null && e.Student.User.Username == username)
+                .Select(e => (int?)e.StudentId).FirstOrDefaultAsync();
         }
     }
 }

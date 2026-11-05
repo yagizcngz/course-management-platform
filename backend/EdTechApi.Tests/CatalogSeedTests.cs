@@ -1,8 +1,11 @@
 using EdTechApi.API.Helpers;
+using EdTechApi.Business.Services;
 using EdTechApi.Core.Constants;
+using EdTechApi.Core.DTOs;
 using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 
 namespace EdTechApi.Tests
@@ -109,6 +112,59 @@ namespace EdTechApi.Tests
             }
             Assert.All(_db.Teachers.Where(t => t.Email.EndsWith("@edtech.example")).ToList(),
                 t => Assert.True(t.CreatedAt < DateTime.UtcNow.AddDays(-250)));
+        }
+
+        [Fact]
+        public async Task Completing_every_lesson_marks_the_enrollment_completed()
+        {
+            CatalogSeed.SeedCategories(_db);
+            CatalogSeed.SeedCatalog(_db);
+            // seed ilerlemesi: bitmiş ve devam eden kayıtlar birlikte var
+            Assert.Contains(_db.Enrollments, e => e.Status == EnrollmentService.Completed);
+            Assert.Contains(_db.Enrollments, e => e.Status == EnrollmentService.InProgress);
+
+            var service = new EnrollmentService(_db);
+            var student = new Student { FirstName = "Yeni", LastName = "Öğrenci", Email = "yeni@test", StudentNumber = "x1" };
+            _db.Students.Add(student);
+            var course = _db.Courses.First();
+            _db.Enrollments.Add(new Enrollment { Student = student, CourseId = course.Id });
+            _db.SaveChanges();
+            var lessons = _db.Lessons.Where(l => l.CourseId == course.Id).Select(l => l.Id).ToList();
+
+            CourseProgress p = null!;
+            foreach (var id in lessons.Append(lessons[0])) p = await service.CompleteLessonAsync(student.Id, course.Id, id);
+            Assert.Equal(100, p.Percent);
+            Assert.Equal(lessons.Count, _db.LessonCompletions.Count(c => c.StudentId == student.Id));
+            Assert.Equal(EnrollmentService.Completed, _db.Enrollments.Single(e => e.StudentId == student.Id).Status);
+            var mine = (await service.GetStudentEnrollmentsAsync(student.Id)).Single();
+            Assert.Equal(100, mine.ProgressPercent);
+            Assert.NotNull(mine.CompletedAt);
+
+            // yeni ders eklenince kurs yeniden yüzde 100'ün altına iner
+            _db.Lessons.Add(new Lesson { CourseId = course.Id, Title = "Ek ders" });
+            _db.SaveChanges();
+            Assert.True((await service.GetProgressAsync(student.Id, new[] { course.Id }))[course.Id].Percent < 100);
+            await Assert.ThrowsAsync<ArgumentException>(() => service.CompleteLessonAsync(student.Id, course.Id + 999, lessons[0]));
+        }
+
+        [Fact]
+        public void Demo_accounts_start_with_progress_and_courses()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Seed:DemoUsers"] = "true", ["Seed:DemoPassword"] = "demo-pass-123"
+            }).Build();
+            DataSeeder.Run(_db, config, isDevelopment: true);
+            DataSeeder.Run(_db, config, isDevelopment: true);
+
+            var student = _db.Students.Single(s => s.User!.Username == "demo_student");
+            var enrollments = _db.Enrollments.Where(e => e.StudentId == student.Id).ToList();
+            Assert.InRange(enrollments.Count, 2, 5);
+            Assert.Contains(enrollments, e => e.Status == EnrollmentService.Completed);
+            Assert.Contains(enrollments, e => e.Status == EnrollmentService.InProgress);
+            var user = _db.Users.Single(u => u.Username == "demo_student");
+            Assert.Equal(_db.WalletTransactions.Where(t => t.UserId == user.Id).ToList().Sum(t => t.Amount), user.Balance);
+            Assert.True(_db.Courses.Count(c => c.Teacher!.User!.Username == "demo_teacher") >= 1);
         }
 
         [Fact]

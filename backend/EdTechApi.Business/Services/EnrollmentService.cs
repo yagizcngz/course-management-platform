@@ -137,9 +137,42 @@ namespace EdTechApi.Business.Services
                 .ToListAsync();
         }
 
+        public const string InProgress = "Devam Ediyor", Completed = "Tamamlandı";
+
+        public async Task<Dictionary<int, CourseProgress>> GetProgressAsync(int studentId, IReadOnlyCollection<int> courseIds)
+        {
+            // ders filtresi silinmiş dersleri hem toplamdan hem tamamlananlardan düşürür
+            var totals = await _context.Lessons.Where(l => courseIds.Contains(l.CourseId))
+                .GroupBy(l => l.CourseId).Select(g => new { g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.Key, x => x.Count);
+            var done = await _context.LessonCompletions
+                .Where(c => c.StudentId == studentId && courseIds.Contains(c.Lesson!.CourseId))
+                .GroupBy(c => c.Lesson!.CourseId)
+                .Select(g => new { g.Key, Count = g.Count(), Last = g.Max(c => c.CompletedAt) })
+                .ToDictionaryAsync(x => x.Key);
+            return courseIds.Distinct().ToDictionary(id => id, id => new CourseProgress(
+                done.TryGetValue(id, out var d) ? d.Count : 0, totals.GetValueOrDefault(id), d?.Last));
+        }
+
+        public async Task<CourseProgress> CompleteLessonAsync(int studentId, int courseId, int lessonId)
+        {
+            var enrollment = await _context.Enrollments.FirstOrDefaultAsync(e => e.StudentId == studentId && e.CourseId == courseId)
+                ?? throw new ArgumentException("Bu kursa kayıtlı değilsiniz.");
+            if (!await _context.Lessons.AnyAsync(l => l.Id == lessonId && l.CourseId == courseId))
+                throw new ArgumentException("Ders bulunamadı.");
+            if (!await _context.LessonCompletions.AnyAsync(c => c.StudentId == studentId && c.LessonId == lessonId))
+                _context.LessonCompletions.Add(new LessonCompletion { StudentId = studentId, LessonId = lessonId });
+            await _context.SaveChangesAsync();
+
+            var progress = (await GetProgressAsync(studentId, new[] { courseId }))[courseId];
+            enrollment.Status = progress.IsComplete ? Completed : InProgress;
+            await _context.SaveChangesAsync();
+            return progress;
+        }
+
         public async Task<IEnumerable<EnrollmentDto>> GetStudentEnrollmentsAsync(int studentId)
         {
-            return await _context.Enrollments
+            var list = await _context.Enrollments
                 .Include(e => e.Course)
                 .Where(e => e.StudentId == studentId && !e.IsDeleted)
                 .Select(e => new EnrollmentDto
@@ -151,9 +184,19 @@ namespace EdTechApi.Business.Services
                     CourseTitle = e.Course.Title,
                     CourseId = e.CourseId,
                     Status = e.Status,
-                    EnrollmentDate = e.EnrollmentDate 
+                    EnrollmentDate = e.EnrollmentDate
                 })
                 .ToListAsync();
+            var progress = await GetProgressAsync(studentId, list.Select(e => e.CourseId).ToList());
+            foreach (var e in list)
+            {
+                var p = progress[e.CourseId];
+                e.CompletedLessons = p.Done;
+                e.TotalLessons = p.Total;
+                e.ProgressPercent = p.Percent;
+                e.CompletedAt = p.IsComplete ? p.LastCompletedAt : null;
+            }
+            return list;
         }
     }
 }

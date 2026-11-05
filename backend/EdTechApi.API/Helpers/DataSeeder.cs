@@ -24,7 +24,11 @@ namespace EdTechApi.API.Helpers
             CatalogSeed.SeedCatalog(db);
 
             var demoPass = config["Seed:DemoPassword"];
-            if (!string.IsNullOrWhiteSpace(demoPass)) SeedDemoAccounts(db, demoPass);
+            if (!string.IsNullOrWhiteSpace(demoPass))
+            {
+                SeedDemoAccounts(db, demoPass);
+                CatalogSeed.SeedDemoLearning(db);
+            }
             // demo hesaplar dahil, avatarı veya biyografisi boş kalan her profil doldurulur
             CatalogSeed.BackfillProfiles(db);
         }

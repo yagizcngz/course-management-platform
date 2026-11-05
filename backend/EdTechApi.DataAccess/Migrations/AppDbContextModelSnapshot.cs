@@ -213,6 +213,33 @@ namespace EdTechApi.DataAccess.Migrations
                     b.ToTable("Lessons");
                 });
 
+            modelBuilder.Entity("EdTechApi.Core.Entities.LessonCompletion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LessonId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LessonId");
+
+                    b.HasIndex("StudentId", "LessonId")
+                        .IsUnique();
+
+                    b.ToTable("LessonCompletions");
+                });
+
             modelBuilder.Entity("EdTechApi.Core.Entities.Student", b =>
                 {
                     b.Property<int>("Id")
@@ -590,6 +617,23 @@ namespace EdTechApi.DataAccess.Migrations
                         .IsRequired();
 
                     b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("EdTechApi.Core.Entities.LessonCompletion", b =>
+                {
+                    b.HasOne("EdTechApi.Core.Entities.Lesson", "Lesson")
+                        .WithMany()
+                        .HasForeignKey("LessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EdTechApi.Core.Entities.Student", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lesson");
                 });
 
             modelBuilder.Entity("EdTechApi.Core.Entities.Student", b =>
