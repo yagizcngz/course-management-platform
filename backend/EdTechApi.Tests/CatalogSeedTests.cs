@@ -66,6 +66,9 @@ namespace EdTechApi.Tests
             Assert.All(courses.Where(c => c.SubCategory != null),
                 c => Assert.Contains(c.SubCategory!, BranchOptions.SubCategoriesOf(c.Category)));
             Assert.True(courses.Count(c => c.SubCategory != null) >= courses.Count - 1);
+            // taksonomideki her alt kategoride en az bir kurs var
+            Assert.All(BranchOptions.SubCategories.SelectMany(kv => kv.Value),
+                sub => Assert.True(courses.Any(c => c.SubCategory == sub), sub));
             Assert.True(courses.Count(c => c.Category == "Hukuk & Kamu Yönetimi") >= 4);
             Assert.True(courses.Count(c => c.Category == "Mühendislik & Robotik") >= 4);
         }

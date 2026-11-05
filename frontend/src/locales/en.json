@@ -383,7 +383,17 @@
         "Flutter ile Mobil Uygulama Geliştirme": "Mobile App Development with Flutter",
         "Docker, Kubernetes ve DevOps": "Docker, Kubernetes and DevOps",
         "Unity ile Oyun Geliştirme": "Game Development with Unity",
-        "Büyük Veri ve Veri Mühendisliği": "Big Data and Data Engineering"
+        "Büyük Veri ve Veri Mühendisliği": "Big Data and Data Engineering",
+        "Siyaset Bilimi ve Uluslararası İlişkilere Giriş": "Introduction to Political Science and International Relations",
+        "Hukukun Temel Kavramları ve Anayasa Bilgisi": "Basic Legal Concepts and Constitutional Knowledge",
+        "Etik ve Estetiğe Giriş": "Introduction to Ethics and Aesthetics",
+        "Girişimcilik ve İş Stratejisi": "Entrepreneurship and Business Strategy",
+        "IELTS ve Akademik İngilizce": "IELTS and Academic English",
+        "Blender ile 3B Modelleme ve Animasyon": "3D Modelling and Animation with Blender",
+        "Seramik ve Heykel Atölyesi": "Ceramics and Sculpture Studio",
+        "Ableton ile Müzik Prodüksiyonu": "Music Production with Ableton",
+        "Hareket Bilimi ve Sakatlıktan Korunma": "Movement Science and Injury Prevention",
+        "Araştırma Yöntemleri ve Bilimsel Etik": "Research Methods and Scientific Ethics"
       },
       "descriptions": {
         "İleri Seviye C# ve .NET API": "Advanced C# features and building tested, documented REST APIs with ASP.NET Core.",
@@ -479,7 +489,17 @@
         "Flutter ile Mobil Uygulama Geliştirme": "Learn to build Android and iOS apps from a single codebase. The Dart language, the widget tree, state management, fetching data from a REST API, local storage and store publishing are taught through a shopping app built end to end. For those who know basic programming and want to ship their first mobile app.",
         "Docker, Kubernetes ve DevOps": "Learn to containerise applications and deploy them to the cloud automatically. Docker images, Compose, Kubernetes objects, CI/CD pipelines, infrastructure as code and monitoring are covered by shipping a real web service. For backend developers and anyone moving into DevOps engineering.",
         "Unity ile Oyun Geliştirme": "Design and publish your first game with Unity and C#. Scene layout, the physics engine, character control, animation, UI and audio are taught through a 2D platformer built from start to finish. For anyone curious about game development with basic programming knowledge.",
-        "Büyük Veri ve Veri Mühendisliği": "Learn to build data pipelines that collect, transform and prepare millions of rows for analysis. Data-warehouse modelling, distributed processing with Apache Spark, streaming with Kafka, workflow orchestration with Airflow and data-quality checks are practised hands-on. For those who know SQL and Python and want to become data engineers."
+        "Büyük Veri ve Veri Mühendisliği": "Learn to build data pipelines that collect, transform and prepare millions of rows for analysis. Data-warehouse modelling, distributed processing with Apache Spark, streaming with Kafka, workflow orchestration with Airflow and data-quality checks are practised hands-on. For those who know SQL and Python and want to become data engineers.",
+        "Siyaset Bilimi ve Uluslararası İlişkilere Giriş": "Learn how the state, power, democracy and the international system work, starting from the basic concepts. Political ideologies, electoral and party systems, theories of international relations such as realism and liberalism, and institutions like the UN and the EU are covered with current examples. For future political science and IR students and anyone who wants to read current affairs in depth.",
+        "Hukukun Temel Kavramları ve Anayasa Bilgisi": "Learn the legal rules you meet in everyday life and your rights as a citizen in plain language. The sources of law, rights and legal capacity, the court system and the turning points of Turkish constitutional history are explained with case examples. Suited to high-school and university students, civil-service exam candidates and anyone taking a first step into law.",
+        "Etik ve Estetiğe Giriş": "What makes an action good and a work beautiful? You will discuss moral theories such as virtue ethics, deontology and utilitarianism through current dilemmas, and learn to judge works of art with aesthetic approaches from Plato and Kant to contemporary thinkers. For anyone interested in philosophy who wants to sharpen their arguing and writing.",
+        "Girişimcilik ve İş Stratejisi": "Learn to turn a business idea into a validated business model. Customer discovery, the business model canvas, competitive analysis, unit economics, pricing and the investor pitch are applied step by step to your own idea. For aspiring founders, startup team members and students interested in corporate strategy.",
+        "IELTS ve Akademik İngilizce": "Prepare systematically for the IELTS Academic exam for study and job applications abroad. The format of all four skills, the band descriptors, Writing Task 1 and 2 structures, academic reading strategies and speaking mock tests are practised with one-to-one feedback. For learners at B2 level who want to reach their target band.",
+        "Blender ile 3B Modelleme ve Animasyon": "Learn 3D modelling, materials, lighting and animation from scratch with free, open-source Blender. From simple objects to product visualisation, from camera moves to a short motion-graphics scene, you finish a piece of work in every lesson. For designers, game and video creators and anyone stepping into 3D.",
+        "Seramik ve Heykel Atölyesi": "Get to know the language of clay and three-dimensional form. Hand-building methods, an introduction to the potter's wheel, proportional figure sculpture, glazing and firing are practised in small studio groups. You leave with a functional object of your own design and a small sculpture. No previous experience needed.",
+        "Ableton ile Müzik Prodüksiyonu": "Go from an idea to a finished track on your computer. With Ableton Live you learn to write beats and harmony, design sounds with a synthesiser, and handle sampling, arrangement, mixing and mastering on your own track. For musicians with basic music knowledge and content creators who want to produce their own music.",
+        "Hareket Bilimi ve Sakatlıktan Korunma": "Train more safely and efficiently by understanding how your body moves. Basic anatomy and biomechanics, movement analysis, the causes of common sports injuries, warm-ups and preventive exercise programmes are practised hands-on. For regular exercisers, aspiring coaches and anyone returning to sport safely after an injury.",
+        "Araştırma Yöntemleri ve Bilimsel Etik": "Learn the steps of scientific work, from framing a research question to reporting findings honestly. Literature review, quantitative and qualitative methods, sampling, data-collection tools, citation, plagiarism and research ethics boards are explained through sample projects. For students preparing assignments, projects, theses or research grant proposals."
       },
       "subCategories": {
         "Analiz & Kalkülüs": "Analysis & Calculus",
