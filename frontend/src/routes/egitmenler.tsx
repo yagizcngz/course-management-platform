@@ -116,9 +116,9 @@ function FacultyDirectory() {
         <div className="flex flex-col gap-4 border-b border-border py-6 md:flex-row md:items-center md:justify-between">
           <nav
             aria-label={t("faculty.branchFilter")}
-            className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0"
+            className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0 lg:overflow-visible"
           >
-            <ul className="flex min-w-max gap-2">
+            <ul className="flex gap-2 max-lg:min-w-max lg:flex-wrap">
               {[undefined, ...branches].map((b) => {
                 const on = search.branch === b;
                 return (

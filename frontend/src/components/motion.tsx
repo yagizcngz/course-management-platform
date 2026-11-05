@@ -1,6 +1,6 @@
 import { animate, motion, useInView, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import { Children, useEffect, useRef, useState } from "react";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 // The server cannot know the visitor's motion preference, so `initial` must be the same on
@@ -32,16 +32,23 @@ export function Reveal({
   );
 }
 
-/** Container whose StaggerItem children reveal one after another. */
+/**
+ * Container whose StaggerItem children reveal one after another. Key it on the list's
+ * filter so a new set of items gets its own reveal instead of staying hidden.
+ */
 export function Stagger({ children, className }: { children: ReactNode; className?: string }) {
   const reduce = useReducedMotion();
+  // a long list must not take seconds to fill in: the whole cascade stays under ~0.8 s
+  const step = Math.min(0.07, 0.8 / Math.max(1, Children.count(children)));
   return (
     <motion.div
       className={className}
       initial="hidden"
       whileInView="show"
-      viewport={{ once: true, amount: 0.1 }}
-      variants={{ show: { transition: reduce ? INSTANT : { staggerChildren: 0.07 } } }}
+      // a share of the element (amount: 0.1) never fits on screen for a grid taller than
+      // ten viewports, so it would stay hidden; trigger once its top is well inside instead
+      viewport={{ once: true, amount: "some", margin: "0px 0px -10% 0px" }}
+      variants={{ show: { transition: reduce ? INSTANT : { staggerChildren: step } } }}
     >
       {children}
     </motion.div>

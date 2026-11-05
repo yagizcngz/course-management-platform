@@ -140,9 +140,9 @@ function CoursesCatalog() {
         {/* disciplines */}
         <nav
           aria-label={t("catalog.categoryFilter")}
-          className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0"
+          className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0 lg:overflow-visible"
         >
-          <ul className="flex min-w-max gap-2 py-6">
+          <ul className="flex gap-2 py-6 max-lg:min-w-max lg:flex-wrap">
             {[null, ...categoryNames].map((name) => {
               const on = (search.category ?? null) === name;
               return (
