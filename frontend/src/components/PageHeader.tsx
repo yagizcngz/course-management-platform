@@ -27,9 +27,10 @@ export function PageHeader({ crumb, action, searchValue, onSearchChange }: PageH
             className="bg-card border border-border text-sm px-4 py-2 rounded-full w-32 sm:w-64 transition-[box-shadow,border-color] focus:border-gold focus:ring-4 focus:ring-gold/15 outline-none"
           />
         )}
+        {action}
+        {/* last, so a longer or shorter action label in the other language cannot move them */}
         <LanguageToggle />
         <ThemeToggle />
-        {action}
       </div>
     </header>
   );

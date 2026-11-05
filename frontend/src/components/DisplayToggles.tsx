@@ -68,7 +68,7 @@ function Segmented<T extends string>({
             aria-label={o.label}
             title={o.label}
             onClick={() => !on && onChange(o.value)}
-            className={`relative flex h-8 min-w-9 items-center justify-center rounded-full px-2.5 text-xs tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 ${
+            className={`relative flex h-8 w-10 items-center justify-center rounded-full text-xs tracking-wider transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 ${
               on
                 ? "font-bold text-primary-foreground"
                 : "font-medium text-muted-foreground hover:text-foreground"

@@ -1,6 +1,5 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { useTranslation } from "react-i18next";
+import type { ReactNode } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { CourseDetailModal } from "./CourseDetailModal";
 import { PublicHeader } from "./PublicHeader";
 import { PublicFooter } from "./PublicFooter";
@@ -10,38 +9,9 @@ import type { LandingCourse } from "./landing/shared";
 
 /** Header, main and footer of every public page; signed-in visitors get a dashboard link. */
 export function PublicPage({ children }: { children: ReactNode }) {
-  const { t } = useTranslation();
-  // read after mount: the server cannot see the token, and the first render must match it
-  const [authed, setAuthed] = useState(false);
-  useEffect(() => setAuthed(!!localStorage.getItem("jwt_token")), []);
-
   return (
     <div className="flex min-h-screen flex-col bg-background font-display text-foreground">
-      <PublicHeader>
-        {authed ? (
-          <Link
-            to="/dashboard"
-            className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 active:scale-[0.97]"
-          >
-            {t("publicNav.dashboard")}
-          </Link>
-        ) : (
-          <>
-            <Link
-              to="/login"
-              className="hidden rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
-            >
-              {t("login.loginButton")}
-            </Link>
-            <Link
-              to="/register"
-              className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 active:scale-[0.97]"
-            >
-              {t("login.register")}
-            </Link>
-          </>
-        )}
-      </PublicHeader>
+      <PublicHeader />
       <main className="flex-1 pt-16">{children}</main>
       <PublicFooter />
     </div>
