@@ -1,3 +1,4 @@
+using EdTechApi.API.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -51,7 +52,7 @@ namespace EdTechApi.API.Controllers
         // Kurslar.tsx / Kontrol Paneli'ndeki "Kursu Düzenle" ekranında hem dosya yükleme hem de
         // dışarıdan link yapıştırma seçeneği var; bu endpoint yalnızca "dosya yükle" seçeneği için.
         [HttpPost("course-image")]
-        [Authorize(Roles = "Admin,Teacher")]
+        [Authorize(Roles = RoleNames.AdminsAndTeachers)]
         [RequestSizeLimit(20_000_000)] // 20 MB üst sınır
         public async Task<IActionResult> UploadCourseImage(IFormFile file)
         {
@@ -81,7 +82,7 @@ namespace EdTechApi.API.Controllers
 
         // Ders videosu yükleme. Dosya wwwroot dışına kaydedilir; LessonsController imzalı adresle sunar.
         [HttpPost("video")]
-        [Authorize(Roles = "Admin,Teacher")]
+        [Authorize(Roles = RoleNames.AdminsAndTeachers)]
         [RequestSizeLimit(524_288_000)] // 500 MB
         [RequestFormLimits(MultipartBodyLengthLimit = 524_288_000)]
         public async Task<IActionResult> UploadVideo(IFormFile file)

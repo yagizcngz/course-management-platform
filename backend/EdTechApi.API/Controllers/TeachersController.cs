@@ -1,3 +1,4 @@
+using EdTechApi.API.Helpers;
 using EdTechApi.Business.Interfaces;
 using EdTechApi.Core.Constants;
 using EdTechApi.Core.Entities;
@@ -64,7 +65,7 @@ namespace EdTechApi.API.Controllers
             return Ok(teacher);
         }
 
-        [Authorize(Roles = "Admin,superadmin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpPost]
         public async Task<IActionResult> CreateTeacher([FromBody] Teacher newTeacher)
         {
@@ -85,7 +86,7 @@ namespace EdTechApi.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = newTeacher.Id }, newTeacher);
         }
 
-        [Authorize(Roles = "Admin,superadmin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTeacher(int id, [FromBody] Teacher updatedTeacher)
         {
@@ -135,7 +136,7 @@ namespace EdTechApi.API.Controllers
             return NoContent();
         }
 
-        [Authorize(Roles = "Admin,superadmin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTeacher(int id)
         {
@@ -143,7 +144,7 @@ namespace EdTechApi.API.Controllers
             return NoContent();
         }
 
-        [Authorize(Roles = "Admin,superadmin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpPost("bulk-delete")]
         public async Task<IActionResult> DeleteMultipleTeachers([FromBody] List<int> ids)
         {
@@ -158,7 +159,7 @@ namespace EdTechApi.API.Controllers
         }
 
         // Silinmiş (soft-deleted) öğretmenler — Raporlar sayfasındaki "Silinen Öğretmenler" kartı için
-        [Authorize(Roles = "Admin,superadmin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpGet("deleted")]
         public async Task<IActionResult> GetDeletedTeachers()
         {

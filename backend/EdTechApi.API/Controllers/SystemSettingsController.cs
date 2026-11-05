@@ -1,3 +1,4 @@
+using EdTechApi.API.Helpers;
 using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +9,7 @@ namespace EdTechApi.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin,superadmin")]
+    [Authorize(Roles = RoleNames.Admins)]
     public class SystemSettingsController : ControllerBase
     {
         private readonly AppDbContext _context;

@@ -1,3 +1,4 @@
+using EdTechApi.API.Helpers;
 using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
 using Microsoft.AspNetCore.Authorization;
@@ -32,7 +33,7 @@ namespace EdTechApi.API.Controllers
             return Ok(category);
         }
 
-        [Authorize(Roles = "Admin,superadmin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpPost]
         public async Task<IActionResult> CreateCategory([FromBody] Category request)
         {
@@ -47,7 +48,7 @@ namespace EdTechApi.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = request.Id }, request);
         }
 
-        [Authorize(Roles = "Admin,superadmin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCategory(int id, [FromBody] Category request)
         {
@@ -68,7 +69,7 @@ namespace EdTechApi.API.Controllers
             return Ok(category);
         }
 
-        [Authorize(Roles = "Admin,superadmin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
@@ -81,7 +82,7 @@ namespace EdTechApi.API.Controllers
             return Ok(new { message = "Kategori başarıyla silindi." });
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpPost("seed")]
         public IActionResult SeedDefaultCategories()
         {

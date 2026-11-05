@@ -1,3 +1,4 @@
+using EdTechApi.API.Helpers;
 using EdTechApi.Business.Interfaces;
 using EdTechApi.Core.Constants;
 using EdTechApi.Core.Entities;
@@ -72,7 +73,7 @@ namespace EdTechApi.API.Controllers
         // veya superadmin ile giriş yapan biri kurs oluşturma butonunu görüyor ama backend
         // 403 döndürüyordu. Rol listesi frontend'deki canManage ile eşleşecek şekilde
         // genişletildi.
-        [Authorize(Roles = "Admin,Teacher,superadmin")]
+        [Authorize(Roles = RoleNames.AdminsAndTeachers)]
         [HttpPost]
         public async Task<IActionResult> CreateCourse([FromBody] Course newCourse)
         {
@@ -119,7 +120,7 @@ namespace EdTechApi.API.Controllers
 
         // NOT: Aynı sebeple PUT de "Eğitmen" ve "superadmin" rollerine açıldı — öğretmen
         // atama/düzenleme işlemi CourseDetailModal üzerinden bu rollerle yapılabilsin.
-        [Authorize(Roles = "Admin,Teacher,superadmin")]
+        [Authorize(Roles = RoleNames.AdminsAndTeachers)]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCourse(int id, [FromBody] Course updatedCourse)
         {
@@ -147,7 +148,7 @@ namespace EdTechApi.API.Controllers
 
         // NOT: Önceden hiç [Authorize] yoktu, yani kimlik doğrulaması olmadan da
         // çağrılabiliyordu. POST/PUT ile aynı rol setine kısıtlandı.
-        [Authorize(Roles = "Admin,Teacher,superadmin")]
+        [Authorize(Roles = RoleNames.AdminsAndTeachers)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCourse(int id)
         {
@@ -162,7 +163,7 @@ namespace EdTechApi.API.Controllers
         }
 
         // Silinmiş (soft-deleted) kurslar — Raporlar sayfasındaki "Silinen Kurslar" kartı için
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpGet("deleted")]
         public async Task<IActionResult> GetDeletedCourses()
         {

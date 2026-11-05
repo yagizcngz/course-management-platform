@@ -1,3 +1,4 @@
+using EdTechApi.API.Helpers;
 using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
 using Microsoft.AspNetCore.Authorization;
@@ -74,7 +75,7 @@ namespace EdTechApi.API.Controllers
         // GET /api/supportrequests
         // Sadece Admin görebilir. Tüm destek talepleri.
         [HttpGet]
-        [Authorize(Roles = "Admin,SuperAdmin")]
+        [Authorize(Roles = RoleNames.Admins)]
         public async Task<IActionResult> GetAllRequests()
         {
             var requests = await _context.SupportRequests
@@ -131,7 +132,7 @@ namespace EdTechApi.API.Controllers
         // POST /api/supportrequests/{id}/reply
         // Admin tarafından bir talebe cevap vermek
         [HttpPost("{id}/reply")]
-        [Authorize(Roles = "Admin,SuperAdmin")]
+        [Authorize(Roles = RoleNames.Admins)]
         public async Task<IActionResult> ReplyToRequest(int id, [FromBody] ReplySupportRequestDto dto)
         {
             var request = await _context.SupportRequests.FindAsync(id);
@@ -151,7 +152,7 @@ namespace EdTechApi.API.Controllers
 
         // DELETE /api/supportrequests/clear-resolved
         [HttpDelete("clear-resolved")]
-        [Authorize(Roles = "Admin,SuperAdmin")]
+        [Authorize(Roles = RoleNames.Admins)]
         public async Task<IActionResult> ClearResolvedRequests()
         {
             var resolvedRequests = await _context.SupportRequests
@@ -172,7 +173,7 @@ namespace EdTechApi.API.Controllers
 
         // DELETE /api/supportrequests/{id}
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,SuperAdmin")]
+        [Authorize(Roles = RoleNames.Admins)]
         public async Task<IActionResult> DeleteRequest(int id)
         {
             var request = await _context.SupportRequests.FindAsync(id);

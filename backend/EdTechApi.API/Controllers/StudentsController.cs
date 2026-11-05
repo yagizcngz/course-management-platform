@@ -58,7 +58,7 @@ namespace EdTechApi.API.Controllers
         }
 
 
-        [Authorize(Roles = "Admin,superadmin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpPost]
         public async Task<IActionResult> CreateStudent([FromBody] Student newStudent)
         {
@@ -77,7 +77,7 @@ namespace EdTechApi.API.Controllers
             }
         }
         
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateStudent(int id, [FromBody] Student updatedStudent)
         {
@@ -89,7 +89,7 @@ namespace EdTechApi.API.Controllers
             return NoContent();
         }
 
-        [Authorize(Roles = "Admin,superadmin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStudent(int id)
         {
@@ -98,14 +98,14 @@ namespace EdTechApi.API.Controllers
         }
 
         // Silinmiş (soft-deleted) öğrenciler — Raporlar sayfasındaki "Silinen Öğrenciler" kartı için
-        [Authorize(Roles = "Admin,superadmin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpGet("deleted")]
         public async Task<IActionResult> GetDeletedStudents()
         {
             var deleted = await _studentService.GetDeletedStudentsAsync();
             return Ok(deleted);
         }
-        [Authorize(Roles = "Admin,superadmin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpPost("bulk-delete")]
         public async Task<IActionResult> DeleteMultipleStudents([FromBody] List<int> ids)
         {

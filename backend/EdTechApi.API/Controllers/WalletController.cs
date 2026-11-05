@@ -69,7 +69,7 @@ namespace EdTechApi.API.Controllers
         }
 
         // Yönetici özeti: satış adedi, toplam ciro, öğretmenlere ödenen ve platform payı
-        [Authorize(Roles = "Admin,SuperAdmin,superadmin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpGet("summary")]
         public async Task<IActionResult> Summary()
         {

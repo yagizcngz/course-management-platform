@@ -1,3 +1,4 @@
+using EdTechApi.API.Helpers;
 using EdTechApi.Business.Interfaces;
 using EdTechApi.DataAccess.Context;
 using EdTechApi.Core.Entities;
@@ -99,7 +100,7 @@ namespace EdTechApi.API.Controllers
             return Ok(enrollments);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpPost("student/{studentId}/course/{courseId}")]
     public async Task<IActionResult> Enroll(int studentId, int courseId)
     {
@@ -107,7 +108,7 @@ namespace EdTechApi.API.Controllers
         return Ok(new { message = "Öğrenci kursa başarıyla kaydedildi!" });
     }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -139,7 +140,7 @@ namespace EdTechApi.API.Controllers
         }
 
         // Silinmiş (soft-deleted) kayıtlar — Raporlar sayfasındaki "Silinen Kayıtlar" kartı için
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpGet("deleted")]
         public async Task<IActionResult> GetDeletedEnrollments()
         {

@@ -1,3 +1,4 @@
+using EdTechApi.API.Helpers;
 using EdTechApi.Business.Interfaces;
 using EdTechApi.Core.DTOs;
 using Microsoft.AspNetCore.Authorization;
@@ -25,7 +26,7 @@ namespace EdTechApi.API.Controllers
             return Ok(announcements);
         }
 
-        [Authorize(Roles = "Admin,superadmin")]
+        [Authorize(Roles = RoleNames.Admins)]
         [HttpPost]
         public async Task<ActionResult<AnnouncementDto>> CreateAnnouncement([FromBody] CreateAnnouncementRequest request)
         {
@@ -37,6 +38,11 @@ namespace EdTechApi.API.Controllers
             var announcement = await _announcementService.AddAnnouncementAsync(request.Title, request.Content);
             return Ok(announcement);
         }
+
+        [Authorize(Roles = RoleNames.Admins)]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Remove(int id) =>
+            await _announcementService.RemoveAnnouncementAsync(id) ? NoContent() : NotFound("Duyuru bulunamadı.");
     }
 
     public class CreateAnnouncementRequest
