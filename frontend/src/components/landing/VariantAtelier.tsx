@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { ArrowRight, Bookmark } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { motion, useReducedMotion } from "motion/react";
 import { BookScene, useBookStrings, type BookPage } from "../effects/three/BookScene";
@@ -13,14 +13,8 @@ import {
   type CourseData,
   type TeacherLiteDto,
 } from "../courseHelpers";
-import {
-  CategoryToken,
-  HeroSearch,
-  ListHeader,
-  ListState,
-  type LandingCourse,
-  type LandingProps,
-} from "./shared";
+import { getToken } from "../../lib/auth";
+import { HeroSearch, ListHeader, ListState, type LandingCourse, type LandingProps } from "./shared";
 import { groupByCategory, price } from "./catalog";
 
 const AUTO_TURN_MS = 7000;
@@ -28,6 +22,10 @@ const FACULTY_PREVIEW = 9;
 const CATEGORY_PREVIEW = 8;
 // the book is a showcase, not the catalogue: a few spreads are enough and keep it light
 const BOOK_LIMIT = 10;
+// a search or category shows only its best few; the full list is right below the hero
+const BOOK_FILTER_LIMIT = 3;
+// the course whose spread holds the ribbon, kept across visits
+const RIBBON_KEY = "ekurs_book_ribbon_course";
 
 const accent = (text: string) =>
   text
@@ -36,8 +34,8 @@ const accent = (text: string) =>
     .join(" ");
 
 /**
- * A — Atelier. The catalogue is a notebook: every spread is a real course, the contents
- * list beside it jumps to a category, and the search narrows what the book holds.
+ * A — Atelier. The catalogue is a notebook: every spread is a whole course page, and the
+ * search narrows what the book holds.
  */
 export function VariantAtelier(p: LandingProps) {
   return (
@@ -55,8 +53,10 @@ export function VariantAtelier(p: LandingProps) {
 function AtelierHero(p: LandingProps) {
   const { t } = useTranslation();
   const reduce = useReducedMotion();
-  // the ten most popular courses (the API sorts by enrolment), or the first ten matches
-  const book = (p.matches ?? p.courses ?? []).slice(0, BOOK_LIMIT);
+  const navigate = useNavigate();
+  // the ten most popular courses (the API sorts by enrolment), or the best few matches
+  const limit = p.matches ? BOOK_FILTER_LIMIT : BOOK_LIMIT;
+  const book = (p.matches ?? p.courses ?? []).slice(0, limit);
   const bookKey = book.map((c) => c.id).join(",");
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -82,6 +82,7 @@ function AtelierHero(p: LandingProps) {
     () =>
       book.map((c, i) => {
         const teacher = p.teachers.find((m) => String(m.id ?? m.Id) === String(c.teacherId));
+        const photo = teacher?.profilePictureUrl || teacher?.ProfilePictureUrl;
         return {
           key: String(c.id),
           no: i + 1,
@@ -97,6 +98,8 @@ function AtelierHero(p: LandingProps) {
                 .map((b) => p.label("categories", b))
                 .join(" · ")
             : undefined,
+          instructorBio: teacher?.aboutMe || teacher?.AboutMe || undefined,
+          instructorPhoto: photo ? resolveImageSrc(photo) : undefined,
           capacity: c.maxCapacity || undefined,
           lessons: p.outline[c.id] ?? [],
           price: price(c.price),
@@ -117,16 +120,36 @@ function AtelierHero(p: LandingProps) {
     setIndex(n);
     setInteracted((k) => k + 1);
   };
+  // the printed "join" button: straight to the course for a member, to sign-in for a guest
+  const join = () => {
+    if (!current) return;
+    if (getToken()) navigate({ to: "/kurs/$id", params: { id: String(current.id) } });
+    else navigate({ to: "/login" });
+  };
 
-  // the largest disciplines first; the full list lives in the categories section
-  const toc = groupByCategory(p.courses ?? [], p.categories)
-    .sort((a, b) => b.courses.length - a.courses.length)
-    .slice(0, 8);
+  // one ribbon for the whole book; first visit marks the most popular course. Read after
+  // hydration, since the server has no localStorage.
+  const [marked, setMarked] = useState<string | null>(null);
+  const firstId = p.courses?.[0]?.id;
+  useEffect(() => {
+    if (firstId == null) return;
+    let id = localStorage.getItem(RIBBON_KEY);
+    if (!id) localStorage.setItem(RIBBON_KEY, (id = String(firstId)));
+    setMarked(id);
+  }, [firstId]);
+  // -1 when the marked course is not in this (filtered) book: no ribbon then
+  const ribbonAt = book.findIndex((c) => String(c.id) === marked);
+  const mark = () => {
+    if (!current) return;
+    localStorage.setItem(RIBBON_KEY, String(current.id));
+    setMarked(String(current.id));
+    setInteracted((k) => k + 1);
+  };
 
   return (
     <section className="border-b border-border">
       <div className="mx-auto grid max-w-7xl gap-12 px-4 pb-16 pt-14 sm:px-6 lg:grid-cols-[1fr_1.05fr] lg:gap-10 lg:pb-20 lg:pt-20">
-        <div className="flex flex-col">
+        <div className="flex flex-col lg:justify-center lg:pb-16">
           <h1 className="font-serif text-[clamp(3rem,6.6vw,5.5rem)] leading-[0.95] tracking-tight">
             <SplitHeadline text={`${t("guest.heroTitle1")} ${accent(t("guest.heroTitle2"))}`} />
           </h1>
@@ -143,48 +166,6 @@ function AtelierHero(p: LandingProps) {
               buttonClass="absolute inset-y-2 right-2 rounded bg-primary px-6 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
             />
           </Reveal>
-
-          {toc.length > 0 && (
-            <Reveal delay={0.6} className="mt-8 max-w-xl">
-              <nav aria-label={t("guest.contents")}>
-                <div className="flex items-baseline justify-between border-b border-foreground/70 pb-2">
-                  <h2 className="font-serif text-xl italic">{t("guest.contents")}</h2>
-                  <CategoryToken
-                    p={p}
-                    className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-                  />
-                </div>
-                <ol>
-                  {toc.map((g) => {
-                    const on = p.category === g.name;
-                    return (
-                      <li key={g.name}>
-                        <button
-                          type="button"
-                          aria-pressed={on}
-                          onClick={() => p.setCategory(on ? null : g.name)}
-                          className="group flex w-full items-baseline gap-3 py-1.5 text-left"
-                        >
-                          <span
-                            className={`font-serif text-lg transition-colors ${on ? "text-gold italic" : "group-hover:text-gold"}`}
-                          >
-                            {p.label("categories", g.name)}
-                          </span>
-                          <span
-                            aria-hidden="true"
-                            className="mb-1 flex-1 border-b border-dotted border-muted-foreground/50"
-                          />
-                          <span className="font-mono text-xs tabular-nums text-muted-foreground">
-                            {t("guest.courseCount", { count: g.courses.length })}
-                          </span>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ol>
-              </nav>
-            </Reveal>
-          )}
         </div>
 
         <div
@@ -197,7 +178,7 @@ function AtelierHero(p: LandingProps) {
             if (e.target !== e.currentTarget) return;
             if (e.key === "ArrowLeft") go(-1);
             else if (e.key === "ArrowRight") go(1);
-            else if (e.key === "Enter" && current) p.onOpen(current);
+            else if (e.key === "Enter") join();
             else return;
             e.preventDefault();
           }}
@@ -209,7 +190,7 @@ function AtelierHero(p: LandingProps) {
           <div className="mx-auto flex w-full max-w-lg items-baseline justify-between gap-4 border-b border-border pb-2">
             <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-gold">
               {p.matches
-                ? p.matches.length > BOOK_LIMIT
+                ? p.matches.length > limit
                   ? t("guest.bookMatches", { count: book.length, total: p.matches.length })
                   : t("guest.matchCount", { count: p.matches.length })
                 : t("guest.bookTop", { count: BOOK_LIMIT })}
@@ -232,92 +213,61 @@ function AtelierHero(p: LandingProps) {
               pages={pages}
               index={Math.min(index, Math.max(0, pages.length - 1))}
               strings={strings}
-              onActivate={current ? () => p.onOpen(current) : undefined}
+              bookmark={ribbonAt}
+              onActivate={current ? join : undefined}
               onTurn={go}
             />
           </div>
-          {book.length > 1 && (
-            <ol
-              aria-label={t("guest.bookPages")}
-              className="mx-auto mb-3 flex w-full max-w-lg flex-wrap justify-center gap-1"
-            >
-              {book.map((c, n) => (
-                <li key={c.id}>
-                  <button
-                    type="button"
-                    onClick={() => jump(n)}
-                    aria-current={n === index ? "page" : undefined}
-                    aria-label={t("guest.bookGoTo", {
-                      no: n + 1,
-                      title: p.label("courses", c.title),
-                    })}
-                    className="h-7 min-w-8 rounded-full px-1.5 font-mono text-[11px] tabular-nums text-muted-foreground transition-colors hover:text-foreground aria-[current=page]:bg-primary aria-[current=page]:text-primary-foreground"
-                  >
-                    {String(n + 1).padStart(2, "0")}
-                  </button>
-                </li>
-              ))}
-            </ol>
-          )}
-
-          <div className="mx-auto w-full max-w-lg border-t border-foreground/80 pt-3">
-            {current ? (
-              <>
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-medium uppercase tracking-[0.16em] text-gold">
-                    {p.label("categories", current.category)}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      onClick={() => go(-1)}
-                      disabled={book.length < 2}
-                      aria-label={t("guest.prevCourse")}
-                      className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-40"
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                    </button>
-                    <span
-                      aria-live="polite"
-                      className="min-w-14 text-center font-mono text-xs tabular-nums text-muted-foreground"
-                    >
-                      {String(index + 1).padStart(2, "0")} / {String(book.length).padStart(2, "0")}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => go(1)}
-                      disabled={book.length < 2}
-                      aria-label={t("guest.nextCourse")}
-                      className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-40"
-                    >
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => p.onOpen(current)}
-                  className="group mt-1 grid w-full grid-cols-[1fr_auto] items-end gap-x-6 text-left"
+          {current ? (
+            <div className="mx-auto flex w-full max-w-lg items-center justify-center gap-3">
+              {book.length > 1 && (
+                <ol
+                  aria-label={t("guest.bookPages")}
+                  className="flex flex-wrap justify-center gap-1"
                 >
-                  <span className="font-serif text-2xl leading-tight decoration-gold decoration-1 underline-offset-4 group-hover:underline">
-                    {p.label("courses", current.title)}
-                  </span>
-                  <span className="text-lg tabular-nums">{price(current.price)}</span>
-                  <span className="mt-1 text-sm text-muted-foreground">
-                    {t("guest.instructor")} {current.instructor}
-                  </span>
-                  <span className="mt-3 inline-flex items-center gap-1.5 justify-self-end rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity group-hover:opacity-90">
-                    {t("guest.bookCta")}
-                    <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
-                  </span>
-                </button>
-              </>
-            ) : (
-              <p className="py-3 text-sm text-muted-foreground">
-                {p.courses === null ? t("common.loading") : t("guest.noMatch")}
-              </p>
-            )}
-          </div>
+                  {book.map((c, n) => (
+                    <li key={c.id}>
+                      <button
+                        type="button"
+                        onClick={() => jump(n)}
+                        aria-current={n === index ? "page" : undefined}
+                        aria-label={`${t("guest.bookGoTo", {
+                          no: n + 1,
+                          title: p.label("courses", c.title),
+                        })}${n === ribbonAt ? ` · ${t("guest.bookmarked")}` : ""}`}
+                        className="relative h-7 min-w-8 rounded-full px-1.5 font-mono text-[11px] tabular-nums text-muted-foreground transition-colors hover:text-foreground aria-[current=page]:bg-primary aria-[current=page]:text-primary-foreground"
+                      >
+                        {String(n + 1).padStart(2, "0")}
+                        {n === ribbonAt && (
+                          <span
+                            aria-hidden="true"
+                            className="absolute -bottom-1 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-gold"
+                          />
+                        )}
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              )}
+              <button
+                type="button"
+                onClick={mark}
+                aria-pressed={ribbonAt === index}
+                title={ribbonAt === index ? t("guest.bookmarked") : t("guest.bookmarkPage")}
+                aria-label={ribbonAt === index ? t("guest.bookmarked") : t("guest.bookmarkPage")}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground aria-pressed:text-gold"
+              >
+                <Bookmark
+                  aria-hidden="true"
+                  className={`h-4 w-4 ${ribbonAt === index ? "fill-current" : ""}`}
+                />
+              </button>
+            </div>
+          ) : (
+            <p className="mx-auto w-full max-w-lg border-t border-border py-3 text-sm text-muted-foreground">
+              {p.courses === null ? t("common.loading") : t("guest.noMatch")}
+            </p>
+          )}
         </div>
       </div>
     </section>

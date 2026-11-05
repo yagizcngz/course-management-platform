@@ -28,6 +28,12 @@ export interface GuestStats {
   totalCourses: number;
 }
 
+/** A lesson as the public outline lists it (no video link). */
+export interface OutlineLesson {
+  title: string;
+  description?: string | null;
+}
+
 export interface LandingProps {
   /** Every published course; null while loading, [] when the request failed or is empty. */
   courses: LandingCourse[] | null;
@@ -53,8 +59,8 @@ export interface LandingProps {
   label: (kind: "categories" | "courses" | "subCategories", value: string) => string;
   /** A course's description in the current language. */
   describe: (course: LandingCourse) => string;
-  /** Lesson titles by course id. */
-  outline: Record<string, string[]>;
+  /** Each course's lessons in order, by course id. */
+  outline: Record<string, OutlineLesson[]>;
 }
 
 /**

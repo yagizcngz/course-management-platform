@@ -1037,7 +1037,6 @@
       "removeCategory": "Remove the {{name}} filter",
       "noCourses": "No courses to show right now.",
       "peakAria": "{{name}}, {{count}} courses — filter by this category",
-      "contents": "Contents",
       "courseCount_one": "{{count}} course",
       "courseCount_other": "{{count}} courses",
       "prevCourse": "Previous course",
@@ -1079,12 +1078,14 @@
       "bookLessons_other": "{{count}} lessons",
       "bookCapacity": "Capacity",
       "bookRefund": "Full refund to your wallet within 7 days",
-      "bookCta": "View course",
+      "bookCta": "Join the course",
       "bookSoon": "Syllabus in preparation",
       "bookRole": "book",
-      "bookLabel": "Book of featured courses. Use the left and right arrow keys to turn pages, Enter to open the course.",
+      "bookLabel": "Book of featured courses. Use the left and right arrow keys to turn pages, Enter to join the course.",
       "bookPages": "Pages of the book",
-      "bookGoTo": "Course {{no}}: {{title}}"
+      "bookGoTo": "Course {{no}}: {{title}}",
+      "bookmarkPage": "Bookmark this page",
+      "bookmarked": "Bookmarked page"
     },
     "help": {
       "title": "Help",

@@ -6,7 +6,7 @@ import {
   fetchPublicTeachers,
   type TeacherLiteDto,
 } from "../courseHelpers";
-import type { LandingCourse } from "./shared";
+import type { LandingCourse, OutlineLesson } from "./shared";
 
 /** Fetches JSON and returns null on any failure, so one bad endpoint cannot crash the page. */
 export async function getJson<T>(url: string): Promise<T | null> {
@@ -27,7 +27,7 @@ export function usePublicCatalog() {
   const [courses, setCourses] = useState<LandingCourse[] | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [teachers, setTeachers] = useState<TeacherLiteDto[]>([]);
-  const [outline, setOutline] = useState<Record<string, string[]>>({});
+  const [outline, setOutline] = useState<Record<string, OutlineLesson[]>>({});
 
   useEffect(() => {
     getJson<LandingCourse[]>(`${API_BASE}/api/Courses`).then((data) =>
@@ -35,7 +35,7 @@ export function usePublicCatalog() {
     );
     fetchCategories().then(setCategories);
     fetchPublicTeachers().then(setTeachers);
-    getJson<Record<string, string[]>>(`${API_BASE}/api/lessons/outline`).then(
+    getJson<Record<string, OutlineLesson[]>>(`${API_BASE}/api/lessons/outline`).then(
       (data) => data && setOutline(data),
     );
   }, []);
@@ -71,7 +71,7 @@ export function usePublicCatalog() {
             .join(" ")
         : "";
     return (c: LandingCourse) =>
-      `${(outline[c.id] ?? []).join(" ")} ${byTeacher.get(String(c.teacherId)) ?? ""} ${both("categories", c.category)} ${both("subCategories", c.subCategory)}`;
+      `${(outline[c.id] ?? []).map((l) => l.title).join(" ")} ${byTeacher.get(String(c.teacherId)) ?? ""} ${both("categories", c.category)} ${both("subCategories", c.subCategory)}`;
   }, [teachers, outline, t]);
 
   return { courses, categories, teachers, outline, label, describe, extra };

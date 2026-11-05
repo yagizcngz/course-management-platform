@@ -958,7 +958,6 @@
       "removeCategory": "{{name}} filtresini kaldır",
       "noCourses": "Şu an gösterilecek kurs yok.",
       "peakAria": "{{name}}, {{count}} kurs — bu kategoriye göre filtrele",
-      "contents": "İçindekiler",
       "courseCount": "{{count}} kurs",
       "prevCourse": "Önceki kurs",
       "nextCourse": "Sonraki kurs",
@@ -995,12 +994,14 @@
       "bookLessons_other": "{{count}} ders",
       "bookCapacity": "Kontenjan",
       "bookRefund": "7 gün içinde cüzdanınıza tam iade",
-      "bookCta": "Kursu incele",
+      "bookCta": "Kursa katıl",
       "bookSoon": "Müfredat hazırlanıyor",
       "bookRole": "kitap",
-      "bookLabel": "Öne çıkan kurslar kitabı. Sayfa çevirmek için sol ve sağ ok tuşları, kursu açmak için Enter.",
+      "bookLabel": "Öne çıkan kurslar kitabı. Sayfa çevirmek için sol ve sağ ok tuşları, kursa katılmak için Enter.",
       "bookPages": "Kitabın sayfaları",
-      "bookGoTo": "{{no}}. kurs: {{title}}"
+      "bookGoTo": "{{no}}. kurs: {{title}}",
+      "bookmarkPage": "Bu sayfayı işaretle",
+      "bookmarked": "İşaretli sayfa"
     },
     "help": {
       "title": "Yardım",
