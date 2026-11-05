@@ -30,7 +30,7 @@ export const PUBLIC_LINKS = [
 ] as const;
 
 const NAV_LINK =
-  "relative rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground data-[status=active]:font-medium data-[status=active]:text-foreground";
+  "relative whitespace-nowrap rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground data-[status=active]:font-medium data-[status=active]:text-foreground";
 
 function PublicNav() {
   const { t } = useTranslation();
@@ -51,7 +51,7 @@ function PublicNav() {
 }
 
 const PRIMARY_CTA =
-  "rounded-full bg-primary px-4 py-2 text-center text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 active:scale-[0.97]";
+  "whitespace-nowrap rounded-full bg-primary px-4 py-2 text-center text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 active:scale-[0.97]";
 
 /** Sign-in links for guests, a dashboard link for members. */
 function AuthLinks({ authed, stacked = false }: { authed: boolean; stacked?: boolean }) {
@@ -66,7 +66,7 @@ function AuthLinks({ authed, stacked = false }: { authed: boolean; stacked?: boo
     <>
       <Link
         to="/login"
-        className={`rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground ${stacked ? "border border-border text-center" : ""}`}
+        className={`whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground ${stacked ? "border border-border text-center" : ""}`}
       >
         {t("login.loginButton")}
       </Link>
