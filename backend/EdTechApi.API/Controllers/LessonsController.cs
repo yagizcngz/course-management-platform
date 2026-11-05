@@ -36,16 +36,16 @@ namespace EdTechApi.API.Controllers
             return PhysicalFile(path, contentType, enableRangeProcessing: true);
         }
 
-        // Herkese açık arama dizini: kurs kimliği -> sıralı ders başlıkları (video bağlantısı içermez).
+        // Herkese açık müfredat: kurs kimliği -> sıralı ders başlığı ve açıklaması (video bağlantısı içermez).
         [AllowAnonymous]
         [HttpGet("/api/lessons/outline")]
         public async Task<IActionResult> Outline() =>
             Ok((await _context.Lessons.AsNoTracking()
                     .OrderBy(l => l.Order).ThenBy(l => l.Id)
-                    .Select(l => new { l.CourseId, l.Title })
+                    .Select(l => new { l.CourseId, l.Title, l.Description })
                     .ToListAsync())
                 .GroupBy(l => l.CourseId)
-                .ToDictionary(g => g.Key.ToString(), g => g.Select(l => l.Title).ToList()));
+                .ToDictionary(g => g.Key.ToString(), g => g.Select(l => new { l.Title, l.Description }).ToList()));
 
         public record LessonRequest(string Title, string? Description, string? VideoUrl, int? Order);
 
