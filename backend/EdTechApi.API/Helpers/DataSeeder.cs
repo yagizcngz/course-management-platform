@@ -78,6 +78,15 @@ namespace EdTechApi.API.Helpers
                 db.WalletTransactions.Add(new WalletTransaction { UserId = user.Id, Amount = 1000m, Type = "TopUp", Description = "Demo bakiye" });
                 db.SaveChanges();
             }
+
+            // demo profiller de seed eğitmen/öğrencileri gibi aylar önce katılmış görünür
+            var teacherJoined = DateTime.UtcNow.AddDays(-330);
+            foreach (var t in db.Teachers.Where(t => t.User != null && t.User.Username == "demo_teacher" && t.CreatedAt > teacherJoined))
+                t.CreatedAt = teacherJoined;
+            var studentJoined = DateTime.UtcNow.AddDays(-200);
+            foreach (var s in db.Students.Where(s => s.User != null && s.User.Username == "demo_student" && s.CreatedAt > studentJoined))
+                s.CreatedAt = studentJoined;
+            db.SaveChanges();
         }
 
         private static User NewUser(string username, string password, string role, string first, string last, string email) => new()

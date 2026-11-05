@@ -74,6 +74,44 @@ namespace EdTechApi.Tests
         }
 
         [Fact]
+        public void Seed_rebalances_enrollments_and_backs_paid_ones_with_wallet_history()
+        {
+            CatalogSeed.SeedCategories(_db);
+            CatalogSeed.SeedCatalog(_db);
+            // eski seed'in bıraktığı gibi bir öğrenciyi 20 kursa yaz
+            var student = _db.Students.Single(s => s.Email == "ali.vural@ogrenci.example");
+            foreach (var c in _db.Courses.ToList().Where(c => !_db.Enrollments.Any(e => e.StudentId == student.Id && e.CourseId == c.Id)).Take(20))
+                _db.Enrollments.Add(new Enrollment { StudentId = student.Id, CourseId = c.Id });
+            _db.SaveChanges();
+
+            CatalogSeed.SeedCatalog(_db);
+            var txCount = _db.WalletTransactions.Count();
+            CatalogSeed.SeedCatalog(_db);
+            Assert.Equal(txCount, _db.WalletTransactions.Count());
+
+            var seedStudents = _db.Students.Where(s => s.Email.EndsWith("@ogrenci.example")).ToList();
+            Assert.All(seedStudents, s =>
+                Assert.InRange(_db.Enrollments.Count(e => e.StudentId == s.Id), 2, 5));
+            Assert.All(seedStudents, s => Assert.NotNull(s.UserId));
+
+            var tx = _db.WalletTransactions.ToList();
+            Assert.Contains(tx, t => t.Type == "Purchase");
+            Assert.Contains(tx, t => t.Type == "Earning");
+            Assert.Contains(tx, t => t.Type == "Refund");
+            Assert.Contains(tx, t => t.Type == "EarningReversal");
+            // her etkin ücretli kaydın bir satın alması var; bakiye hareketlerin toplamı ve eksi değil
+            foreach (var e in _db.Enrollments.Include(e => e.Course).Include(e => e.Student).Where(e => e.Course.Price > 0).ToList())
+                Assert.Contains(tx, t => t.Type == "Purchase" && t.CourseId == e.CourseId && t.UserId == e.Student.UserId);
+            foreach (var u in _db.Users.ToList())
+            {
+                Assert.Equal(tx.Where(t => t.UserId == u.Id).Sum(t => t.Amount), u.Balance);
+                Assert.True(u.Balance >= 0, u.Username);
+            }
+            Assert.All(_db.Teachers.Where(t => t.Email.EndsWith("@edtech.example")).ToList(),
+                t => Assert.True(t.CreatedAt < DateTime.UtcNow.AddDays(-250)));
+        }
+
+        [Fact]
         public void Seed_keeps_valid_subcategory_and_fixes_invalid_one()
         {
             CatalogSeed.SeedCategories(_db);

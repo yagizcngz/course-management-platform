@@ -40,23 +40,29 @@ namespace EdTechApi.API.Helpers
 
         public static void SeedCatalog(AppDbContext db)
         {
+            var now = DateTime.UtcNow;
+            var users = db.Users.ToList();
             var teachers = db.Teachers.IgnoreQueryFilters().ToList();
-            foreach (var s in Teachers)
+            for (var i = 0; i < Teachers.Length; i++)
             {
+                var s = Teachers[i];
+                // eğitmenler 10-12 ay önce katılmış görünür; hepsi aynı anda değil
+                var joined = now.AddDays(-(300 + i * 11 % 65));
                 var t = teachers.FirstOrDefault(x => string.Equals(x.Email, s.Email, StringComparison.OrdinalIgnoreCase));
                 if (t == null)
                 {
                     t = new Teacher
                     {
                         FirstName = s.First, LastName = s.Last, Email = s.Email, Branch = s.Branch,
-                        AboutMe = s.About, ProfilePictureUrl = Avatar(s.Email), CreatedAt = DateTime.UtcNow
+                        AboutMe = s.About, ProfilePictureUrl = Avatar(s.Email), CreatedAt = joined
                     };
                     db.Teachers.Add(t);
                     db.SaveChanges();
                     t.TeacherNumber = DateTime.UtcNow.ToString("yy") + t.Id.ToString().PadLeft(7, '0');
                     teachers.Add(t);
-                    continue;
                 }
+                if (t.CreatedAt > joined) t.CreatedAt = joined;
+                t.User = EnsureAccount(db, users, t.UserId, s.Email, s.First, s.Last, "Teacher");
                 t.IsDeleted = false;
                 t.DeletedAt = null;
                 // seed branşları korunur, öğretmenin sonradan eklediği branşlar silinmez
@@ -69,9 +75,12 @@ namespace EdTechApi.API.Helpers
             var courses = db.Courses.IgnoreQueryFilters().ToList();
             var lessons = db.Lessons.IgnoreQueryFilters().ToList();
             var seeded = new List<Course>();
-            foreach (var s in Courses)
+            for (var i = 0; i < Courses.Length; i++)
             {
+                var s = Courses[i];
                 var teacher = teachers.First(x => x.Email == s.TeacherEmail);
+                // kurslar eğitmenlerden sonra, 6-10 ay önce açılmış görünür
+                var opened = now.AddDays(-(190 + i * 17 % 100));
                 // aynı başlıkta hem silinmiş hem etkin kurs varsa etkin olan tercih edilir
                 var c = courses.Where(x => string.Equals(x.Title.Trim(), s.Title, StringComparison.OrdinalIgnoreCase))
                     .OrderBy(x => x.IsDeleted).FirstOrDefault();
@@ -81,7 +90,7 @@ namespace EdTechApi.API.Helpers
                     {
                         Title = s.Title, Category = s.Category, Price = s.Price, MaxCapacity = s.Capacity,
                         Description = s.Description, TeacherId = teacher.Id, Instructor = FullName(teacher),
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = opened
                     };
                     db.Courses.Add(c);
                     db.SaveChanges();
@@ -102,6 +111,7 @@ namespace EdTechApi.API.Helpers
                         c.Instructor = FullName(teacher);
                     }
                 }
+                if (c.CreatedAt > opened) c.CreatedAt = opened;
                 if (string.IsNullOrWhiteSpace(c.Level) && Levels.TryGetValue(s.Title, out var level)) c.Level = level;
                 // alt kategori boşsa veya artık kategorisine ait değilse seed'dekiyle doldurulur; geçerli seçim korunur
                 if (BranchOptions.NormalizeSubCategory(c.Category, c.SubCategory) == null)
@@ -110,13 +120,13 @@ namespace EdTechApi.API.Helpers
 
                 // müfredat: seed derslerinden eksik olanlar eklenir, silinmiş olanlar geri yüklenir
                 var own = lessons.Where(l => l.CourseId == c.Id).ToList();
-                for (var i = 0; i < s.Lessons.Length; i++)
+                for (var j = 0; j < s.Lessons.Length; j++)
                 {
-                    var (title, description) = s.Lessons[i];
+                    var (title, description) = s.Lessons[j];
                     var l = own.FirstOrDefault(x => string.Equals(x.Title.Trim(), title, StringComparison.OrdinalIgnoreCase));
                     if (l == null)
                     {
-                        l = new Lesson { CourseId = c.Id, Title = title, Description = description, Order = i + 1 };
+                        l = new Lesson { CourseId = c.Id, Title = title, Description = description, Order = j + 1 };
                         db.Lessons.Add(l);
                         lessons.Add(l);
                     }
@@ -129,7 +139,7 @@ namespace EdTechApi.API.Helpers
             }
             db.SaveChanges();
 
-            SeedStudentsAndEnrollments(db, seeded);
+            SeedStudentsAndEnrollments(db, seeded, users);
             FillMissingTeacherBios(db);
         }
 
@@ -140,54 +150,198 @@ namespace EdTechApi.API.Helpers
         // "admin", "test" gibi deneme yazıları da boş sayılır; gerçek bir biyografi bundan uzundur
         private static bool IsBlankBio(string? bio) => string.IsNullOrWhiteSpace(bio) || bio.Trim().Length < 20;
 
-        // Demo öğrenciler (giriş hesabı yok) ve kurslara deterministik dağılan kayıtlar; kapasite aşılmaz.
-        private static void SeedStudentsAndEnrollments(AppDbContext db, List<Course> courses)
+        // Demo öğrenciler: her biri 2-5 kursa kayıtlı. Ücretli kayıtlar WalletService'teki gibi cüzdan hareketiyle
+        // (yükleme, satın alma, öğretmen payı) gelir; birkaç öğrenci de bir kursu alıp iade etmiştir. Raporlar ve
+        // cüzdan sayfaları bu hareketlerden beslenir.
+        private static void SeedStudentsAndEnrollments(AppDbContext db, List<Course> courses, List<User> users)
         {
+            var now = DateTime.UtcNow;
             var existing = db.Students.IgnoreQueryFilters().ToList();
             var students = new List<Student>();
-            foreach (var s in Students)
+            for (var i = 0; i < Students.Length; i++)
             {
+                var s = Students[i];
+                var joined = now.AddDays(-(180 + i * 37 % 180));
                 var st = existing.FirstOrDefault(x => string.Equals(x.Email, s.Email, StringComparison.OrdinalIgnoreCase));
                 if (st == null)
                 {
                     // StudentNumber benzersiz indeksli; gerçek numara Id'ye bağlı olduğu için önce geçici değer
-                    st = new Student { FirstName = s.First, LastName = s.Last, Email = s.Email, StudentNumber = "tmp-" + s.Email, CreatedAt = DateTime.UtcNow };
+                    st = new Student { FirstName = s.First, LastName = s.Last, Email = s.Email, StudentNumber = "tmp-" + s.Email, CreatedAt = joined };
                     db.Students.Add(st);
                     db.SaveChanges();
                     st.StudentNumber = DateTime.UtcNow.ToString("yy") + st.Id.ToString().PadLeft(7, '0');
                 }
-                else
-                {
-                    st.IsDeleted = false;
-                    st.DeletedAt = null;
-                }
+                st.IsDeleted = false;
+                st.DeletedAt = null;
+                if (st.CreatedAt > joined) st.CreatedAt = joined;
+                st.User = EnsureAccount(db, users, st.UserId, s.Email, s.First, s.Last, "User");
                 students.Add(st);
             }
             db.SaveChanges();
 
-            var ids = courses.Select(c => c.Id).ToList();
-            var enrollments = db.Enrollments.IgnoreQueryFilters().Where(e => ids.Contains(e.CourseId)).ToList();
-            for (var i = 0; i < courses.Count; i++)
+            var studentIds = students.Select(s => s.Id).ToList();
+            var enrollments = db.Enrollments.IgnoreQueryFilters().Where(e => studentIds.Contains(e.StudentId)).ToList();
+            var taken = db.Enrollments.GroupBy(e => e.CourseId).Select(g => new { g.Key, Count = g.Count() })
+                .ToDictionary(x => x.Key, x => x.Count);
+            var refunded = new List<(Student Student, Course Course, DateTime At)>();
+            for (var i = 0; i < students.Count; i++)
             {
-                var course = courses[i];
-                var active = enrollments.Count(e => e.CourseId == course.Id && !e.IsDeleted);
-                var want = 3 + (i * 7) % 10;
-                for (var k = 0; k < want && active < course.MaxCapacity; k++)
+                var st = students[i];
+                var picks = PickCourses(i, 2 + i * 3 % 4, courses.Count);
+                var target = picks.Select(n => courses[n].Id).ToHashSet();
+                // eski seed öğrencileri 15-25 kursa yazıyordu: hedef dışındaki etkin kayıtları kaldırılır
+                foreach (var e in enrollments.Where(e => e.StudentId == st.Id && !e.IsDeleted && !target.Contains(e.CourseId)).ToList())
                 {
-                    var st = students[(i * 5 + k * 3) % students.Count];
+                    db.Enrollments.Remove(e);
+                    enrollments.Remove(e);
+                    taken[e.CourseId]--;
+                }
+                for (var k = 0; k < picks.Count; k++)
+                {
+                    var course = courses[picks[k]];
                     // silinmiş kayıt öğrencinin/yöneticinin kararıdır, geri yüklenmez
-                    if (enrollments.Any(x => x.CourseId == course.Id && x.StudentId == st.Id)) continue;
+                    if (enrollments.Any(x => x.StudentId == st.Id && x.CourseId == course.Id)
+                        || taken.GetValueOrDefault(course.Id) >= course.MaxCapacity) continue;
                     var e = new Enrollment
                     {
                         CourseId = course.Id, StudentId = st.Id, Grade = 55 + (i * 13 + k * 7) % 45,
-                        EnrollmentDate = DateTime.UtcNow.AddDays(-((i * 11 + k * 5) % 120))
+                        EnrollmentDate = now.AddDays(-(3 + (i * 31 + k * 47) % 170)).AddHours(-((i + k) % 9))
                     };
                     db.Enrollments.Add(e);
                     enrollments.Add(e);
-                    active++;
+                    taken[course.Id] = taken.GetValueOrDefault(course.Id) + 1;
+                }
+                // her yedinci öğrenci bir kursu satın alıp iki gün içinde iade etmiş
+                if (i % 7 == 3)
+                {
+                    var other = courses.Where(c => c.Price > 0 && !target.Contains(c.Id)).ElementAtOrDefault(i * 5 % 40);
+                    if (other != null) refunded.Add((st, other, now.AddDays(-(20 + i * 9 % 140))));
                 }
             }
             db.SaveChanges();
+            SeedWallet(db, students, courses, enrollments, refunded);
+        }
+
+        // Bir öğrencinin seed kursları: katalog sırasına göre deterministik ve tekrarsız
+        private static List<int> PickCourses(int student, int count, int total)
+        {
+            var picks = new List<int>();
+            for (var k = 0; picks.Count < Math.Min(count, total) && k < total * 2; k++)
+            {
+                var n = (student * 13 + k * 29) % total;
+                if (!picks.Contains(n)) picks.Add(n);
+            }
+            return picks;
+        }
+
+        private static void SeedWallet(AppDbContext db, List<Student> students, List<Course> courses,
+            List<Enrollment> enrollments, List<(Student Student, Course Course, DateTime At)> refunded)
+        {
+            var buyerIds = students.Where(s => s.UserId != null).Select(s => s.UserId!.Value).ToList();
+            var bought = db.WalletTransactions
+                .Where(t => buyerIds.Contains(t.UserId) && (t.Type == "Purchase" || t.Type == "Refund"))
+                .Select(t => new { t.UserId, t.CourseId, t.Type }).ToList();
+            var teacherUser = db.Teachers.IgnoreQueryFilters().Where(t => t.UserId != null)
+                .ToDictionary(t => t.Id, t => t.UserId!.Value);
+            var share = 70m;
+            var setting = db.SystemSettings.FirstOrDefault(s => s.SettingKey == "TEACHER_SHARE_PERCENT");
+            if (setting != null && decimal.TryParse(setting.SettingValue, out var parsed) && parsed is >= 0 and <= 100) share = parsed;
+
+            var sales = new List<(WalletTransaction Purchase, Course Course, DateTime? RefundAt)>();
+            void Buy(int userId, Course course, DateTime at, DateTime? refundAt)
+            {
+                // satın almadan hemen önce fiyatı karşılayan, 250'ye yuvarlanmış bir yükleme
+                db.WalletTransactions.Add(new WalletTransaction
+                {
+                    UserId = userId, Amount = Math.Ceiling(course.Price / 250m) * 250m, Type = "TopUp",
+                    Description = "Bakiye yükleme", CreatedAt = at.AddMinutes(-20)
+                });
+                var purchase = new WalletTransaction
+                {
+                    UserId = userId, Amount = -course.Price, Type = "Purchase", CourseId = course.Id,
+                    Description = course.Title, CreatedAt = at
+                };
+                db.WalletTransactions.Add(purchase);
+                sales.Add((purchase, course, refundAt));
+            }
+
+            foreach (var st in students.Where(s => s.UserId != null))
+                foreach (var e in enrollments.Where(e => e.StudentId == st.Id && !e.IsDeleted))
+                {
+                    var course = courses.FirstOrDefault(c => c.Id == e.CourseId);
+                    if (course == null || course.Price <= 0 || bought.Any(b => b.UserId == st.UserId && b.CourseId == course.Id)) continue;
+                    Buy(st.UserId!.Value, course, e.EnrollmentDate, null);
+                }
+            foreach (var (st, course, at) in refunded)
+            {
+                if (st.UserId == null || bought.Any(b => b.UserId == st.UserId && b.Type == "Refund")) continue;
+                Buy(st.UserId.Value, course, at, at.AddDays(2));
+                // iade, WalletService'teki gibi kaydı soft-delete eder
+                if (!enrollments.Any(e => e.StudentId == st.Id && e.CourseId == course.Id))
+                    db.Enrollments.Add(new Enrollment
+                    {
+                        CourseId = course.Id, StudentId = st.Id, EnrollmentDate = at, IsDeleted = true, DeletedAt = at.AddDays(2)
+                    });
+            }
+            db.SaveChanges(); // satın alma Id'leri öğretmen payı ve iade satırlarında kullanılır
+
+            foreach (var (purchase, course, refundAt) in sales)
+            {
+                int? teacherUserId = course.TeacherId is int tid && teacherUser.TryGetValue(tid, out var uid) ? uid : null;
+                var earning = decimal.Round(course.Price * share / 100m, 2);
+                var paysTeacher = teacherUserId != null && earning > 0;
+                if (paysTeacher)
+                    db.WalletTransactions.Add(new WalletTransaction
+                    {
+                        UserId = teacherUserId!.Value, Amount = earning, Type = "Earning", CourseId = course.Id,
+                        Description = course.Title, RelatedTransactionId = purchase.Id, CreatedAt = purchase.CreatedAt
+                    });
+                if (refundAt is not DateTime at) continue;
+                db.WalletTransactions.Add(new WalletTransaction
+                {
+                    UserId = purchase.UserId, Amount = course.Price, Type = "Refund", CourseId = course.Id,
+                    Description = course.Title, RelatedTransactionId = purchase.Id, CreatedAt = at
+                });
+                if (paysTeacher)
+                    db.WalletTransactions.Add(new WalletTransaction
+                    {
+                        UserId = teacherUserId!.Value, Amount = -earning, Type = "EarningReversal", CourseId = course.Id,
+                        Description = course.Title, RelatedTransactionId = purchase.Id, CreatedAt = at
+                    });
+            }
+            db.SaveChanges();
+
+            // bakiye her zaman hareketlerin toplamıdır (WalletService de bu eşitliği korur)
+            var seedUserIds = buyerIds.Concat(teacherUser.Values).Distinct().ToList();
+            var sums = db.WalletTransactions.Where(t => seedUserIds.Contains(t.UserId))
+                .Select(t => new { t.UserId, t.Amount }).ToList() // SQLite (testler) decimal toplamını sunucuda yapamaz
+                .GroupBy(t => t.UserId).ToDictionary(g => g.Key, g => g.Sum(t => t.Amount));
+            foreach (var u in db.Users.Where(u => seedUserIds.Contains(u.Id)).ToList())
+                u.Balance = sums.GetValueOrDefault(u.Id);
+            db.SaveChanges();
+        }
+
+        private static string? _seedPasswordHash;
+
+        // Seed eğitmen/öğrencilerinin giriş hesabı: cüzdan hareketleri bir kullanıcıya bağlanır. Parola kimsenin
+        // bilmediği rastgele bir değerin özetidir, bu hesaplarla giriş yapılamaz.
+        private static User EnsureAccount(AppDbContext db, List<User> users, int? userId, string email, string first, string last, string role)
+        {
+            var u = users.FirstOrDefault(x => userId != null && x.Id == userId)
+                ?? users.FirstOrDefault(x => string.Equals(x.Email, email, StringComparison.OrdinalIgnoreCase));
+            if (u != null) return u;
+            var name = email.Split('@')[0];
+            var username = name;
+            for (var n = 2; users.Any(x => string.Equals(x.Username, username, StringComparison.OrdinalIgnoreCase)); n++)
+                username = name + n;
+            u = new User
+            {
+                Username = username, Role = role, FirstName = first, LastName = last, Email = email,
+                Password = _seedPasswordHash ??= BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString("N"))
+            };
+            db.Users.Add(u);
+            users.Add(u);
+            return u;
         }
 
         // Seed listesinde olmayan (ör. panelden eklenmiş) öğretmenlerin boş biyografilerini branşlarına göre doldurur.
