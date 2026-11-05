@@ -70,15 +70,22 @@ function CoursePage() {
   const [refundable, setRefundable] = useState(false);
   const [refundOpen, setRefundOpen] = useState(false);
 
-  const load = async () => {
+  // `stale` turns true once the page has moved to another course, so a slow answer for the
+  // previous one cannot overwrite it
+  const load = async (stale = () => false) => {
     try {
       const res = await fetch(`${API_BASE}/api/courses/${id}/lessons`, { headers: authHeaders() });
       if (!res.ok) throw new Error(await readError(res, t("lessons.loadFailed")));
       const json: CourseLessons = await res.json();
+      if (stale()) return;
       setData(json);
-      setActiveId((cur) => cur ?? json.lessons[0]?.id ?? null);
+      // keep the open lesson only if it belongs to this course
+      setActiveId((cur) =>
+        json.lessons.some((l) => l.id === cur) ? cur : (json.lessons[0]?.id ?? null),
+      );
       setError(null);
     } catch (e) {
+      if (stale()) return;
       setError((e as Error).message);
     }
     const w = await fetch(`${API_BASE}/api/wallet/me`, { headers: authHeaders() }).catch(
@@ -86,6 +93,7 @@ function CoursePage() {
     );
     if (w?.ok) {
       const wallet = await w.json();
+      if (stale()) return;
       setBalance(wallet.balance);
       setPurchased(wallet.purchasedCourseIds.includes(Number(id)));
       setRefundable(wallet.refundableCourseIds.includes(Number(id)));
@@ -93,7 +101,11 @@ function CoursePage() {
   };
 
   useEffect(() => {
-    load();
+    let off = false;
+    load(() => off);
+    return () => {
+      off = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
