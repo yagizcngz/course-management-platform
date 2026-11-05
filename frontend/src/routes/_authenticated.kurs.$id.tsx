@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { PlayCircle, Lock, Trash2, Upload } from "lucide-react";
+import { PlayCircle, Lock, Trash2, Upload, CheckCircle2, Circle } from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { API_BASE } from "@/components/courseHelpers";
+import { CourseProgressBar } from "@/components/CourseProgressBar";
 import { authHeaders, getToken, readError } from "@/lib/auth";
 import { formatTry } from "@/lib/utils";
 
@@ -38,6 +39,9 @@ interface Lesson {
 interface CourseLessons {
   hasAccess: boolean;
   canEdit: boolean;
+  isEnrolled: boolean;
+  completedLessonIds: number[];
+  progressPercent: number;
   course: {
     id: number;
     title: string;
@@ -131,6 +135,31 @@ function CoursePage() {
     }
   };
 
+  // a lesson counts as done from its button or when its video plays to the end
+  const complete = async (lessonId: number) => {
+    if (!data?.isEnrolled || data.completedLessonIds.includes(lessonId)) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/courses/${id}/lessons/${lessonId}/complete`, {
+        method: "POST",
+        headers: authHeaders(),
+      });
+      if (!res.ok) throw new Error(await readError(res, t("lessons.completeFailed")));
+      const p: { progressPercent: number; completed: boolean } = await res.json();
+      setData((d) =>
+        d
+          ? {
+              ...d,
+              completedLessonIds: [...d.completedLessonIds, lessonId],
+              progressPercent: p.progressPercent,
+            }
+          : d,
+      );
+      if (p.completed) toast.success(t("lessons.courseCompleted"));
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  };
+
   const refund = async () => {
     setBusy(true);
     try {
@@ -167,8 +196,9 @@ function CoursePage() {
     );
   }
 
-  const { course, lessons, hasAccess, canEdit } = data;
+  const { course, lessons, hasAccess, canEdit, isEnrolled } = data;
   const active = lessons.find((l) => l.id === activeId) ?? null;
+  const done = new Set(data.completedLessonIds ?? []);
   const needsPurchase = course.price > 0 && !purchased;
   const insufficient = needsPurchase && balance !== null && balance < course.price;
 
@@ -191,7 +221,13 @@ function CoursePage() {
                     allowFullScreen
                   />
                 ) : (
-                  <video key={p.src} src={p.src} controls className="w-full h-full" />
+                  <video
+                    key={p.src}
+                    src={p.src}
+                    controls
+                    className="w-full h-full"
+                    onEnded={() => complete(active.id)}
+                  />
                 );
               })()
             ) : (
@@ -206,14 +242,28 @@ function CoursePage() {
             )}
           </div>
 
-          <div>
+          <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {course.category} · {course.instructor}
             </p>
-            <h1 className="text-2xl font-bold tracking-tight mt-1">
-              {active && hasAccess ? active.title : course.title}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-2 whitespace-pre-line">
+            <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
+              <h1 className="min-w-0 flex-1 text-2xl font-bold tracking-tight break-words [overflow-wrap:anywhere]">
+                {active && hasAccess ? active.title : course.title}
+              </h1>
+              {isEnrolled && active && (
+                <Button
+                  size="sm"
+                  variant={done.has(active.id) ? "secondary" : "default"}
+                  disabled={done.has(active.id)}
+                  onClick={() => complete(active.id)}
+                  className="shrink-0 rounded-full"
+                >
+                  <CheckCircle2 className="size-4" />
+                  {done.has(active.id) ? t("lessons.completed") : t("lessons.markComplete")}
+                </Button>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground mt-2 whitespace-pre-line break-words [overflow-wrap:anywhere]">
               {active && hasAccess ? active.description || "" : course.description}
             </p>
           </div>
@@ -268,6 +318,13 @@ function CoursePage() {
 
         <Card className="h-fit">
           <CardContent className="p-0">
+            {isEnrolled && (
+              <CourseProgressBar
+                percent={data.progressPercent}
+                label={t("lessons.progress", { done: done.size, total: lessons.length })}
+                className="px-4 py-4 border-b"
+              />
+            )}
             <p className="px-4 py-3 border-b text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {t("lessons.list", { count: lessons.length })}
             </p>
@@ -285,8 +342,20 @@ function CoursePage() {
                       <span className="text-xs text-muted-foreground tabular-nums w-5 pt-0.5">
                         {i + 1}
                       </span>
-                      <span className="flex-1">{l.title}</span>
+                      <span className="flex-1 min-w-0 break-words">{l.title}</span>
                       {!hasAccess && <Lock className="size-3.5 text-muted-foreground mt-0.5" />}
+                      {isEnrolled &&
+                        (done.has(l.id) ? (
+                          <CheckCircle2
+                            aria-label={t("lessons.completed")}
+                            className="size-4 shrink-0 text-gold mt-0.5"
+                          />
+                        ) : (
+                          <Circle
+                            aria-hidden="true"
+                            className="size-4 shrink-0 text-border mt-0.5"
+                          />
+                        ))}
                     </button>
                     {canEdit && <DeleteLessonButton courseId={id} lesson={l} onDeleted={load} />}
                   </li>

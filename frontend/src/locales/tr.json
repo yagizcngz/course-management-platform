@@ -1107,7 +1107,12 @@
       "refundHint": "Vazgeçtiniz mi? Satın almadan sonraki 7 gün içinde tam iade.",
       "refundBody": "{{price}} cüzdanınıza iade edilecek ve \"{{course}}\" kursuna erişiminiz kapanacak.",
       "refundSuccess": "Cüzdanınıza iade edildi.",
-      "refundFailed": "İade yapılamadı."
+      "refundFailed": "İade yapılamadı.",
+      "completeFailed": "Ders tamamlanamadı.",
+      "courseCompleted": "Tebrikler, kursu tamamladınız!",
+      "completed": "Tamamlandı",
+      "markComplete": "Dersi Tamamla",
+      "progress": "İlerleme · {{done}}/{{total}} ders"
     },
     "publicNav": {
       "label": "Ana menü",
@@ -1231,6 +1236,15 @@
       "less": "Daha az göster",
       "moreCourses": "+{{count}} kurs daha",
       "fewerCourses": "Daha az göster"
+    },
+    "myCourses": {
+      "ongoing": "Devam Eden Kurslar",
+      "completed": "Tamamlanan Kurslar",
+      "noOngoing": "Devam eden kursunuz yok; yeni bir kurs keşfedin.",
+      "noCompleted": "Henüz tamamlanan kurs yok. Bir kursun tüm derslerini bitirdiğinizde burada görünür.",
+      "completedBadge": "Tamamlandı",
+      "lessonsDone": "{{done}}/{{total}} ders",
+      "completedOn": "{{date}} tarihinde tamamlandı"
     }
   }
 }

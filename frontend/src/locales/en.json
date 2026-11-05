@@ -1190,7 +1190,12 @@
       "refundHint": "Changed your mind? Full refund within 7 days of purchase.",
       "refundBody": "{{price}} will be returned to your wallet and you will lose access to \"{{course}}\".",
       "refundSuccess": "Refunded to your wallet.",
-      "refundFailed": "Refund failed."
+      "refundFailed": "Refund failed.",
+      "completeFailed": "Could not mark the lesson complete.",
+      "courseCompleted": "Congratulations, you completed the course!",
+      "completed": "Completed",
+      "markComplete": "Mark Complete",
+      "progress": "Progress · {{done}}/{{total}} lessons"
     },
     "publicNav": {
       "label": "Main navigation",
@@ -1316,6 +1321,15 @@
       "moreCourses_one": "+{{count}} more course",
       "moreCourses_other": "+{{count}} more courses",
       "fewerCourses": "Show fewer"
+    },
+    "myCourses": {
+      "ongoing": "Ongoing Courses",
+      "completed": "Completed Courses",
+      "noOngoing": "No ongoing courses; discover a new one.",
+      "noCompleted": "No completed courses yet. A course appears here once you finish all of its lessons.",
+      "completedBadge": "Completed",
+      "lessonsDone": "{{done}}/{{total}} lessons",
+      "completedOn": "Completed on {{date}}"
     }
   }
 }

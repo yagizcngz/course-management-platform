@@ -21,5 +21,7 @@ export const formatTry = (value: number) =>
 /** A date in the UI language's format, or "-" when it is missing or unparseable. */
 export const formatDate = (raw: unknown, lang: string) => {
   const d = raw ? new Date(raw as string) : null;
-  return d && !isNaN(d.getTime()) ? d.toLocaleDateString(lang.startsWith("en") ? "en-GB" : "tr-TR") : "-";
+  return d && !isNaN(d.getTime())
+    ? d.toLocaleDateString(lang.startsWith("en") ? "en-GB" : "tr-TR")
+    : "-";
 };

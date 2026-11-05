@@ -84,6 +84,11 @@ export interface EnrollmentDto {
   EnrollmentDate?: string;
   status?: string;
   Status?: string;
+  /** Only on the student's own list (/api/enrollments/my-courses). */
+  progressPercent?: number;
+  completedLessons?: number;
+  totalLessons?: number;
+  completedAt?: string | null;
 }
 
 export interface StudentLiteDto {

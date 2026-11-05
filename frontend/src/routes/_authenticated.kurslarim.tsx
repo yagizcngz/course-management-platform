@@ -10,6 +10,9 @@ import {
   type TeacherLiteDto,
 } from "@/components/courseHelpers";
 import { toast } from "sonner";
+import { CheckCircle2 } from "lucide-react";
+import { CourseProgressBar } from "@/components/CourseProgressBar";
+import { formatDate } from "@/lib/utils";
 
 import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/_authenticated/kurslarim")({
@@ -102,6 +105,70 @@ function MyCoursesPage() {
     fetchMyCourses();
   };
 
+  const progressOf = (e: EnrollmentDto) => e.progressPercent ?? 0;
+  const ongoing = courses.filter((e) => progressOf(e) < 100);
+  const completed = courses.filter((e) => progressOf(e) >= 100);
+
+  const renderCard = (enrollment: EnrollmentDto, index: number) => {
+    const c = (enrollment.course || enrollment.Course || enrollment) as CourseData;
+    const title = c.title || c.Title || t("courses.unnamedCourse");
+    const categoryRaw = c.category || c.Category || "";
+    const category = categoryRaw
+      ? i18n.exists(`dynamic.categories.${categoryRaw}`)
+        ? t(`dynamic.categories.${categoryRaw}`)
+        : categoryRaw
+      : t("courses.general");
+    const instructor = c.instructor || c.Instructor || t("courses.unknown");
+    const percent = progressOf(enrollment);
+    const done = percent >= 100;
+
+    return (
+      <button
+        type="button"
+        key={enrollment.id || enrollment.Id || index}
+        onClick={() => setSelectedCourse(c)}
+        title={t("courses.viewDetails")}
+        className="group min-w-0 text-left bg-card border border-border hover:border-gold/60 transition-colors rounded-xl overflow-hidden shadow-sm flex flex-col"
+      >
+        <div className="w-full aspect-video relative overflow-hidden bg-muted">
+          <img src={getCourseImage(c, index)} alt="" className="w-full h-full object-cover" />
+          <span
+            className={`absolute top-2 right-2 inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] backdrop-blur-sm ${done ? "bg-gold text-night" : "bg-black/70 text-white"}`}
+          >
+            {done && <CheckCircle2 aria-hidden="true" className="size-3" />}
+            {done ? t("myCourses.completedBadge") : t("dashboard.inProgress")}
+          </span>
+        </div>
+        <div className="p-4 flex-1 flex flex-col gap-1 min-w-0">
+          <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-gold truncate">
+            {category}
+          </div>
+          <h3 className="font-semibold break-words [overflow-wrap:anywhere] group-hover:text-gold transition-colors">
+            {i18n.exists(`dynamic.courses.${title}`) ? t(`dynamic.courses.${title}`) : title}
+          </h3>
+          <p className="text-xs text-muted-foreground truncate">
+            {t("guest.instructor")}: {instructor}
+          </p>
+          <CourseProgressBar
+            percent={percent}
+            label={t("myCourses.lessonsDone", {
+              done: enrollment.completedLessons ?? 0,
+              total: enrollment.totalLessons ?? 0,
+            })}
+            className="mt-auto pt-3"
+          />
+          {done && enrollment.completedAt && (
+            <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+              {t("myCourses.completedOn", {
+                date: formatDate(enrollment.completedAt, i18n.language),
+              })}
+            </p>
+          )}
+        </div>
+      </button>
+    );
+  };
+
   return (
     <>
       <PageHeader crumb={t("sidebar.myCourses", "Kurslarım")} />
@@ -129,52 +196,33 @@ function MyCoursesPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-            {courses.map((enrollment, index) => {
-              const c = (enrollment.course || enrollment.Course || enrollment) as CourseData;
-              const currentId = c.id ?? c.Id;
-              const title = c.title || c.Title || t("courses.unnamedCourse");
-              const categoryRaw = c.category || c.Category || "";
-              const category = categoryRaw
-                ? i18n.exists(`dynamic.categories.${categoryRaw}`)
-                  ? t(`dynamic.categories.${categoryRaw}`)
-                  : categoryRaw
-                : t("courses.general");
-              const price = c.price || c.Price || "0";
-              const instructor = c.instructor || c.Instructor || t("courses.unknown");
-              const imageUrl = getCourseImage(c, index);
-
-              return (
-                <div
-                  key={enrollment.id || enrollment.Id || index}
-                  onClick={() => setSelectedCourse(c)}
-                  title={t("courses.viewDetails")}
-                  className="group bg-card border border-border hover:border-accent transition-colors rounded-md overflow-hidden shadow-sm flex flex-col cursor-pointer"
-                >
-                  <div className="w-full aspect-video relative overflow-hidden bg-muted">
-                    <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
-                    <span className="absolute top-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider backdrop-blur-sm shadow-sm border border-border">
-                      {t("dashboard.inProgress", "DEVAM EDİYOR")}
-                    </span>
-                  </div>
-                  <div className="p-4 flex-1 flex flex-col">
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-accent mb-2">
-                      {i18n.exists(`dynamic.categories.${category}`)
-                        ? t(`dynamic.categories.${category}`)
-                        : category}
-                    </div>
-                    <h3 className="font-bold mb-1 group-hover:text-accent transition-colors">
-                      {i18n.exists(`dynamic.courses.${title}`)
-                        ? t(`dynamic.courses.${title}`)
-                        : title}
-                    </h3>
-                    <p className="text-xs text-muted-foreground mt-auto">
-                      {t("guest.instructor", "Eğitmen")}: {instructor}
-                    </p>
-                  </div>
+          <div className="space-y-12">
+            {[
+              { key: "ongoing", title: t("myCourses.ongoing"), list: ongoing },
+              { key: "completed", title: t("myCourses.completed"), list: completed },
+            ].map((section) => (
+              <section key={section.key} aria-labelledby={`my-${section.key}`}>
+                <div className="mb-5 flex items-baseline justify-between gap-4 border-b border-border pb-2">
+                  <h2 id={`my-${section.key}`} className="font-serif text-3xl leading-none">
+                    {section.title}
+                  </h2>
+                  <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground tabular-nums">
+                    {String(section.list.length).padStart(2, "0")}
+                  </span>
                 </div>
-              );
-            })}
+                {section.list.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    {section.key === "ongoing"
+                      ? t("myCourses.noOngoing")
+                      : t("myCourses.noCompleted")}
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {section.list.map((enrollment, index) => renderCard(enrollment, index))}
+                  </div>
+                )}
+              </section>
+            ))}
           </div>
         )}
       </div>
