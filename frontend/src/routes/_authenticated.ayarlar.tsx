@@ -1,30 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import {
-  Settings,
-  User as UserIcon,
-  Lock,
-  Mail,
-  AlertCircle,
-  Database,
-  List,
-  Plus,
-  Trash2,
-} from "lucide-react";
-import { useEffect, useState } from "react";
+import { User as UserIcon, Lock, Mail, Database, List, Plus, Trash2, Palette } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-
-import { parseJwt, isAdminRole, readError } from "@/lib/auth";
+import { PageHeader } from "@/components/PageHeader";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { LanguageToggle, ThemeToggle } from "@/components/DisplayToggles";
+import { Switch } from "@/components/ui/switch";
+import { chip, pillButton } from "@/lib/utils";
+import { authHeaders, getRoleFromToken, isAdminRole, readError } from "@/lib/auth";
 import { API_BASE } from "@/components/courseHelpers";
 interface SystemSettingData {
   settingKey: string;
@@ -36,6 +20,7 @@ interface CategoryData {
   id: string | number;
   name: string;
   description?: string;
+  subCategories?: string[];
 }
 
 export const Route = createFileRoute("/_authenticated/ayarlar")({
@@ -66,15 +51,7 @@ function SettingsPage() {
 
   const [isLoading, setIsLoading] = useState(true);
 
-  const [deleteSettingConfirm, setDeleteSettingConfirm] = useState<string | null>(null);
-  const [deleteCategoryConfirm, setDeleteCategoryConfirm] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
   const [isSaving, setIsSaving] = useState(false);
-  const [pendingConfirm, setPendingConfirm] = useState<{
-    message: string;
-    onConfirm: () => void;
-  } | null>(null);
 
   // System Settings State
   const [settings, setSettings] = useState<SystemSettingData[]>([]);
@@ -88,15 +65,7 @@ function SettingsPage() {
   const [newCategoryDesc, setNewCategoryDesc] = useState("");
 
   useEffect(() => {
-    const token = localStorage.getItem("jwt_token");
-    if (token) {
-      const payload = parseJwt(token);
-      if (payload) {
-        const role =
-          payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || payload.role;
-        setIsAdmin(isAdminRole(role));
-      }
-    }
+    setIsAdmin(isAdminRole(getRoleFromToken()));
     fetchProfile();
   }, []);
 
@@ -241,636 +210,498 @@ function SettingsPage() {
     }
   };
 
+  // the switch saves at once; a failed save puts it back
+  const savePreference = async (value: boolean) => {
+    setReceiveEmail(value);
+    const res = await fetch(`${API_BASE}/api/profile/me`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify({
+        firstName,
+        lastName,
+        aboutMe,
+        profilePictureUrl: profilePic,
+        isProfilePublic: isPublic,
+        receiveEmailNotifications: value,
+      }),
+    }).catch(() => null);
+    if (res?.ok) showToast("success", t("settings.success"));
+    else {
+      setReceiveEmail(!value);
+      showToast("error", t("settings.system.updateFailed"));
+    }
+  };
+
+  const saveSetting = async (setting: SystemSettingData, value: string) => {
+    if (value === setting.settingValue) return;
+    const res = await fetch(`${API_BASE}/api/systemsettings/${setting.settingKey}`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify({ settingValue: value, description: setting.description }),
+    }).catch(() => null);
+    if (res?.ok) {
+      showToast("success", t("settings.system.updateSuccess"));
+      fetchSettings();
+    } else showToast("error", t("settings.system.updateFailed"));
+  };
+
+  const addSetting = async () => {
+    if (!newSettingKey || !newSettingValue) return;
+    const res = await fetch(`${API_BASE}/api/systemsettings/${newSettingKey}`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify({ settingValue: newSettingValue, description: newSettingDesc }),
+    }).catch(() => null);
+    if (res?.ok) {
+      showToast("success", t("settings.system.addSuccess"));
+      setNewSettingKey("");
+      setNewSettingValue("");
+      setNewSettingDesc("");
+      fetchSettings();
+    } else showToast("error", t("settings.system.addFailed"));
+  };
+
+  const addCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    const res = await fetch(`${API_BASE}/api/categories`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ name: newCategoryName, description: newCategoryDesc }),
+    }).catch(() => null);
+    if (res?.ok) {
+      showToast("success", t("settings.categories.addSuccess"));
+      setNewCategoryName("");
+      setNewCategoryDesc("");
+      fetchCategoriesList();
+    } else
+      showToast(
+        "error",
+        res
+          ? await readError(res, t("settings.categories.addFailed"))
+          : t("settings.categories.addFailed"),
+      );
+  };
+
   if (isLoading) {
     return (
-      <div className="p-8 flex justify-center">
-        <div className="size-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-      </div>
+      <>
+        <PageHeader crumb={t("sidebar.settings")} />
+        <div className="p-8 flex justify-center">
+          <div className="size-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </>
     );
   }
 
+  const tabs: { id: typeof activeTab; label: string }[] = [
+    { id: "account", label: t("settings.tabs.account") },
+    { id: "preferences", label: t("settings.tabs.preferences") },
+    ...(isAdmin
+      ? [
+          { id: "system" as const, label: t("settings.tabs.system") },
+          { id: "categories" as const, label: t("settings.tabs.categories") },
+        ]
+      : []),
+  ];
+  const label = (key: string, ns: "categories" | "subCategories") =>
+    i18n.exists(`dynamic.${ns}.${key}`) ? t(`dynamic.${ns}.${key}`) : key;
+
+  const deleteAccount = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/profile/me`, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
+      if (!res.ok) throw new Error(await readError(res, t("settings.profile.deleteError")));
+      localStorage.removeItem("jwt_token");
+      window.location.href = "/";
+    } catch (e) {
+      showToast("error", (e as Error).message);
+    }
+  };
+
+  const deleteSetting = async (key: string) => {
+    const res = await fetch(`${API_BASE}/api/systemsettings/${key}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    }).catch(() => null);
+    if (res?.ok) {
+      showToast("success", t("settings.system.deleteSuccess"));
+      fetchSettings();
+    } else showToast("error", t("settings.system.deleteFailed"));
+  };
+
+  const deleteCategory = async (id: string | number) => {
+    const res = await fetch(`${API_BASE}/api/categories/${id}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    }).catch(() => null);
+    if (res?.ok) {
+      showToast("success", t("settings.categories.deleteSuccess"));
+      fetchCategoriesList();
+    } else
+      showToast(
+        "error",
+        res
+          ? await readError(res, t("settings.categories.deleteFailed"))
+          : t("settings.categories.deleteFailed"),
+      );
+  };
+
   return (
-    <div className="flex-1 space-y-6 p-4 pt-6 sm:p-8 sm:pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Settings className="h-8 w-8 text-primary" />
-          {t("settings.title")}
-        </h2>
-      </div>
+    <>
+      <PageHeader crumb={t("sidebar.settings")} />
+      <div className="mx-auto w-full max-w-5xl space-y-8 p-4 md:p-8 animate-reveal">
+        <div className="space-y-3">
+          <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gold">
+            {t("settings.eyebrow")}
+          </p>
+          <h1 className="font-serif text-5xl leading-none">{t("settings.title")}</h1>
+          <p className="max-w-2xl text-muted-foreground">{t("settings.intro")}</p>
+        </div>
 
-      <div className="flex gap-8 border-b border-border pb-px overflow-x-auto">
-        <button
-          onClick={() => setActiveTab("account")}
-          className={`pb-4 text-sm font-semibold transition-colors whitespace-nowrap ${activeTab === "account" ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
-        >
-          {t("settings.tabs.account")}
-        </button>
-
-        <button
-          onClick={() => setActiveTab("preferences")}
-          className={`pb-4 text-sm font-semibold transition-colors whitespace-nowrap ${activeTab === "preferences" ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
-        >
-          {t("settings.tabs.preferences")}
-        </button>
-        {isAdmin && (
-          <>
+        <div role="tablist" aria-label={t("settings.title")} className="flex flex-wrap gap-2">
+          {tabs.map((tab, i) => (
             <button
-              onClick={() => setActiveTab("system")}
-              className={`pb-4 text-sm font-semibold transition-colors whitespace-nowrap ${
-                activeTab === "system"
-                  ? "border-b-2 border-primary text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:border-border"
-              }`}
+              key={tab.id}
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={chip(activeTab === tab.id)}
             >
-              {t("settings.tabs.system")}
+              <span className="font-mono text-[10px] opacity-70">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              {tab.label}
             </button>
-            <button
-              onClick={() => setActiveTab("categories")}
-              className={`pb-4 text-sm font-semibold transition-colors whitespace-nowrap ${activeTab === "categories" ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:text-foreground"}`}
-            >
-              {t("settings.tabs.categories")}
-            </button>
-          </>
-        )}
-      </div>
+          ))}
+        </div>
 
-      <div className="mt-6 max-w-4xl">
         {activeTab === "account" && (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
-              <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
-                <UserIcon className="size-5 text-primary" />
-                {t("settings.account.username")} / {t("settings.account.email")}
-              </h3>
-              <p className="text-sm text-muted-foreground mb-6">
-                {t("settings.account.description")}
-              </p>
-
-              <form onSubmit={handleUpdateUsername} className="space-y-4 mb-6">
-                <div>
-                  <label className="text-sm font-medium">{t("settings.account.username")}</label>
-                  <div className="flex gap-3 mt-1.5">
-                    <input
-                      type="text"
-                      className="min-w-0 flex-1 p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-primary transition-colors"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                    />
-                    <button
-                      type="submit"
-                      disabled={isSaving}
-                      className="px-4 bg-secondary hover:bg-secondary/80 text-secondary-foreground text-sm font-semibold rounded-md"
-                    >
-                      {isSaving ? "..." : t("settings.account.updateUsername")}
-                    </button>
-                  </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            <Panel no="01" title={t("settings.account.identityTitle")} icon={<UserIcon />}>
+              <p className="text-sm text-muted-foreground">{t("settings.account.description")}</p>
+              <form onSubmit={handleUpdateUsername} className="space-y-1.5">
+                <label htmlFor="set-username" className="text-sm font-medium">
+                  {t("settings.account.username")}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    id="set-username"
+                    className={field}
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                  />
+                  <button type="submit" disabled={isSaving} className={pillButton.outline}>
+                    {t("settings.account.updateUsername")}
+                  </button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t("settings.account.usernameHint")}
+                </p>
+              </form>
+              <form onSubmit={handleUpdateEmail} className="space-y-1.5">
+                <label htmlFor="set-email" className="text-sm font-medium">
+                  {t("settings.account.email")}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    id="set-email"
+                    type="email"
+                    className={field}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  <button type="submit" disabled={isSaving} className={pillButton.outline}>
+                    {t("settings.account.updateEmail")}
+                  </button>
                 </div>
               </form>
+            </Panel>
 
-              <form onSubmit={handleUpdateEmail} className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium">{t("settings.account.email")}</label>
-                  <div className="flex gap-3 mt-1.5">
-                    <input
-                      type="email"
-                      className="min-w-0 flex-1 p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-primary transition-colors"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                    <button
-                      type="submit"
-                      disabled={isSaving}
-                      className="px-4 bg-secondary hover:bg-secondary/80 text-secondary-foreground text-sm font-semibold rounded-md"
-                    >
-                      {isSaving ? "..." : t("settings.account.updateEmail")}
-                    </button>
-                  </div>
-                </div>
-              </form>
-            </div>
-
-            <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
-              <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
-                <Lock className="size-5 text-primary" />
-                {t("settings.account.changePassword")}
-              </h3>
-              <form onSubmit={handleUpdatePassword} className="space-y-4 mt-6">
+            <Panel no="02" title={t("settings.account.changePassword")} icon={<Lock />}>
+              <form onSubmit={handleUpdatePassword} className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium">
+                  <label htmlFor="set-current" className="text-sm font-medium">
                     {t("settings.account.currentPassword")}
                   </label>
                   <input
+                    id="set-current"
                     type="password"
                     required
-                    className="w-full p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-primary transition-colors"
+                    autoComplete="current-password"
+                    className={field}
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium">{t("settings.account.newPassword")}</label>
+                  <label htmlFor="set-new" className="text-sm font-medium">
+                    {t("settings.account.newPassword")}
+                  </label>
                   <input
+                    id="set-new"
                     type="password"
                     required
                     minLength={8}
-                    className="w-full p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-primary transition-colors"
+                    autoComplete="new-password"
+                    className={field}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    {t("backendErrors.passwordTooShort", { count: 8 })}
+                  </p>
                 </div>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="w-full mt-2 py-2.5 bg-foreground hover:bg-foreground/90 text-background font-semibold rounded-md transition-colors"
-                >
-                  {isSaving ? "..." : t("settings.account.changePassword")}
+                <button type="submit" disabled={isSaving} className={pillButton.primary}>
+                  {t("settings.account.changePassword")}
                 </button>
               </form>
-            </div>
-            <div className="rounded-xl border border-destructive/30 bg-card text-card-foreground shadow p-6 mt-6 max-w-2xl">
-              <h3 className="font-bold text-lg text-destructive flex items-center gap-2 mb-2">
-                <AlertCircle className="h-5 w-5" /> {t("settings.profile.manageAccount")}
-              </h3>
-              <p className="text-sm text-muted-foreground mb-6">
-                {t("settings.profile.manageAccountDesc")}
+            </Panel>
+
+            <section className="md:col-span-2 min-w-0 rounded-xl border border-destructive/40 bg-card p-6">
+              <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-destructive">
+                03 · {t("settings.profile.manageAccount")}
               </p>
-
-              <div className="space-y-5">
-                <button
-                  onClick={() =>
-                    setPendingConfirm({
-                      message: t("settings.profile.deleteConfirm"),
-                      onConfirm: async () => {
-                        const token =
-                          localStorage.getItem("jwt_token") || localStorage.getItem("token");
-                        if (token) {
-                          try {
-                            const res = await fetch(`${API_BASE}/api/profile/me`, {
-                              method: "DELETE",
-                              headers: { Authorization: `Bearer ${token}` },
-                            });
-
-                            if (res.ok) {
-                              localStorage.removeItem("jwt_token");
-                              localStorage.removeItem("token");
-                              window.location.href = "/";
-                            } else {
-                              showToast("error", t("settings.profile.deleteError"));
-                            }
-                          } catch (e) {
-                            console.error(e);
-                            showToast("error", t("settings.profile.deleteError"));
-                          }
-                        }
-                      },
-                    })
-                  }
-                  className="w-full sm:w-auto px-6 py-2.5 bg-destructive hover:bg-destructive/90 text-white font-semibold rounded-md transition-colors flex items-center justify-center gap-2"
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
+                <p className="max-w-xl text-sm text-muted-foreground">
+                  {t("settings.profile.manageAccountDesc")}
+                </p>
+                <ConfirmDialog
+                  title={t("settings.profile.deleteAccount")}
+                  description={t("settings.profile.deleteConfirm")}
+                  confirmLabel={t("settings.profile.deleteAccount")}
+                  onConfirm={deleteAccount}
                 >
-                  <Trash2 className="h-4 w-4" />
-                  {t("settings.profile.deleteAccount")}
-                </button>
+                  <button className={pillButton.danger}>
+                    <Trash2 className="size-4" />
+                    {t("settings.profile.deleteAccount")}
+                  </button>
+                </ConfirmDialog>
               </div>
-            </div>
+            </section>
           </div>
         )}
 
         {activeTab === "preferences" && (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div className="rounded-xl border bg-card text-card-foreground shadow p-6">
-              <h3 className="font-semibold leading-none tracking-tight flex items-center gap-2 text-lg mb-2">
-                <Mail className="h-5 w-5 text-primary" />
-                {t("settings.preferences.emailNotifications")}
-              </h3>
-              <p className="text-sm text-muted-foreground mb-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <Panel no="01" title={t("settings.preferences.emailNotifications")} icon={<Mail />}>
+              <p className="text-sm text-muted-foreground">
                 {t("settings.preferences.description")}
               </p>
-
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={receiveEmail}
-                  onChange={async (e) => {
-                    const newValue = e.target.checked;
-                    setReceiveEmail(newValue);
-                    // auto save preference
-                    const token = localStorage.getItem("jwt_token");
-                    try {
-                      const res = await fetch(`${API_BASE}/api/profile/me`, {
-                        method: "PUT",
-                        headers: {
-                          "Content-Type": "application/json",
-                          Authorization: `Bearer ${token}`,
-                        },
-                        body: JSON.stringify({
-                          firstName,
-                          lastName,
-                          aboutMe,
-                          profilePictureUrl: profilePic,
-                          isProfilePublic: isPublic,
-                          receiveEmailNotifications: newValue,
-                        }),
-                      });
-                      if (res.ok) {
-                        showToast("success", t("settings.success"));
-                      } else {
-                        setReceiveEmail(!newValue);
-                        showToast("error", t("settings.system.updateFailed"));
-                      }
-                    } catch (err) {
-                      setReceiveEmail(!newValue);
-                      showToast("error", t("settings.system.updateFailed"));
-                    }
-                  }}
-                  className="size-5 rounded accent-primary cursor-pointer"
-                />
+              <label className="flex items-center justify-between gap-4 rounded-lg border border-border p-4">
                 <span className="text-sm font-medium">
                   {t("settings.preferences.receiveNotifications")}
                 </span>
+                <Switch checked={receiveEmail} onCheckedChange={savePreference} />
               </label>
-            </div>
+            </Panel>
+            <Panel no="02" title={t("settings.preferences.displayTitle")} icon={<Palette />}>
+              <p className="text-sm text-muted-foreground">
+                {t("settings.preferences.displayDesc")}
+              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <LanguageToggle />
+                <ThemeToggle />
+              </div>
+            </Panel>
           </div>
         )}
 
         {isAdmin && activeTab === "system" && (
-          <div className="rounded-xl border bg-card text-card-foreground shadow p-6 max-w-4xl">
-            <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
-              <Database className="size-5 text-primary" />
-              {t("settings.system.title")}
-            </h3>
-            <p className="text-sm text-muted-foreground mb-6">{t("settings.system.description")}</p>
-
-            <div className="space-y-4 mb-8">
+          <Panel no="01" title={t("settings.system.title")} icon={<Database />}>
+            <p className="text-sm text-muted-foreground">{t("settings.system.description")}</p>
+            <ul className="space-y-3">
               {settings.map((setting) => (
-                <div
+                <li
                   key={setting.settingKey}
-                  className="flex gap-4 items-start p-4 border border-border rounded-md"
+                  className="flex min-w-0 items-start gap-4 rounded-lg border border-border p-4"
                 >
-                  <div className="flex-1 space-y-2">
-                    <div>
-                      <span className="font-semibold">{setting.settingKey}</span>
-                      <p className="text-xs text-muted-foreground">{setting.description || "-"}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        className="flex-1 p-2 bg-background border border-border rounded-md text-sm outline-none focus:border-primary"
-                        defaultValue={setting.settingValue}
-                        onBlur={async (e) => {
-                          const val = e.target.value;
-                          if (val === setting.settingValue) return;
-                          const token = localStorage.getItem("jwt_token");
-                          const res = await fetch(
-                            `${API_BASE}/api/systemsettings/${setting.settingKey}`,
-                            {
-                              method: "PUT",
-                              headers: {
-                                "Content-Type": "application/json",
-                                Authorization: `Bearer ${token}`,
-                              },
-                              body: JSON.stringify({
-                                settingValue: val,
-                                description: setting.description,
-                              }),
-                            },
-                          );
-                          if (res.ok) {
-                            showToast("success", t("settings.system.updateSuccess"));
-                            fetchSettings();
-                          } else {
-                            showToast("error", t("settings.system.updateFailed"));
-                          }
-                        }}
-                      />
-                    </div>
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <p className="font-mono text-xs uppercase tracking-[0.12em] text-gold">
+                      {setting.settingKey}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {i18n.exists(`settings.system.keys.${setting.settingKey}`)
+                        ? t(`settings.system.keys.${setting.settingKey}`)
+                        : setting.description || "-"}
+                    </p>
+                    <input
+                      aria-label={setting.settingKey}
+                      className={field}
+                      defaultValue={setting.settingValue}
+                      onBlur={(e) => saveSetting(setting, e.target.value)}
+                    />
                   </div>
-                  <button
-                    onClick={() => setDeleteSettingConfirm(setting.settingKey)}
-                    className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                  <ConfirmDialog
+                    title={t("settings.system.deleteTitle")}
+                    description={`"${setting.settingKey}" ${t("settings.system.deleteConfirm")}`}
+                    confirmLabel={t("settings.system.deleteBtn")}
+                    onConfirm={() => deleteSetting(setting.settingKey)}
                   >
-                    <Trash2 className="size-4" />
-                  </button>
-                </div>
+                    <button
+                      aria-label={t("settings.system.deleteBtn")}
+                      className="rounded-full p-2 text-destructive transition-colors hover:bg-destructive/10"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </ConfirmDialog>
+                </li>
               ))}
-            </div>
+            </ul>
 
-            <div className="pt-6 border-t border-border">
-              <h4 className="font-semibold mb-4">{t("settings.system.newSettingTitle")}</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="space-y-4 border-t border-border pt-6">
+              <h3 className="font-serif text-xl">{t("settings.system.newSettingTitle")}</h3>
+              <div className="grid gap-3 md:grid-cols-3">
                 <select
-                  className={`p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-primary ${!newSettingKey ? "text-muted-foreground" : "text-foreground"}`}
+                  aria-label={t("settings.system.keyPlaceholder")}
+                  className={field}
                   value={newSettingKey}
                   onChange={(e) => setNewSettingKey(e.target.value)}
                 >
                   <option value="" disabled>
                     {t("settings.system.keyPlaceholder")}
                   </option>
-                  <option value="TEACHER_CODE">TEACHER_CODE</option>
-                  <option value="ADMIN_CODE">ADMIN_CODE</option>
-                  <option value="ENABLE_GUEST_HOME_FEATURED">ENABLE_GUEST_HOME_FEATURED</option>
-                  <option value="ENABLE_GUEST_HOME_POPULAR">ENABLE_GUEST_HOME_POPULAR</option>
-                  <option value="ENABLE_STUDENT_HOME_RECOMMENDATIONS">
-                    ENABLE_STUDENT_HOME_RECOMMENDATIONS
-                  </option>
-                  <option value="ENABLE_STUDENT_HOME_ANNOUNCEMENTS">
-                    ENABLE_STUDENT_HOME_ANNOUNCEMENTS
-                  </option>
-                  <option value="ENABLE_TEACHER_HOME_NOTIFICATIONS">
-                    ENABLE_TEACHER_HOME_NOTIFICATIONS
-                  </option>
-                  <option value="ENABLE_ADMIN_HOME_CAPACITY_ALERTS">
-                    ENABLE_ADMIN_HOME_CAPACITY_ALERTS
-                  </option>
-                  <option value="ENABLE_ADMIN_HOME_ACTIVITY_LOG">
-                    ENABLE_ADMIN_HOME_ACTIVITY_LOG
-                  </option>
+                  {KNOWN_SETTINGS.map((k) => (
+                    <option key={k} value={k}>
+                      {k}
+                    </option>
+                  ))}
                 </select>
                 <input
                   placeholder={t("settings.system.valuePlaceholder")}
-                  className="p-2.5 bg-background border border-border rounded-md text-sm"
+                  className={field}
                   value={newSettingValue}
                   onChange={(e) => setNewSettingValue(e.target.value)}
                 />
                 <input
                   placeholder={t("settings.system.descPlaceholder")}
-                  className="p-2.5 bg-background border border-border rounded-md text-sm"
+                  className={field}
                   value={newSettingDesc}
                   onChange={(e) => setNewSettingDesc(e.target.value)}
                 />
               </div>
-              <button
-                onClick={async () => {
-                  if (!newSettingKey || !newSettingValue) return;
-                  const token = localStorage.getItem("jwt_token");
-                  const res = await fetch(`${API_BASE}/api/systemsettings/${newSettingKey}`, {
-                    method: "PUT",
-                    headers: {
-                      "Content-Type": "application/json",
-                      Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({
-                      settingValue: newSettingValue,
-                      description: newSettingDesc,
-                    }),
-                  });
-                  if (res.ok) {
-                    showToast("success", t("settings.system.addSuccess"));
-                    setNewSettingKey("");
-                    setNewSettingValue("");
-                    setNewSettingDesc("");
-                    fetchSettings();
-                  } else {
-                    showToast("error", t("settings.system.addFailed"));
-                  }
-                }}
-                className="flex items-center gap-2 px-4 py-2 bg-foreground text-background font-semibold rounded-md text-sm hover:opacity-90 transition-opacity"
-              >
+              {newSettingKey && (
+                <p className="text-xs text-muted-foreground">
+                  {t(`settings.system.keys.${newSettingKey}`)}
+                </p>
+              )}
+              <button onClick={addSetting} className={pillButton.primary}>
                 <Plus className="size-4" /> {t("settings.system.addBtn")}
               </button>
             </div>
-          </div>
+          </Panel>
         )}
 
         {isAdmin && activeTab === "categories" && (
-          <div className="rounded-xl border bg-card text-card-foreground shadow p-6 max-w-4xl">
-            <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
-              <List className="size-5 text-primary" />
-              {t("settings.categories.title")}
-            </h3>
-            <p className="text-sm text-muted-foreground mb-6">
-              {t("settings.categories.description")}
-            </p>
-
-            <div className="space-y-4 mb-8">
-              {categories.map((cat: CategoryData) => (
-                <div
-                  key={cat.id}
-                  className="flex gap-4 items-center p-4 border border-border rounded-md"
-                >
-                  <div className="flex-1">
-                    <div className="font-semibold">
-                      {i18n.exists(`dynamic.categories.${cat.name}`)
-                        ? t(`dynamic.categories.${cat.name}`)
-                        : cat.name}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
+          <Panel no="01" title={t("settings.categories.title")} icon={<List />}>
+            <p className="text-sm text-muted-foreground">{t("settings.categories.description")}</p>
+            <ul className="divide-y divide-border rounded-lg border border-border">
+              {categories.map((cat) => (
+                <li key={cat.id} className="flex min-w-0 items-start gap-4 p-4">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-serif text-xl leading-tight">
+                      {label(cat.name, "categories")}
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
                       {i18n.exists(`dynamic.categoryDescriptions.${cat.name}`)
                         ? t(`dynamic.categoryDescriptions.${cat.name}`)
                         : cat.description || t("settings.categories.noDesc")}
-                    </div>
+                    </p>
+                    {!!cat.subCategories?.length && (
+                      <ul
+                        aria-label={t("settings.categories.subCategories")}
+                        className="mt-3 flex flex-wrap gap-1.5"
+                      >
+                        {cat.subCategories.map((s) => (
+                          <li
+                            key={s}
+                            className="rounded-full border border-border px-2.5 py-0.5 text-xs text-foreground"
+                          >
+                            {label(s, "subCategories")}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
-                  <button
-                    onClick={() => setDeleteCategoryConfirm(String(cat.id))}
-                    className="p-2 text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                  <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground tabular-nums">
+                    {t("settings.categories.subCount", { count: cat.subCategories?.length ?? 0 })}
+                  </span>
+                  <ConfirmDialog
+                    title={t("settings.categories.deleteTitle")}
+                    description={t("settings.categories.deleteConfirm")}
+                    confirmLabel={t("settings.categories.deleteBtn")}
+                    onConfirm={() => deleteCategory(cat.id)}
                   >
-                    <Trash2 className="size-4" />
-                  </button>
-                </div>
+                    <button
+                      aria-label={t("settings.categories.deleteBtn")}
+                      className="rounded-full p-2 text-destructive transition-colors hover:bg-destructive/10"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </ConfirmDialog>
+                </li>
               ))}
-            </div>
+            </ul>
 
-            <div className="pt-6 border-t border-border">
-              <h4 className="font-semibold mb-4">{t("settings.categories.newCategoryTitle")}</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="space-y-4 border-t border-border pt-6">
+              <h3 className="font-serif text-xl">{t("settings.categories.newCategoryTitle")}</h3>
+              <div className="grid gap-3 md:grid-cols-2">
                 <input
                   placeholder={t("settings.categories.namePlaceholder")}
-                  className="p-2.5 bg-background border border-border rounded-md text-sm"
+                  className={field}
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
                 />
                 <input
                   placeholder={t("settings.categories.descPlaceholder")}
-                  className="p-2.5 bg-background border border-border rounded-md text-sm"
+                  className={field}
                   value={newCategoryDesc}
                   onChange={(e) => setNewCategoryDesc(e.target.value)}
                 />
               </div>
-              <button
-                onClick={async () => {
-                  if (!newCategoryName) return;
-                  const token = localStorage.getItem("jwt_token");
-                  const res = await fetch(`${API_BASE}/api/categories`, {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                      Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({ name: newCategoryName, description: newCategoryDesc }),
-                  });
-                  if (res.ok) {
-                    showToast("success", t("settings.categories.addSuccess"));
-                    setNewCategoryName("");
-                    setNewCategoryDesc("");
-                    fetchCategoriesList();
-                  } else {
-                    showToast("error", t("settings.categories.addFailed"));
-                  }
-                }}
-                className="flex items-center gap-2 px-4 py-2 bg-foreground text-background font-semibold rounded-md text-sm hover:opacity-90 transition-opacity"
-              >
+              <button onClick={addCategory} className={pillButton.primary}>
                 <Plus className="size-4" /> {t("settings.categories.addBtn")}
               </button>
             </div>
-          </div>
+          </Panel>
         )}
       </div>
+    </>
+  );
+}
 
-      {/* Delete Setting Confirmation Modal */}
-      {deleteSettingConfirm && (
-        <div className="fixed inset-0 z-100 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-background rounded-2xl shadow-lg w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-6">
-              <div className="flex gap-4">
-                <div className="size-10 rounded-full bg-destructive/10 grid place-items-center shrink-0">
-                  <Trash2 className="size-5 text-destructive" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg tracking-tight">
-                    {t("courses.deleteConfirmTitle") || "Silme Onayı"}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    "{deleteSettingConfirm}" {t("settings.system.deleteConfirm")}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="p-4 bg-muted/50 border-t flex justify-end gap-3">
-              <button
-                onClick={() => setDeleteSettingConfirm(null)}
-                disabled={isDeleting}
-                className="px-4 py-2 font-semibold text-sm rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
-              >
-                {t("students.no") || "İptal"}
-              </button>
-              <button
-                disabled={isDeleting}
-                onClick={async () => {
-                  setIsDeleting(true);
-                  try {
-                    const token = localStorage.getItem("jwt_token");
-                    const res = await fetch(
-                      `${API_BASE}/api/systemsettings/${deleteSettingConfirm}`,
-                      {
-                        method: "DELETE",
-                        headers: { Authorization: `Bearer ${token}` },
-                      },
-                    );
-                    if (res.ok) {
-                      showToast("success", t("settings.system.deleteSuccess"));
-                      fetchSettings();
-                    } else {
-                      showToast("error", t("settings.system.deleteFailed"));
-                    }
-                  } catch (err) {
-                    showToast("error", t("settings.system.deleteFailed"));
-                  } finally {
-                    setIsDeleting(false);
-                    setDeleteSettingConfirm(null);
-                  }
-                }}
-                className="px-4 py-2 font-semibold text-sm rounded-md bg-destructive text-white hover:bg-destructive/90 transition-colors disabled:opacity-50 flex items-center gap-2"
-              >
-                {isDeleting ? (
-                  <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <Trash2 className="size-4" />
-                )}
-                {t("students.yes") || "Evet, Sil"}
-              </button>
-            </div>
-          </div>
+const KNOWN_SETTINGS = ["TEACHER_CODE", "ADMIN_CODE", "TEACHER_SHARE_PERCENT"];
+
+const field =
+  "h-10 w-full min-w-0 rounded-lg border border-border bg-background px-3 text-sm outline-none transition-[border-color,box-shadow] focus:border-gold focus:ring-4 focus:ring-gold/15";
+
+/** A numbered settings card with a serif title. */
+function Panel({
+  no,
+  title,
+  icon,
+  children,
+}: {
+  no: string;
+  title: string;
+  icon: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className="min-w-0 space-y-5 rounded-xl border border-border bg-card p-6">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+            {no}
+          </p>
+          <h2 className="mt-1 font-serif text-2xl leading-tight">{title}</h2>
         </div>
-      )}
-
-      {/* Delete Category Confirmation Modal */}
-      {deleteCategoryConfirm && (
-        <div className="fixed inset-0 z-100 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-background rounded-2xl shadow-lg w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-6">
-              <div className="flex gap-4">
-                <div className="size-10 rounded-full bg-destructive/10 grid place-items-center shrink-0">
-                  <Trash2 className="size-5 text-destructive" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg tracking-tight">
-                    {t("courses.deleteConfirmTitle") || "Silme Onayı"}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {t("settings.categories.deleteConfirm")}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="p-4 bg-muted/50 border-t flex justify-end gap-3">
-              <button
-                onClick={() => setDeleteCategoryConfirm(null)}
-                disabled={isDeleting}
-                className="px-4 py-2 font-semibold text-sm rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground transition-colors"
-              >
-                {t("students.no") || "İptal"}
-              </button>
-              <button
-                disabled={isDeleting}
-                onClick={async () => {
-                  setIsDeleting(true);
-                  try {
-                    const token = localStorage.getItem("jwt_token");
-                    const res = await fetch(`${API_BASE}/api/categories/${deleteCategoryConfirm}`, {
-                      method: "DELETE",
-                      headers: { Authorization: `Bearer ${token}` },
-                    });
-                    if (res.ok) {
-                      showToast("success", t("settings.categories.deleteSuccess"));
-                      fetchCategoriesList();
-                    } else {
-                      showToast("error", t("settings.categories.deleteFailed"));
-                    }
-                  } catch (err) {
-                    showToast("error", t("settings.categories.deleteFailed"));
-                  } finally {
-                    setIsDeleting(false);
-                    setDeleteCategoryConfirm(null);
-                  }
-                }}
-                className="px-4 py-2 font-semibold text-sm rounded-md bg-destructive text-white hover:bg-destructive/90 transition-colors disabled:opacity-50 flex items-center gap-2"
-              >
-                {isDeleting ? (
-                  <div className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  <Trash2 className="size-4" />
-                )}
-                {t("students.yes") || "Evet, Sil"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <AlertDialog
-        open={pendingConfirm !== null}
-        onOpenChange={(open) => {
-          if (!open) setPendingConfirm(null);
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("common.confirm", "Onayla")}</AlertDialogTitle>
-            <AlertDialogDescription>{pendingConfirm?.message}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                const run = pendingConfirm?.onConfirm;
-                setPendingConfirm(null);
-                run?.();
-              }}
-            >
-              {t("common.confirm", "Onayla")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+        <span className="text-gold [&>svg]:size-5" aria-hidden="true">
+          {icon}
+        </span>
+      </div>
+      {children}
+    </section>
   );
 }

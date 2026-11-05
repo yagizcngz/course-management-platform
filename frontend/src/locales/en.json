@@ -50,7 +50,9 @@
         "newPassword": "New Password",
         "updateUsername": "Update Username",
         "updateEmail": "Update Email",
-        "changePassword": "Change Password"
+        "changePassword": "Change Password",
+        "identityTitle": "Username and email",
+        "usernameHint": "After changing your username you will be asked to sign in again."
       },
       "profile": {
         "title": "Profile Settings",
@@ -74,7 +76,9 @@
         "description": "Manage your notifications and app preferences.",
         "emailNotifications": "Email Notifications",
         "receiveNotifications": "Receive notifications",
-        "updatePreferences": "Save Preferences"
+        "updatePreferences": "Save Preferences",
+        "displayTitle": "Language and appearance",
+        "displayDesc": "The interface language and light/dark theme are kept in this browser."
       },
       "saving": "Saving...",
       "success": "Changes saved successfully.",
@@ -93,7 +97,14 @@
         "updateSuccess": "Setting updated.",
         "updateFailed": "Failed to update.",
         "deleteSuccess": "Setting deleted.",
-        "deleteFailed": "Failed to delete."
+        "deleteFailed": "Failed to delete.",
+        "deleteTitle": "Delete this setting?",
+        "deleteBtn": "Delete setting",
+        "keys": {
+          "TEACHER_CODE": "Instructor invite code. Someone who enters it at sign-up becomes an instructor right away; applications without it wait for admin approval. Leave it empty to review every application.",
+          "ADMIN_CODE": "Admin sign-up code. An account that enters it at sign-up becomes an admin; share it only with people you trust.",
+          "TEACHER_SHARE_PERCENT": "The share of each course sale paid to the instructor (percent, 0-100). Defaults to 70; the rest is platform revenue."
+        }
       },
       "categories": {
         "title": "Categories (Branches)",
@@ -107,13 +118,19 @@
         "addSuccess": "Category added.",
         "addFailed": "Failed to add.",
         "deleteSuccess": "Category deleted.",
-        "deleteFailed": "Failed to delete."
+        "deleteFailed": "Failed to delete.",
+        "subCategories": "Sub-categories",
+        "subCount": "{{count}} sub-categories",
+        "deleteTitle": "Delete this category?",
+        "deleteBtn": "Delete category"
       },
       "errors": {
         "passwordFailed": "Could not update the password.",
         "emailFailed": "Could not update the email.",
         "usernameFailed": "Could not update the username."
-      }
+      },
+      "eyebrow": "Account · Preferences · Platform",
+      "intro": "Manage your sign-in details, password and notification preferences here. Admins also edit instructor application codes, the instructor share and the category tree."
     },
     "login": {
       "panelTitle": "Every skill is a *star*. Connect them into your own path.",

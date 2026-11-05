@@ -50,7 +50,9 @@
         "newPassword": "Yeni Şifre",
         "updateUsername": "Kullanıcı Adını Güncelle",
         "updateEmail": "E-postayı Güncelle",
-        "changePassword": "Şifreyi Değiştir"
+        "changePassword": "Şifreyi Değiştir",
+        "identityTitle": "Kullanıcı adı ve e-posta",
+        "usernameHint": "Kullanıcı adını değiştirince yeniden giriş yapmanız istenir."
       },
       "profile": {
         "title": "Profil Ayarları",
@@ -74,7 +76,9 @@
         "description": "Bildirim ve uygulama tercihlerinizi yönetin.",
         "emailNotifications": "E-posta Bildirimleri",
         "receiveNotifications": "Bildirimleri al",
-        "updatePreferences": "Tercihleri Kaydet"
+        "updatePreferences": "Tercihleri Kaydet",
+        "displayTitle": "Dil ve görünüm",
+        "displayDesc": "Arayüz dili ve açık/koyu tema bu tarayıcıda saklanır."
       },
       "saving": "Kaydediliyor...",
       "success": "Değişiklikler başarıyla kaydedildi.",
@@ -93,7 +97,14 @@
         "updateSuccess": "Ayar güncellendi.",
         "updateFailed": "Güncelleme başarısız.",
         "deleteSuccess": "Ayar silindi.",
-        "deleteFailed": "Silme başarısız."
+        "deleteFailed": "Silme başarısız.",
+        "deleteTitle": "Ayar silinsin mi?",
+        "deleteBtn": "Ayarı sil",
+        "keys": {
+          "TEACHER_CODE": "Eğitmen davet kodu. Kayıtta bu kodu giren kişi doğrudan eğitmen olur; kodsuz eğitmen başvuruları yönetici onayına düşer. Boş bırakılırsa tüm başvurular onay bekler.",
+          "ADMIN_CODE": "Yönetici kayıt kodu. Kayıtta bu kodu giren hesap yönetici olur; yalnızca güvendiğiniz kişilerle paylaşın.",
+          "TEACHER_SHARE_PERCENT": "Bir kurs satışında eğitmene aktarılan pay (yüzde, 0-100). Varsayılan 70; kalan kısım platform gelirine yazılır."
+        }
       },
       "categories": {
         "title": "Kategoriler (Branşlar)",
@@ -107,13 +118,19 @@
         "addSuccess": "Kategori eklendi.",
         "addFailed": "Ekleme başarısız.",
         "deleteSuccess": "Kategori silindi.",
-        "deleteFailed": "Silme başarısız."
+        "deleteFailed": "Silme başarısız.",
+        "subCategories": "Alt kategoriler",
+        "subCount": "{{count}} alt kategori",
+        "deleteTitle": "Kategori silinsin mi?",
+        "deleteBtn": "Kategoriyi sil"
       },
       "errors": {
         "passwordFailed": "Şifre güncellenemedi.",
         "emailFailed": "E-posta güncellenemedi.",
         "usernameFailed": "Kullanıcı adı güncellenemedi."
-      }
+      },
+      "eyebrow": "Hesap · Tercihler · Platform",
+      "intro": "Giriş bilgilerinizi, şifrenizi ve bildirim tercihlerinizi buradan yönetin. Yöneticiler eğitmen başvurusu kodlarını, öğretmen payını ve kategori ağacını da buradan düzenler."
     },
     "login": {
       "panelTitle": "Her beceri bir *yıldız*. Onları birleştirip kendi yolunu çiz.",
