@@ -152,7 +152,15 @@ namespace EdTechApi.Business.Services
                 }
             }
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                // aynı satın alma için eşzamanlı ikinci iade: benzersiz indeks reddetti, işlem geri alınır
+                throw new ArgumentException("Bu kurs için iade edilebilir bir satın alma yok.");
+            }
             await tx.CommitAsync();
 
             return await _context.Users.Where(u => u.Id == buyer.Id).Select(u => u.Balance).FirstAsync();

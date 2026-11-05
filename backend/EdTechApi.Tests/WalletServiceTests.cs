@@ -50,6 +50,22 @@ namespace EdTechApi.Tests
         private bool IsEnrolled() => _db.Enrollments.Any(e => e.CourseId == _course.Id);
 
         [Fact]
+        public async Task A_purchase_cannot_be_refunded_twice_even_concurrently()
+        {
+            await _wallet.TopUpAsync(_studentUser.Id, 200m);
+            await _wallet.PurchaseCourseAsync(_studentUser, _course.Id);
+            var purchase = _db.WalletTransactions.Single(t => t.Type == "Purchase");
+            await _wallet.RefundCourseAsync(_studentUser, _course.Id);
+
+            // a racing request that slipped past the service checks writes the same refund row
+            _db.WalletTransactions.Add(new WalletTransaction
+            {
+                UserId = _studentUser.Id, Amount = 100m, Type = "Refund", CourseId = _course.Id, RelatedTransactionId = purchase.Id
+            });
+            await Assert.ThrowsAsync<DbUpdateException>(() => _db.SaveChangesAsync());
+        }
+
+        [Fact]
         public async Task Deleting_a_buyer_keeps_the_sales_history_and_frees_the_username()
         {
             await _wallet.TopUpAsync(_studentUser.Id, 200m);

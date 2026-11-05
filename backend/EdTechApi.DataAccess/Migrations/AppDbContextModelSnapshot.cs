@@ -567,12 +567,16 @@ namespace EdTechApi.DataAccess.Migrations
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RelatedTransactionId", "Type")
+                        .IsUnique()
+                        .HasFilter("[RelatedTransactionId] IS NOT NULL");
 
                     b.HasIndex("UserId", "CreatedAt");
 

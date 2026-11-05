@@ -49,6 +49,12 @@ namespace EdTechApi.DataAccess.Context
             modelBuilder.Entity<User>().HasIndex(u => u.Username).IsUnique();
             modelBuilder.Entity<WalletTransaction>().Property(t => t.Amount).HasPrecision(18, 2);
             modelBuilder.Entity<WalletTransaction>().HasIndex(t => new { t.UserId, t.CreatedAt });
+            // bir satın almanın en fazla bir iadesi, bir öğretmen payı ve bir pay geri alımı olur: eşzamanlı iki iade
+            // isteğinden ikincisi veritabanında reddedilir (bakiye iki kez artmaz)
+            modelBuilder.Entity<WalletTransaction>()
+                .HasIndex(t => new { t.RelatedTransactionId, t.Type })
+                .IsUnique()
+                .HasFilter("[RelatedTransactionId] IS NOT NULL");
 
             // Aynı öğrenci aynı kursa yalnızca bir aktif kayıt (soft-delete edilenler hariç)
             modelBuilder.Entity<Enrollment>()
