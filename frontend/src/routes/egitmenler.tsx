@@ -158,7 +158,7 @@ function FacultyDirectory() {
         {/* keyed on the filter: a fresh list staggers in, so no card is left at opacity 0 */}
         <Stagger
           key={`${search.q ?? ""}|${search.branch ?? ""}|${list.length}`}
-          className="mt-12 grid gap-x-10 gap-y-16 sm:grid-cols-2 lg:grid-cols-3"
+          className="mt-12 grid grid-cols-1 gap-x-10 gap-y-16 sm:grid-cols-2 lg:grid-cols-3"
         >
           {list.map((teacher) => (
             <StaggerItem key={String(teacher.id ?? teacher.Id)}>
