@@ -17,7 +17,7 @@ import {
   type TeacherLiteDto,
 } from "../components/courseHelpers";
 
-import { parseJwt, isAdminRole, isStudentRole, isTeacherRole } from "@/lib/auth";
+import { parseJwt, isAdminRole, isStudentRole, isTeacherRole, readError } from "@/lib/auth";
 import { API_BASE } from "@/components/courseHelpers";
 import { CourseTaxonomyFields } from "@/components/CourseTaxonomyFields";
 export const Route = createFileRoute("/_authenticated/katalog")({
@@ -257,9 +257,7 @@ function CoursesPage() {
         handleCloseModal();
         fetchCourses();
       } else {
-        const errorData = await response.text();
-        console.error("Backend'den dönen hata:", errorData);
-        showToast(errorData || t("courses.errors.createFailed"), "error");
+        showToast(await readError(response, t("courses.errors.createFailed")), "error");
       }
     } catch (error) {
       showToast(t("courses.errors.serverError"), "error");
@@ -282,8 +280,7 @@ function CoursesPage() {
       if (response.ok) {
         showToast(t("requests.sentSuccess", "Ders verme isteği gönderildi."), "success");
       } else {
-        const err = await response.text();
-        showToast(err || t("requests.sentFailed", "İstek gönderilemedi."), "error");
+        showToast(await readError(response, t("requests.sentFailed")), "error");
       }
     } catch (error) {
       showToast(t("courses.errors.serverError", "Sunucuya bağlanılamadı."), "error");
@@ -309,8 +306,7 @@ function CoursesPage() {
         });
         if (myRes.ok) setMyCourses(await myRes.json());
       } else {
-        const err = await response.text();
-        showToast(err || t("dashboard.alerts.joinError", "Kursa katılınamadı."), "error");
+        showToast(await readError(response, t("dashboard.alerts.joinError")), "error");
       }
     } catch (error) {
       showToast(t("courses.errors.serverError", "Sunucuya bağlanılamadı."), "error");

@@ -1,3 +1,4 @@
+import { readError } from "@/lib/auth";
 import { initialsOf, formatDate } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "../components/PageHeader";
@@ -5,7 +6,6 @@ import { Plus, X, Edit2, Trash2, Upload, Link2, Search } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { translateBackendError } from "../lib/errorTranslator";
 import { adminOnly } from "../hooks/useAdminGuard";
 import { fetchCategories } from "../components/courseHelpers";
 
@@ -183,9 +183,7 @@ function TeachersPage() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Toplu silme hatası:", errorText);
-        showToast(t("teachers.errors.deleteFailed"), "error");
+        showToast(await readError(response, t("teachers.errors.deleteFailed")), "error");
         return;
       }
 
@@ -241,10 +239,7 @@ function TeachersPage() {
       });
 
       if (!res.ok) {
-        const errText = await res.text();
-        console.error("Register hatası:", errText);
-        const translatedError = translateBackendError(errText, t);
-        showToast(translatedError || t("teachers.errors.registerFailed"), "error");
+        showToast(await readError(res, t("teachers.errors.registerFailed")), "error");
         return;
       }
 
@@ -372,8 +367,7 @@ function TeachersPage() {
         setEditProfilePictureUrl(`${API_BASE}${data.url}`);
         showToast(t("teachers.errors.updateSuccess"));
       } else {
-        const errText = await response.text();
-        showToast(errText || t("teachers.errors.updateFailed"), "error");
+        showToast(await readError(response, t("teachers.errors.updateFailed")), "error");
       }
     } catch (error) {
       console.error(error);
@@ -449,10 +443,7 @@ function TeachersPage() {
         setIsEditingProfile(false);
         showToast(t("teachers.errors.updateSuccess"));
       } else {
-        const errorText = await response.text();
-        console.error("Öğretmen güncellenirken hata:", errorText);
-        const translatedError = translateBackendError(errorText, t);
-        showToast(translatedError || t("teachers.errors.updateFailed"), "error");
+        showToast(await readError(response, t("teachers.errors.updateFailed")), "error");
       }
     } catch (error) {
       console.error(error);

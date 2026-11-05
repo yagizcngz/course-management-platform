@@ -28,7 +28,7 @@ import { CourseTaxonomyFields } from "./CourseTaxonomyFields";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { useLenis } from "lenis/react";
-import { authHeaders } from "@/lib/auth";
+import { authHeaders, readError } from "@/lib/auth";
 
 type SyllabusLesson = { id: number; title: string; description?: string | null; order: number };
 
@@ -233,11 +233,10 @@ export function CourseDetailModal({
       if (res.ok) {
         showStatusToast("success", t("requests.sentSuccess", "Ders verme isteği gönderildi."));
       } else {
-        const errorText = await res.text();
-        showStatusToast("error", errorText || "İstek gönderilemedi.");
+        showStatusToast("error", await readError(res, t("requests.sentFailed")));
       }
-    } catch (err) {
-      showStatusToast("error", "Sunucu hatası.");
+    } catch {
+      showStatusToast("error", t("courses.errors.serverError"));
     }
   };
 
@@ -466,9 +465,7 @@ export function CourseDetailModal({
         setIsEditing(false);
         showStatusToast("success", t("courseModal.errors.updateSuccess"));
       } else {
-        const errorData = await response.text();
-        console.error("Kurs güncellenirken backend hatası:", errorData);
-        showStatusToast("error", errorData || t("courseModal.errors.updateFailed"));
+        showStatusToast("error", await readError(response, t("courseModal.errors.updateFailed")));
       }
     } catch (error) {
       console.error(error);

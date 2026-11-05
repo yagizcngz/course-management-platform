@@ -1,3 +1,4 @@
+import { readError } from "@/lib/auth";
 import { formatDate } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -185,8 +186,7 @@ function TaughtCoursesPage() {
         setNewDescription("");
         fetchData();
       } else {
-        const errorText = await response.text();
-        toast.error(errorText || t("courses.errors.createFailed"));
+        toast.error(await readError(response, t("courses.errors.createFailed")));
       }
     } catch (error) {
       toast.error(t("courses.errors.serverError"));

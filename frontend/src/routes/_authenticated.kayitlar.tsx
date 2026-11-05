@@ -1,3 +1,4 @@
+import { readError } from "@/lib/auth";
 import { formatDate } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, X, AlertCircle, Trash2 } from "lucide-react";
@@ -187,17 +188,7 @@ function EnrollmentsPage() {
         handleCloseModal();
         fetchEnrollments();
       } else {
-        let msg = t("enrollments.errors.enrollFailed");
-
-        try {
-          const data = await res.json();
-          msg = data.message || data.title || msg;
-        } catch {
-          const txt = await res.text();
-          if (txt) msg = txt;
-        }
-
-        showToast(msg, "error");
+        showToast(await readError(res, t("enrollments.errors.enrollFailed")), "error");
       }
     } catch (err) {
       console.error(err);

@@ -7,7 +7,7 @@ import type { TFunction } from "i18next";
 import { fetchCategories, type CourseData, type TeacherLiteDto } from "../components/courseHelpers";
 import { toast } from "sonner";
 
-import { parseJwt } from "@/lib/auth";
+import { parseJwt, readError } from "@/lib/auth";
 import { API_BASE } from "@/components/courseHelpers";
 import { BadgeShowcase, useBadges } from "@/components/Badges";
 export const Route = createFileRoute("/_authenticated/profil")({
@@ -265,8 +265,7 @@ function ProfilePage() {
         );
         showToast(t("profile.errors.updateSuccess"));
       } else {
-        const errorText = await response.text();
-        showToast(errorText || t("profile.errors.updateFailed"), "error");
+        showToast(await readError(response, t("profile.errors.updateFailed")), "error");
       }
     } catch (err) {
       console.error(err);

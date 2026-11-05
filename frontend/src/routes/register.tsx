@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 
 import { API_BASE, fetchCategories } from "@/components/courseHelpers";
 import { readError } from "@/lib/auth";
-import { translateBackendError } from "@/lib/errorTranslator";
 import { AuthShell, authButtonClass, authInputClass, authLabelClass } from "@/components/AuthShell";
 import { SolarSystem } from "@/components/effects/SolarSystem";
 import { SplitHeadline } from "@/components/motion";
@@ -90,10 +89,8 @@ function RegisterPage() {
       } else {
         // the email code stays valid after a failed attempt, so the user only fixes the field
         const raw = await readError(response, t("register.registerError"));
-        const keepsCode = response.status === 400 && !raw.toLowerCase().includes("doğrulama kodu");
-        setError(
-          translateBackendError(raw, t) + (keepsCode ? ` ${t("register.codeStillValid")}` : ""),
-        );
+        const keepsCode = response.status === 400 && raw !== t("backendErrors.invalidCode");
+        setError(raw + (keepsCode ? ` ${t("register.codeStillValid")}` : ""));
       }
     } catch (err) {
       setError(t("register.serverError"));
@@ -121,7 +118,7 @@ function RegisterPage() {
         setIsEmailSent(true);
         setSuccessMsg(t("register.emailSentSuccess"));
       } else {
-        setError(translateBackendError(await readError(response, t("register.codeSendError")), t));
+        setError(await readError(response, t("register.codeSendError")));
       }
     } catch (err) {
       setError(t("register.serverError"));

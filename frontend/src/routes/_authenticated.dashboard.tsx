@@ -12,7 +12,7 @@ import {
 } from "../components/courseHelpers";
 import { toast } from "sonner";
 
-import { isAdminRole, parseJwt } from "@/lib/auth";
+import { isAdminRole, parseJwt, readError } from "@/lib/auth";
 import { API_BASE } from "@/components/courseHelpers";
 import { BadgeStrip, useBadges } from "@/components/Badges";
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -200,8 +200,7 @@ function HomePage() {
         });
         if (enrRes.ok) setDbEnrollments(await enrRes.json());
       } else {
-        const errorText = await res.text();
-        toast.error(`${t("dashboard.alerts.joinError")}: ${errorText}`);
+        toast.error(await readError(res, t("dashboard.alerts.joinError")));
       }
     } catch (err) {
       toast.error(t("dashboard.alerts.joinErrorGeneric"));
@@ -230,11 +229,10 @@ function HomePage() {
         });
         if (enrRes.ok) setDbEnrollments(await enrRes.json());
       } else {
-        const errorText = await res.text();
-        toast.error(`${t("dashboard.alerts.leaveError", "Hata")}: ${errorText}`);
+        toast.error(await readError(res, t("dashboard.alerts.leaveError")));
       }
-    } catch (err) {
-      toast.error(t("dashboard.alerts.leaveErrorGeneric", "Bir hata oluştu."));
+    } catch {
+      toast.error(t("dashboard.alerts.leaveErrorGeneric"));
     }
   };
 

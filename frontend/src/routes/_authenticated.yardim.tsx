@@ -1,3 +1,4 @@
+import { readError } from "@/lib/auth";
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -44,11 +45,10 @@ function HelpPage() {
         toast.success(t("help.successMessage", "Mesajınız başarıyla gönderildi."));
         form.reset();
       } else {
-        toast.error("Form gönderilirken bir hata oluştu.");
+        toast.error(await readError(res, t("help.sendFailed")));
       }
-    } catch (err) {
-      console.error("Form submit error:", err);
-      toast.error("Sunucuya bağlanılamadı.");
+    } catch {
+      toast.error(t("courses.errors.serverError"));
     }
   };
 

@@ -1,3 +1,4 @@
+import { readError } from "@/lib/auth";
 import { formatDate } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -70,7 +71,7 @@ function AnnouncementsPage() {
   const handleAddAnnouncement = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !newContent.trim()) {
-      toast.error("Başlık ve içerik boş olamaz.");
+      toast.error(t("backendErrors.announcementFieldsRequired"));
       return;
     }
 
@@ -86,16 +87,16 @@ function AnnouncementsPage() {
       });
 
       if (res.ok) {
-        toast.success("Duyuru başarıyla oluşturuldu.");
+        toast.success(t("dashboard.announcementCreated"));
         setIsModalOpen(false);
         setNewTitle("");
         setNewContent("");
         fetchAnnouncements();
       } else {
-        toast.error("Duyuru oluşturulamadı.");
+        toast.error(await readError(res, t("dashboard.announcementCreateFailed")));
       }
-    } catch (err) {
-      toast.error("Sunucuya bağlanılamadı.");
+    } catch {
+      toast.error(t("courses.errors.serverError"));
     }
   };
 

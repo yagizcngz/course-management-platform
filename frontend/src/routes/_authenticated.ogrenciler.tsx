@@ -1,3 +1,4 @@
+import { readError } from "@/lib/auth";
 import { initialsOf, formatDate } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "../components/PageHeader";
@@ -5,7 +6,6 @@ import { Plus, X, Edit2, Trash2, Camera, Upload, Link2, Search } from "lucide-re
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { translateBackendError } from "../lib/errorTranslator";
 import { adminOnly } from "../hooks/useAdminGuard";
 
 import { API_BASE } from "@/components/courseHelpers";
@@ -248,10 +248,7 @@ function StudentsPage() {
         setIsModalOpen(false);
         fetchStudents();
       } else {
-        const errText = await res.text();
-        console.error("Register hatası:", errText);
-        const translatedError = translateBackendError(errText, t);
-        showToast(translatedError || t("students.errors.registerFailed"), "error");
+        showToast(await readError(res, t("students.errors.registerFailed")), "error");
       }
     } catch (error) {
       console.error(error);
@@ -392,10 +389,7 @@ function StudentsPage() {
         setIsEditingProfile(false);
         showToast(t("students.errors.updateSuccess"));
       } else {
-        const errorText = await response.text();
-        console.error("Öğrenci güncellenirken hata:", errorText);
-        const translatedError = translateBackendError(errorText, t);
-        showToast(translatedError || t("students.errors.updateFailed"), "error");
+        showToast(await readError(response, t("students.errors.updateFailed")), "error");
       }
     } catch (error) {
       console.error(error);

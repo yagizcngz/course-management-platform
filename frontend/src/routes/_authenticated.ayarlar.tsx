@@ -24,7 +24,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-import { parseJwt, isAdminRole } from "@/lib/auth";
+import { parseJwt, isAdminRole, readError } from "@/lib/auth";
 import { API_BASE } from "@/components/courseHelpers";
 interface SystemSettingData {
   settingKey: string;
@@ -176,11 +176,10 @@ function SettingsPage() {
         setCurrentPassword("");
         setNewPassword("");
       } else {
-        const errText = await res.text();
-        showToast("error", errText);
+        showToast("error", await readError(res, t("settings.errors.passwordFailed")));
       }
-    } catch (err) {
-      showToast("error", "Error updating password");
+    } catch {
+      showToast("error", t("courses.errors.serverError"));
     } finally {
       setIsSaving(false);
     }
@@ -202,11 +201,10 @@ function SettingsPage() {
       if (res.ok) {
         showToast("success", t("settings.success"));
       } else {
-        const errText = await res.text();
-        showToast("error", errText);
+        showToast("error", await readError(res, t("settings.errors.emailFailed")));
       }
-    } catch (err) {
-      showToast("error", "Error updating email");
+    } catch {
+      showToast("error", t("courses.errors.serverError"));
     } finally {
       setIsSaving(false);
     }
@@ -234,11 +232,10 @@ function SettingsPage() {
           window.location.href = "/login";
         }, 1500);
       } else {
-        const errText = await res.text();
-        showToast("error", errText);
+        showToast("error", await readError(res, t("settings.errors.usernameFailed")));
       }
-    } catch (err) {
-      showToast("error", "Error updating username");
+    } catch {
+      showToast("error", t("courses.errors.serverError"));
     } finally {
       setIsSaving(false);
     }
