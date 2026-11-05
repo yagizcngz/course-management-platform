@@ -33,6 +33,7 @@ namespace EdTechApi.API.Controllers
         }
 
         private const int MaxOtpAttempts = 5;
+        public const int MinPasswordLength = 8; // kayıt ve şifre değiştirme aynı kuralı kullanır
         private const int MinTeacherBio = 40;
         private const int MaxTeacherBio = 2000;
         private const int MaxLoginFailures = 5;
@@ -92,6 +93,10 @@ namespace EdTechApi.API.Controllers
 
             if (!new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(request.Email))
                 return BadRequest("Geçerli bir e-posta adresi giriniz.");
+            if (string.IsNullOrWhiteSpace(request.Username))
+                return BadRequest("Kullanıcı adı zorunludur.");
+            if ((request.Password ?? "").Length < MinPasswordLength)
+                return BadRequest($"Şifre en az {MinPasswordLength} karakter olmalıdır.");
 
             // Kullanıcı adı veya E-posta kontrolü
             var usernameExists = await _context.Users.AnyAsync(u => u.Username == request.Username);

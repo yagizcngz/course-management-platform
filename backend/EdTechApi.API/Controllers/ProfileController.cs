@@ -177,6 +177,9 @@ namespace EdTechApi.API.Controllers
                 return BadRequest("Mevcut şifre hatalı.");
             }
 
+            if ((request.NewPassword ?? "").Length < AuthController.MinPasswordLength)
+                return BadRequest($"Yeni şifre en az {AuthController.MinPasswordLength} karakter olmalıdır.");
+
             user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
             await _context.SaveChangesAsync();
 

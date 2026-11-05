@@ -375,6 +375,7 @@ function SettingsPage() {
                   <input
                     type="password"
                     required
+                    minLength={8}
                     className="w-full p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-primary transition-colors"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}

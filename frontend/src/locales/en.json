@@ -147,6 +147,7 @@
       "alreadyHaveAccount": "Already have an account?",
       "login": "Log In",
       "invalidEmail": "Please enter a valid email address.",
+      "passwordTooShort": "Password must be at least {{count}} characters.",
       "emailSentSuccess": "Verification code sent to your email.",
       "codeSendError": "An error occurred while sending the code!",
       "registerError": "An error occurred during registration!",

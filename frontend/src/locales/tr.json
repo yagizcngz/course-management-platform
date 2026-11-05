@@ -147,6 +147,7 @@
       "alreadyHaveAccount": "Zaten hesabın var mı?",
       "login": "Giriş Yap",
       "invalidEmail": "Lütfen geçerli bir e-posta adresi girin.",
+      "passwordTooShort": "Şifre en az {{count}} karakter olmalıdır.",
       "emailSentSuccess": "Doğrulama kodu e-postanıza gönderildi.",
       "codeSendError": "Kod gönderilirken bir hata oluştu!",
       "registerError": "Kayıt olurken bir hata oluştu!",

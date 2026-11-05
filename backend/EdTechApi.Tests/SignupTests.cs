@@ -69,6 +69,17 @@ namespace EdTechApi.Tests
         }
 
         [Fact]
+        public async Task Short_password_is_rejected_before_an_account_exists()
+        {
+            _cache.Set("new@test.example", "123456", TimeSpan.FromMinutes(5));
+            var request = Request("shorty");
+            request.Password = "1234567";
+
+            Assert.IsType<BadRequestObjectResult>(await Auth().Register(request));
+            Assert.False(_db.Users.Any(u => u.Username == "shorty"));
+        }
+
+        [Fact]
         public async Task Approved_applicant_becomes_a_teacher_and_can_still_delete_the_account()
         {
             _cache.Set("new@test.example", "123456", TimeSpan.FromMinutes(5));

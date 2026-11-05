@@ -11,6 +11,7 @@ import { SplitHeadline } from "@/components/motion";
 import { toast } from "sonner";
 
 const MIN_BIO = 40;
+const MIN_PASSWORD = 8; // AuthController.MinPasswordLength
 export const Route = createFileRoute("/register")({
   component: RegisterPage,
 });
@@ -51,6 +52,10 @@ function RegisterPage() {
         return;
       }
       // checked here too so a missing field never costs a round trip
+      if (password.length < MIN_PASSWORD) {
+        setError(t("register.passwordTooShort", { count: MIN_PASSWORD }));
+        return;
+      }
       if (asTeacher && !branch) {
         setError(t("register.branchRequired"));
         return;
@@ -268,6 +273,7 @@ function RegisterPage() {
             id="reg-password"
             type="password"
             required
+            minLength={MIN_PASSWORD}
             autoComplete="new-password"
             className={authInputClass}
             value={password}
