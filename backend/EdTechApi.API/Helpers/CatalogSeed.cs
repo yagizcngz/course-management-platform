@@ -61,7 +61,7 @@ namespace EdTechApi.API.Helpers
                 t.DeletedAt = null;
                 // seed branşları korunur, öğretmenin sonradan eklediği branşlar silinmez
                 t.Branch = string.Join(", ", Split(t.Branch).Union(Split(s.Branch), StringComparer.OrdinalIgnoreCase));
-                if (string.IsNullOrWhiteSpace(t.AboutMe)) t.AboutMe = s.About;
+                if (IsBlankBio(t.AboutMe)) t.AboutMe = s.About;
                 if (string.IsNullOrWhiteSpace(t.ProfilePictureUrl)) t.ProfilePictureUrl = Avatar(s.Email);
             }
             db.SaveChanges();
@@ -134,6 +134,9 @@ namespace EdTechApi.API.Helpers
         private static bool IsPlaceholder(string? description, string title) =>
             string.IsNullOrWhiteSpace(description) || description.Trim() == title.Trim() || description.Trim().Length < 40;
 
+        // "admin", "test" gibi deneme yazıları da boş sayılır; gerçek bir biyografi bundan uzundur
+        private static bool IsBlankBio(string? bio) => string.IsNullOrWhiteSpace(bio) || bio.Trim().Length < 20;
+
         // Demo öğrenciler (giriş hesabı yok) ve kurslara deterministik dağılan kayıtlar; kapasite aşılmaz.
         private static void SeedStudentsAndEnrollments(AppDbContext db, List<Course> courses)
         {
@@ -189,7 +192,7 @@ namespace EdTechApi.API.Helpers
         {
             var descriptions = db.Categories.ToList()
                 .ToDictionary(c => c.Name, c => c.Description ?? "", StringComparer.OrdinalIgnoreCase);
-            foreach (var t in db.Teachers.Include(x => x.User).Where(x => x.AboutMe == null || x.AboutMe == "").ToList())
+            foreach (var t in db.Teachers.IgnoreQueryFilters().Include(x => x.User).ToList().Where(x => IsBlankBio(x.AboutMe)))
             {
                 var branches = Branches(t);
                 var area = branches.Length > 0 ? string.Join(" ve ", branches) : "genel eğitim";
@@ -197,7 +200,7 @@ namespace EdTechApi.API.Helpers
                 t.AboutMe = $"{FullName(t)}, platformumuzda {area} alanında ders veren eğitmenimizdir. "
                     + (detail != null ? $"Uzmanlık alanı: {detail} " : "")
                     + "Derslerinde konuyu adım adım kurar, her bölümü örnek ve alıştırmalarla pekiştirir; öğrencilerinin sorularına ders sonrasında da yanıt verir.";
-                if (t.User != null && string.IsNullOrWhiteSpace(t.User.AboutMe)) t.User.AboutMe = t.AboutMe;
+                if (t.User != null && IsBlankBio(t.User.AboutMe)) t.User.AboutMe = t.AboutMe;
             }
             db.SaveChanges();
         }
@@ -227,7 +230,7 @@ namespace EdTechApi.API.Helpers
             foreach (var s in students)
             {
                 if (string.IsNullOrWhiteSpace(s.ProfilePictureUrl)) s.ProfilePictureUrl = Avatar(s.Email, $"{s.FirstName}.{s.LastName}");
-                if (!string.IsNullOrWhiteSpace(s.AboutMe)) continue;
+                if (!IsBlankBio(s.AboutMe)) continue;
                 var name = $"{s.FirstName} {s.LastName}".Trim();
                 s.AboutMe = studentAreas.TryGetValue(s.Id, out var areas) && areas.Count > 0
                     ? $"{name}, E-Kurs'ta {string.Join(" ve ", areas)} alanlarındaki kurslara devam eden bir öğrenci. Haftalık çalışma planıyla ilerliyor, ders notlarını düzenli tutuyor ve takıldığı yerleri eğitmenlerine soruyor."
@@ -242,7 +245,7 @@ namespace EdTechApi.API.Helpers
                 var student = students.FirstOrDefault(s => s.UserId == u.Id);
                 if (string.IsNullOrWhiteSpace(u.ProfilePictureUrl))
                     u.ProfilePictureUrl = teacher?.ProfilePictureUrl ?? student?.ProfilePictureUrl ?? Avatar(u.Email, u.Username);
-                if (string.IsNullOrWhiteSpace(u.AboutMe))
+                if (IsBlankBio(u.AboutMe))
                     u.AboutMe = teacher?.AboutMe ?? student?.AboutMe ?? AccountBio(u);
                 if (teacher != null && string.IsNullOrWhiteSpace(teacher.ProfilePictureUrl)) teacher.ProfilePictureUrl = u.ProfilePictureUrl;
                 if (student != null && string.IsNullOrWhiteSpace(student.ProfilePictureUrl)) student.ProfilePictureUrl = u.ProfilePictureUrl;

@@ -88,18 +88,19 @@ namespace EdTechApi.Tests
         {
             CatalogSeed.SeedCategories(_db);
             CatalogSeed.SeedCatalog(_db);
-            var admin = new User { Username = "Admin", Role = "Admin", FirstName = "Admin" };
+            var admin = new User { Username = "Admin", Role = "Admin", FirstName = "Admin", AboutMe = "admin" };
             var teacherUser = new User { Username = "t1", Role = "Teacher", FirstName = "Yeni", LastName = "Hoca", Email = "yeni@test", AboutMe = "Kendi yazdığım biyografi." };
             _db.Users.AddRange(admin, teacherUser);
             _db.SaveChanges();
             _db.Teachers.Add(new Teacher { FirstName = "Yeni", LastName = "Hoca", Email = "yeni@test", TeacherNumber = "t1", UserId = teacherUser.Id });
             _db.Students.Add(new Student { FirstName = "Boş", LastName = "Öğrenci", Email = "bos@test", StudentNumber = "s1" });
+            _db.Teachers.Add(new Teacher { FirstName = "Silinmiş", LastName = "Hoca", Email = "sil@test", TeacherNumber = "t2", IsDeleted = true });
             _db.SaveChanges();
 
             CatalogSeed.BackfillProfiles(_db);
             CatalogSeed.BackfillProfiles(_db);
 
-            Assert.All(_db.Teachers.ToList(), t =>
+            Assert.All(_db.Teachers.IgnoreQueryFilters().ToList(), t =>
             {
                 Assert.False(string.IsNullOrWhiteSpace(t.ProfilePictureUrl));
                 Assert.False(string.IsNullOrWhiteSpace(t.AboutMe));
@@ -110,6 +111,7 @@ namespace EdTechApi.Tests
             Assert.All(_db.Users.ToList(), u =>
                 Assert.False(string.IsNullOrWhiteSpace(u.ProfilePictureUrl) || string.IsNullOrWhiteSpace(u.AboutMe)));
             Assert.Equal("Kendi yazdığım biyografi.", _db.Users.Single(u => u.Username == "t1").AboutMe);
+            Assert.NotEqual("admin", _db.Users.Single(u => u.Username == "Admin").AboutMe);
             Assert.Equal(_db.Teachers.Single(t => t.UserId == teacherUser.Id).ProfilePictureUrl,
                 _db.Users.Single(u => u.Username == "t1").ProfilePictureUrl);
         }
