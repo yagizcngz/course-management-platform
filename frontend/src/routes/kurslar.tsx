@@ -215,7 +215,9 @@ function CoursesCatalog() {
                     className="rounded-full px-3 py-1 text-sm text-muted-foreground transition-colors hover:text-foreground aria-pressed:bg-secondary aria-pressed:font-medium aria-pressed:text-foreground"
                   >
                     {sub ? label("subCategories", sub) : t("catalog.allSubCategories")}
-                    <span className="ml-1.5 font-mono text-[11px] tabular-nums opacity-70">{n}</span>
+                    <span className="ml-1.5 font-mono text-[11px] tabular-nums opacity-70">
+                      {n}
+                    </span>
                   </button>
                 </li>
               ))}

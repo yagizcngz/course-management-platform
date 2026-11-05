@@ -136,7 +136,10 @@ export function PublicHeader() {
               </li>
             ))}
           </ul>
-          <div className="mx-auto mt-4 grid max-w-7xl grid-cols-2 gap-2 sm:hidden" onClick={() => setOpen(false)}>
+          <div
+            className="mx-auto mt-4 grid max-w-7xl grid-cols-2 gap-2 sm:hidden"
+            onClick={() => setOpen(false)}
+          >
             <AuthLinks authed={authed} stacked />
           </div>
         </nav>

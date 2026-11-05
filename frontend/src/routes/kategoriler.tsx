@@ -71,7 +71,8 @@ function CategoriesDirectory() {
             ).filter(([, n]) => n > 0);
             const subs = [
               ...g.courses.reduce(
-                (m, c) => (c.subCategory ? m.set(c.subCategory, (m.get(c.subCategory) ?? 0) + 1) : m),
+                (m, c) =>
+                  c.subCategory ? m.set(c.subCategory, (m.get(c.subCategory) ?? 0) + 1) : m,
                 new Map<string, number>(),
               ),
             ].sort((a, b) => b[1] - a[1]);
@@ -102,7 +103,10 @@ function CategoriesDirectory() {
                       </p>
                     )}
                     {subs.length > 0 && (
-                      <ul aria-label={t("directory.subCategories")} className="mt-5 flex flex-wrap gap-2">
+                      <ul
+                        aria-label={t("directory.subCategories")}
+                        className="mt-5 flex flex-wrap gap-2"
+                      >
                         {subs.map(([sub, n]) => (
                           <li key={sub}>
                             <Link
@@ -111,7 +115,9 @@ function CategoriesDirectory() {
                               className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-sm text-muted-foreground transition-colors hover:border-gold hover:text-foreground"
                             >
                               {label("subCategories", sub)}
-                              <span className="font-mono text-[11px] tabular-nums opacity-70">{n}</span>
+                              <span className="font-mono text-[11px] tabular-nums opacity-70">
+                                {n}
+                              </span>
                             </Link>
                           </li>
                         ))}
