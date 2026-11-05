@@ -118,6 +118,7 @@ const RULES: Rule[] = [
   [/(Support request|Request) not found/i, "requestNotFound"],
   [/Name and Email are required/i, "guestFieldsRequired"],
   [/Title and Content are required/i, "announcementFieldsRequired"],
+  [/Duyuru bulunamadı/i, "announcementNotFound"],
 
   // uploads, server
   [/Dosya seçilmedi/i, "noFile"],

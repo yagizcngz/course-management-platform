@@ -5,11 +5,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
 
-import { parseJwt, isAdminRole } from "@/lib/auth";
+import { parseJwt, isAdminRole, authHeaders } from "@/lib/auth";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { API_BASE } from "@/components/courseHelpers";
 interface AnnouncementData {
   id: number;
@@ -101,6 +102,22 @@ function AnnouncementsPage() {
     }
   };
 
+  const removeAnnouncement = async (id: number) => {
+    const res = await fetch(`${API_BASE}/api/announcements/${id}`, {
+      method: "DELETE",
+      headers: authHeaders(),
+    }).catch(() => null);
+    if (res?.ok) {
+      toast.success(t("dashboard.announcementDeleted"));
+      setAnnouncements((list) => list.filter((a) => a.id !== id));
+    } else
+      toast.error(
+        res
+          ? await readError(res, t("dashboard.announcementDeleteFailed"))
+          : t("courses.errors.serverError"),
+      );
+  };
+
   return (
     <>
       <PageHeader
@@ -118,7 +135,7 @@ function AnnouncementsPage() {
           <div className="flex flex-col gap-4">
             {isLoading ? (
               <div className="py-4 text-center text-muted-foreground text-xs border border-border bg-card animate-pulse">
-                Yükleniyor...
+                {t("common.loading")}
               </div>
             ) : announcements.length === 0 ? (
               <div className="py-8 text-center text-muted-foreground text-sm border border-border bg-card rounded-lg">
@@ -130,11 +147,28 @@ function AnnouncementsPage() {
                   key={ann.id}
                   className="p-5 border border-border bg-card rounded-lg shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-accent flex flex-col gap-2"
                 >
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-bold text-lg">{ann.title}</h4>
-                    <span className="text-[11px] font-mono bg-muted text-muted-foreground px-2 py-1 rounded">
-                      {formatDate(ann.createdAt, i18n.language)}
-                    </span>
+                  <div className="flex items-start justify-between gap-3">
+                    <h4 className="min-w-0 font-bold text-lg">{ann.title}</h4>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <span className="text-[11px] font-mono bg-muted text-muted-foreground px-2 py-1 rounded">
+                        {formatDate(ann.createdAt, i18n.language)}
+                      </span>
+                      {isAdmin && (
+                        <ConfirmDialog
+                          title={t("dashboard.announcementDeleteTitle")}
+                          description={ann.title}
+                          confirmLabel={t("dashboard.announcementDelete")}
+                          onConfirm={() => removeAnnouncement(ann.id)}
+                        >
+                          <button
+                            aria-label={t("dashboard.announcementDelete")}
+                            className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                          >
+                            <Trash2 className="size-4" />
+                          </button>
+                        </ConfirmDialog>
+                      )}
+                    </div>
                   </div>
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap">{ann.content}</p>
                 </div>

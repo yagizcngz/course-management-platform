@@ -32,6 +32,15 @@ namespace EdTechApi.Business.Services
                 .ToListAsync();
         }
 
+        public async Task<bool> RemoveAnnouncementAsync(int id)
+        {
+            var announcement = await _context.Announcements.FirstOrDefaultAsync(a => a.Id == id && a.IsActive);
+            if (announcement == null) return false;
+            announcement.IsActive = false;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<AnnouncementDto> AddAnnouncementAsync(string title, string content)
         {
             var announcement = new EdTechApi.Core.Entities.Announcement
@@ -39,7 +48,7 @@ namespace EdTechApi.Business.Services
                 Title = title,
                 Content = content,
                 IsActive = true,
-                CreatedAt = System.DateTime.Now
+                CreatedAt = System.DateTime.UtcNow
             };
 
             await _context.Announcements.AddAsync(announcement);

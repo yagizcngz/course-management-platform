@@ -8,5 +8,7 @@ namespace EdTechApi.Business.Interfaces
     {
         Task<IEnumerable<AnnouncementDto>> GetActiveAnnouncementsAsync();
         Task<AnnouncementDto> AddAnnouncementAsync(string title, string content);
+        // Duyuruyu yayından kaldırır (satır silinmez); bulunamazsa false
+        Task<bool> RemoveAnnouncementAsync(int id);
     }
 }

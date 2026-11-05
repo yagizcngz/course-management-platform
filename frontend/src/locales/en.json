@@ -244,7 +244,11 @@
       "create": "Create",
       "byCategory": "By category",
       "announcementCreated": "Announcement published.",
-      "announcementCreateFailed": "Could not create the announcement."
+      "announcementCreateFailed": "Could not create the announcement.",
+      "announcementDeleteTitle": "Take this announcement down?",
+      "announcementDelete": "Remove announcement",
+      "announcementDeleted": "Announcement removed.",
+      "announcementDeleteFailed": "Could not remove the announcement."
     },
     "profile": {
       "breadcrumb": "/ profile / me",
@@ -1100,7 +1104,8 @@
       "noFile": "No file was selected.",
       "imageTypeOnly": "Only jpg, png, gif or webp files can be uploaded.",
       "videoTypeOnly": "Only mp4 or webm videos can be uploaded.",
-      "unexpected": "An unexpected error occurred. Please try again."
+      "unexpected": "An unexpected error occurred. Please try again.",
+      "announcementNotFound": "Announcement not found."
     },
     "validation": {
       "required": "Please fill out this field."

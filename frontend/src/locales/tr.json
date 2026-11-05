@@ -244,7 +244,11 @@
       "create": "Oluştur",
       "byCategory": "Kategorilere göre",
       "announcementCreated": "Duyuru yayımlandı.",
-      "announcementCreateFailed": "Duyuru oluşturulamadı."
+      "announcementCreateFailed": "Duyuru oluşturulamadı.",
+      "announcementDeleteTitle": "Duyuru yayından kaldırılsın mı?",
+      "announcementDelete": "Duyuruyu kaldır",
+      "announcementDeleted": "Duyuru kaldırıldı.",
+      "announcementDeleteFailed": "Duyuru kaldırılamadı."
     },
     "profile": {
       "breadcrumb": "/ profil / benim",
@@ -1025,7 +1029,8 @@
       "noFile": "Dosya seçilmedi.",
       "imageTypeOnly": "Yalnızca jpg, png, gif veya webp dosyaları yüklenebilir.",
       "videoTypeOnly": "Yalnızca mp4 veya webm videoları yüklenebilir.",
-      "unexpected": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin."
+      "unexpected": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.",
+      "announcementNotFound": "Duyuru bulunamadı."
     },
     "validation": {
       "required": "Lütfen bu alanı doldurun."
