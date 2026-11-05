@@ -8,10 +8,10 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import "../i18n"; // Import i18n setup
+import i18n from "../i18n";
 import { Toaster } from "sonner";
 
 function NotFoundComponent() {
@@ -128,6 +128,10 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => {
+    const saved = localStorage.getItem("i18nextLng");
+    if (saved && saved !== i18n.language) i18n.changeLanguage(saved);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

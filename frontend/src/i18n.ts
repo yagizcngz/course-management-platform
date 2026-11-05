@@ -8,14 +8,13 @@ const resources = {
   en: enTranslations,
 };
 
-const savedLanguage =
-  typeof window !== "undefined" ? localStorage.getItem("i18nextLng") || "tr" : "tr";
-
 i18n
   .use(initReactI18next) // passes i18n down to react-i18next
   .init({
     resources,
-    lng: savedLanguage, // default language
+    // the server cannot read localStorage, so both sides start in Turkish and the saved
+    // language is applied after hydration (see RootComponent); otherwise React hydration fails
+    lng: "tr",
     fallbackLng: "tr",
 
     interpolation: {
