@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { CourseDetailModal } from "../components/CourseDetailModal";
+import { CategoryBanner } from "../components/CategoryBanner";
 import { useNavigate } from "@tanstack/react-router";
 import {
   getCourseImage,
@@ -40,7 +41,6 @@ function CoursesPage() {
   }, [categoryFromUrl]);
 
   const [currentUser, setCurrentUser] = useState({
-    name: t("courses.unknown"),
     role: t("courses.student"),
   });
 
@@ -88,6 +88,8 @@ function CoursesPage() {
       if (response.ok) {
         const data = await response.json();
         setDbCourses(data);
+      } else {
+        showToast(t("courses.errors.serverError"), "error");
       }
     } catch (error) {
       console.error("Kurslar yüklenirken hata:", error);
@@ -103,20 +105,15 @@ function CoursesPage() {
     if (token) {
       const payload = parseJwt(token);
       if (payload) {
-        const name =
-          payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] ||
-          payload.name ||
-          payload.unique_name ||
-          payload.sub ||
-          t("courses.unknownInstructor");
         const role =
           payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
           payload.role ||
           t("courses.student");
 
-        setCurrentUser({ name, role });
+        setCurrentUser({ role });
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch only when the language changes
   }, [t]);
 
   // Kurs detay modalında kayıtlı öğrenci sayısını göstermek ve öğretmen seçim
@@ -350,7 +347,7 @@ function CoursesPage() {
         Authorization: `Bearer ${token}`,
       };
 
-      await Promise.all(
+      const responses = await Promise.all(
         selectedCourseIds.map((id) =>
           fetch(`${API_BASE}/api/courses/${id}`, {
             method: "DELETE",
@@ -359,7 +356,11 @@ function CoursesPage() {
         ),
       );
 
-      showToast(t("courses.errors.deleteSuccess", { count: selectedCourseIds.length }));
+      if (responses.some((res) => !res.ok)) {
+        showToast(t("courses.errors.deleteFailed"), "error");
+      } else {
+        showToast(t("courses.errors.deleteSuccess", { count: selectedCourseIds.length }));
+      }
       setIsConfirmOpen(false);
       setSelectedCourseIds([]);
       setIsEditMode(false);
@@ -503,6 +504,15 @@ function CoursesPage() {
               </div>
             )}
           </div>
+        )}
+
+        {selectedCategory && !isLoading && (
+          <CategoryBanner
+            key={selectedCategory}
+            category={selectedCategory}
+            courses={dbCourses.filter((c) => (c.category || c.Category) === selectedCategory)}
+            onOpen={setSelectedCourse}
+          />
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">

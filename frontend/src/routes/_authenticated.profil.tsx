@@ -109,7 +109,10 @@ function ProfilePage() {
     setName(currentUserName);
 
     const loadProfile = async () => {
-      if (!token) return;
+      if (!token) {
+        setProfileLoaded(true);
+        return;
+      }
       try {
         const res = await fetch(`${API_BASE}/api/profile/me`, {
           headers: {
@@ -208,7 +211,7 @@ function ProfilePage() {
     };
 
     fetchData();
-  }, [name]);
+  }, []);
 
   useEffect(() => {
     const onProfileUpdated = (e: Event) => {
@@ -232,6 +235,10 @@ function ProfilePage() {
       return;
     }
 
+    // Backend null alanları siler; ad/soyadı ilk boşluktan ayırıyoruz.
+    const [firstName, ...lastParts] = currentUserName.split(" ");
+    const lastName = lastParts.join(" ").trim();
+
     try {
       const token = localStorage.getItem("jwt_token");
       const response = await fetch(`${API_BASE}/api/profile/me`, {
@@ -241,6 +248,8 @@ function ProfilePage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          FirstName: firstName,
+          LastName: lastName,
           AboutMe: bio,
           ProfilePictureUrl: photoUrl,
           IsProfilePublic: isPublic,
@@ -281,10 +290,29 @@ function ProfilePage() {
       if (res.ok) {
         const data = await res.json();
         const fullUrl = `${API_BASE}${data.url}`;
-        setPhotoUrl(fullUrl);
-        window.dispatchEvent(
-          new CustomEvent("profile-updated", { detail: { name, photoUrl: fullUrl } }),
-        );
+        // Backend AboutMe/ProfilePictureUrl null gelirse siler; mevcut değerleri de gönderiyoruz.
+        const saveRes = await fetch(`${API_BASE}/api/profile/me`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            AboutMe: bio,
+            ProfilePictureUrl: fullUrl,
+            IsProfilePublic: isPublic,
+            Branch: isTeacherRole ? branch.join(", ") : undefined,
+          }),
+        });
+
+        if (saveRes.ok) {
+          setPhotoUrl(fullUrl);
+          window.dispatchEvent(
+            new CustomEvent("profile-updated", { detail: { name, photoUrl: fullUrl } }),
+          );
+        } else {
+          showToast(t("profile.errors.updateFailed"), "error");
+        }
       } else {
         showToast(t("profile.errors.photoUploadFailed"), "error");
       }

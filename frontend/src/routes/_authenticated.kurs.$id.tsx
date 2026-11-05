@@ -345,13 +345,17 @@ function DeleteLessonButton({
 }) {
   const { t } = useTranslation();
   const remove = async () => {
-    const res = await fetch(`${API_BASE}/api/courses/${courseId}/lessons/${lesson.id}`, {
-      method: "DELETE",
-      headers: authHeaders(),
-    });
-    if (!res.ok) return toast.error(await readError(res, t("lessons.deleteFailed")));
-    toast.success(t("lessons.deleted"));
-    onDeleted();
+    try {
+      const res = await fetch(`${API_BASE}/api/courses/${courseId}/lessons/${lesson.id}`, {
+        method: "DELETE",
+        headers: authHeaders(),
+      });
+      if (!res.ok) return toast.error(await readError(res, t("lessons.deleteFailed")));
+      toast.success(t("lessons.deleted"));
+      onDeleted();
+    } catch {
+      toast.error(t("lessons.deleteFailed"));
+    }
   };
   return (
     <AlertDialog>

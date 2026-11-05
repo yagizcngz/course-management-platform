@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import {
   Settings,
-  Globe,
   User as UserIcon,
   Lock,
   Mail,
@@ -11,7 +10,6 @@ import {
   List,
   Plus,
   Trash2,
-  Save,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -46,13 +44,11 @@ export const Route = createFileRoute("/_authenticated/ayarlar")({
 
 function SettingsPage() {
   const { t, i18n } = useTranslation();
-  const [activeTab, setActiveTab] = useState<
-    "account" | "profile" | "preferences" | "system" | "categories"
-  >("account");
+  const [activeTab, setActiveTab] = useState<"account" | "preferences" | "system" | "categories">(
+    "account",
+  );
 
   const [isAdmin, setIsAdmin] = useState(false);
-
-  const [currentLanguage, setCurrentLanguage] = useState(i18n.language || "tr");
 
   // Profile State
   const [firstName, setFirstName] = useState("");
@@ -90,10 +86,6 @@ function SettingsPage() {
   const [categories, setCategories] = useState<CategoryData[]>([]);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryDesc, setNewCategoryDesc] = useState("");
-
-  useEffect(() => {
-    setCurrentLanguage(i18n.language);
-  }, [i18n.language]);
 
   useEffect(() => {
     const token = localStorage.getItem("jwt_token");
@@ -165,51 +157,6 @@ function SettingsPage() {
 
   const showToast = (type: "success" | "error", message: string) =>
     type === "error" ? toast.error(message) : toast.success(message);
-
-  const handleLanguageChange = (lang: string) => {
-    i18n.changeLanguage(lang);
-    localStorage.setItem("i18nextLng", lang);
-    setCurrentLanguage(lang);
-  };
-
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    try {
-      const token = localStorage.getItem("jwt_token");
-      const res = await fetch(`${API_BASE}/api/profile/me`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          firstName,
-          lastName,
-          aboutMe,
-          profilePictureUrl: profilePic,
-          isProfilePublic: isPublic,
-          receiveEmailNotifications: receiveEmail,
-        }),
-      });
-      if (res.ok) {
-        showToast("success", t("settings.success"));
-        const currentName = [firstName, lastName].filter(Boolean).join(" ");
-        window.dispatchEvent(
-          new CustomEvent("profile-updated", {
-            detail: { name: currentName, photoUrl: profilePic },
-          }),
-        );
-      } else {
-        const errText = await res.text();
-        showToast("error", errText || t("settings.saving"));
-      }
-    } catch (err) {
-      showToast("error", "Error saving profile");
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -459,38 +406,22 @@ function SettingsPage() {
                         const token =
                           localStorage.getItem("jwt_token") || localStorage.getItem("token");
                         if (token) {
-                          const payload = parseJwt(token);
-                          const userId = payload?.nameid || payload?.sub || payload?.id;
-                          const userRole =
-                            payload?.role ||
-                            payload?.[
-                              "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-                            ] ||
-                            "user";
+                          try {
+                            const res = await fetch(`${API_BASE}/api/profile/me`, {
+                              method: "DELETE",
+                              headers: { Authorization: `Bearer ${token}` },
+                            });
 
-                          if (userId) {
-                            try {
-                              const isTeacher = userRole.toString().toLowerCase() === "teacher";
-                              const endpoint = isTeacher
-                                ? `${API_BASE}/api/Teachers/${userId}`
-                                : `${API_BASE}/api/Students/${userId}`;
-
-                              const res = await fetch(endpoint, {
-                                method: "DELETE",
-                                headers: { Authorization: `Bearer ${token}` },
-                              });
-
-                              if (res.ok) {
-                                localStorage.removeItem("jwt_token");
-                                localStorage.removeItem("token");
-                                window.location.href = "/";
-                              } else {
-                                showToast("error", t("settings.profile.deleteError"));
-                              }
-                            } catch (e) {
-                              console.error(e);
+                            if (res.ok) {
+                              localStorage.removeItem("jwt_token");
+                              localStorage.removeItem("token");
+                              window.location.href = "/";
+                            } else {
                               showToast("error", t("settings.profile.deleteError"));
                             }
+                          } catch (e) {
+                            console.error(e);
+                            showToast("error", t("settings.profile.deleteError"));
                           }
                         }
                       },
@@ -526,22 +457,32 @@ function SettingsPage() {
                     setReceiveEmail(newValue);
                     // auto save preference
                     const token = localStorage.getItem("jwt_token");
-                    await fetch(`${API_BASE}/api/profile/me`, {
-                      method: "PUT",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                      },
-                      body: JSON.stringify({
-                        firstName,
-                        lastName,
-                        aboutMe,
-                        profilePictureUrl: profilePic,
-                        isProfilePublic: isPublic,
-                        receiveEmailNotifications: newValue,
-                      }),
-                    });
-                    showToast("success", t("settings.success"));
+                    try {
+                      const res = await fetch(`${API_BASE}/api/profile/me`, {
+                        method: "PUT",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({
+                          firstName,
+                          lastName,
+                          aboutMe,
+                          profilePictureUrl: profilePic,
+                          isProfilePublic: isPublic,
+                          receiveEmailNotifications: newValue,
+                        }),
+                      });
+                      if (res.ok) {
+                        showToast("success", t("settings.success"));
+                      } else {
+                        setReceiveEmail(!newValue);
+                        showToast("error", t("settings.system.updateFailed"));
+                      }
+                    } catch (err) {
+                      setReceiveEmail(!newValue);
+                      showToast("error", t("settings.system.updateFailed"));
+                    }
                   }}
                   className="size-5 rounded accent-primary cursor-pointer"
                 />

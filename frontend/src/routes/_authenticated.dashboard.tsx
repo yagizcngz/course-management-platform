@@ -193,6 +193,10 @@ function HomePage() {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (myRes.ok) setMyCourses(await myRes.json());
+        const enrRes = await fetch(`${API_BASE}/api/enrollments`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (enrRes.ok) setDbEnrollments(await enrRes.json());
       } else {
         const errorText = await res.text();
         toast.error(`${t("dashboard.alerts.joinError")}: ${errorText}`);
@@ -219,6 +223,10 @@ function HomePage() {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (myRes.ok) setMyCourses(await myRes.json());
+        const enrRes = await fetch(`${API_BASE}/api/enrollments`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (enrRes.ok) setDbEnrollments(await enrRes.json());
       } else {
         const errorText = await res.text();
         toast.error(`${t("dashboard.alerts.leaveError", "Hata")}: ${errorText}`);
@@ -270,11 +278,11 @@ function HomePage() {
     const studentsCount = getCourseEnrollments(c, dbEnrollments).length;
 
     return (
-      <div
+      <button
+        type="button"
         key={c.id || c.Id || index}
         onClick={() => setSelectedCourse(c)}
-        title="Kurs detaylarını görüntüle"
-        className="group bg-card border border-border hover:border-accent transition-colors rounded-md overflow-hidden shadow-sm cursor-pointer"
+        className="group text-left w-full bg-card border border-border hover:border-accent transition-colors rounded-md overflow-hidden shadow-sm cursor-pointer"
       >
         <div className="w-full aspect-video relative overflow-hidden bg-muted">
           <img src={getCourseImage(c, index)} alt={title} className="w-full h-full object-cover" />
@@ -307,7 +315,7 @@ function HomePage() {
             )}
           </div>
         </div>
-      </div>
+      </button>
     );
   };
 
@@ -323,7 +331,7 @@ function HomePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {isLoading ? (
                   <div className="col-span-full py-8 text-center text-muted-foreground text-xs border border-border bg-card animate-pulse">
-                    Yükleniyor...
+                    {t("dashboard.loadingCourses")}
                   </div>
                 ) : recommendedCourses.length === 0 ? (
                   <div className="col-span-full py-8 text-center text-muted-foreground text-xs border border-border bg-card">
@@ -366,7 +374,7 @@ function HomePage() {
               {popularCoursesByCategory.length > 0 && (
                 <div className="space-y-6 pt-4 border-t border-border/50">
                   <h2 className="text-lg font-bold uppercase tracking-tight text-muted-foreground">
-                    Kategorilere Göre
+                    {t("dashboard.byCategory")}
                   </h2>
                   {popularCoursesByCategory.map((group) => (
                     <div

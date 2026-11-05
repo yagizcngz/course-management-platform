@@ -63,6 +63,9 @@ function MyCoursesPage() {
         setDbEnrollments(await enrollmentsRes.json());
       }
 
+      if (!enrollRes.ok || !coursesRes.ok) {
+        toast.error(t("courses.errors.serverError"));
+      }
       if (enrollRes.ok && coursesRes.ok) {
         const enrollments = await enrollRes.json();
         const allCourses = await coursesRes.json();
@@ -75,7 +78,10 @@ function MyCoursesPage() {
           });
           return {
             ...env,
-            course: courseDetail || { title: env.courseTitle || env.CourseTitle },
+            course: courseDetail || {
+              id: env.courseId ?? env.CourseId,
+              title: env.courseTitle || env.CourseTitle,
+            },
           };
         });
         setCourses(merged);
@@ -89,6 +95,7 @@ function MyCoursesPage() {
 
   useEffect(() => {
     fetchMyCourses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch once on mount
   }, []);
 
   const handleCourseSaved = () => {

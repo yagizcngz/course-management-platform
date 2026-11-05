@@ -12,9 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Trash, Trash2, Edit2 } from "lucide-react";
 
 import { API_BASE } from "@/components/courseHelpers";
-import { useAdminGuard } from "@/hooks/useAdminGuard";
+import { adminOnly } from "@/hooks/useAdminGuard";
 export const Route = createFileRoute("/_authenticated/istekler")({
-  component: RequestsPage,
+  component: adminOnly(RequestsPage),
 });
 
 interface TeachingRequest {
@@ -42,7 +42,6 @@ interface SupportRequest {
 }
 
 function RequestsPage() {
-  useAdminGuard();
   const { t, i18n } = useTranslation();
   const [teachingRequests, setTeachingRequests] = useState<TeachingRequest[]>([]);
   const [supportRequests, setSupportRequests] = useState<SupportRequest[]>([]);
@@ -57,7 +56,10 @@ function RequestsPage() {
   const fetchRequests = async () => {
     try {
       const token = localStorage.getItem("jwt_token");
-      if (!token) return;
+      if (!token) {
+        setLoading(false);
+        return;
+      }
 
       const [trRes, srRes] = await Promise.all([
         fetch(`${API_BASE}/api/teachingrequests`, {
@@ -91,6 +93,8 @@ function RequestsPage() {
       if (res.ok) {
         toast.success("Request approved.");
         fetchRequests();
+      } else {
+        toast.error(t("requests.serverError", "Sunucu hatası."));
       }
     } catch {
       toast.error("Error occurred.");
@@ -107,6 +111,8 @@ function RequestsPage() {
       if (res.ok) {
         toast.success("Request rejected.");
         fetchRequests();
+      } else {
+        toast.error(t("requests.serverError", "Sunucu hatası."));
       }
     } catch {
       toast.error("Error occurred.");
@@ -164,28 +170,39 @@ function RequestsPage() {
       const token = localStorage.getItem("jwt_token");
       const headers = { Authorization: `Bearer ${token}` };
 
-      if (selectedTeachingIds.length > 0) {
+      const teachingDeleted = (
         await Promise.all(
           selectedTeachingIds.map((id) =>
             fetch(`${API_BASE}/api/teachingrequests/${id}`, {
               method: "DELETE",
               headers,
-            }),
+            }).then((res) => (res.ok ? id : null)),
           ),
-        );
-      }
-      if (selectedSupportIds.length > 0) {
+        )
+      ).filter((id): id is number => id !== null);
+      const supportDeleted = (
         await Promise.all(
           selectedSupportIds.map((id) =>
-            fetch(`${API_BASE}/api/supportrequests/${id}`, { method: "DELETE", headers }),
+            fetch(`${API_BASE}/api/supportrequests/${id}`, { method: "DELETE", headers }).then(
+              (res) => (res.ok ? id : null),
+            ),
           ),
-        );
-      }
+        )
+      ).filter((id): id is number => id !== null);
 
-      toast.success(t("requests.deleted", "Seçili öğeler silindi."));
-      setSelectedTeachingIds([]);
-      setSelectedSupportIds([]);
-      setIsEditMode(false);
+      const failedCount =
+        selectedTeachingIds.length -
+        teachingDeleted.length +
+        selectedSupportIds.length -
+        supportDeleted.length;
+      if (failedCount > 0) {
+        toast.error(t("requests.serverError", "Sunucu hatası."));
+      } else {
+        toast.success(t("requests.deleted", "Seçili öğeler silindi."));
+        setIsEditMode(false);
+      }
+      setSelectedTeachingIds((prev) => prev.filter((id) => !teachingDeleted.includes(id)));
+      setSelectedSupportIds((prev) => prev.filter((id) => !supportDeleted.includes(id)));
       fetchRequests();
     } catch {
       toast.error(t("requests.serverError", "Sunucu hatası."));

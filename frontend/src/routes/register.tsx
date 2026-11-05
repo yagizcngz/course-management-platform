@@ -167,14 +167,22 @@ function RegisterPage() {
             />
             <button
               type="button"
-              onClick={handleSendVerificationEmail}
-              disabled={isSending || isEmailSent || !email}
+              onClick={
+                isEmailSent
+                  ? () => {
+                      // lets a mistyped address be corrected without reloading the page
+                      setIsEmailSent(false);
+                      setVerificationCode("");
+                    }
+                  : handleSendVerificationEmail
+              }
+              disabled={isSending || (!isEmailSent && !email)}
               className="whitespace-nowrap rounded-xl border border-border bg-secondary px-4 text-sm font-medium text-foreground transition-colors hover:border-gold/60 disabled:opacity-50"
             >
               {isSending
                 ? t("register.sending")
                 : isEmailSent
-                  ? t("register.sent")
+                  ? t("register.changeEmail")
                   : t("register.sendCode")}
             </button>
           </div>
