@@ -23,17 +23,30 @@ const H = 2.2;
 const CW = 512; // canvas size keeps the page's 1.6 : 2.2 ratio
 const CH = 704;
 const FLIP = 0.95; // seconds for one unhurried turn
-// stacked heights: page < leaf shadow < ribbon < turning leaf, far enough apart that
+// stacked heights: page < ribbon < leaf shadow < turning leaf, far enough apart that
 // the depth buffer always keeps them in order (no z-fighting)
 const PAGE_Y = 0.018;
+const RIB_Y = PAGE_Y + 0.0025; // flush on the open pages, so the leaf's shadow falls on it
 const SHADOW_Y = 0.022;
-const RIB_Y = 0.027;
 const LEAF_Y = 0.034;
-const RIB = 32; // ribbon segments
-const RIB_W = 0.05;
-const RIB_X = 0.07; // on the right page, just off the gutter
+// The ribbon lies in the gutter (|x| < RIB_W / 2) and the turning leaf starts GUTTER from
+// the hinge. The leaf only ever rises (y >= LEAF_Y > RIB_Y), so it passes over the ribbon
+// and never cuts it; lying flat on either side it stops short of the gutter, so it never
+// hides the ribbon at the start or end of a turn either.
+const RIB_W = 0.044;
+const GUTTER = 0.03; // must stay below one leaf segment (W / SEG) and above RIB_W / 2
+const RIB = 24; // ribbon rows: head, tail edge of the page, then the hanging end
 const TAIL = 0.5; // how far the ribbon hangs past the tail edge
 const DROP = 1.2; // angle of the hanging end, radians below the page plane
+const CURL_LEN = 0.16; // length over which it bends from flat to DROP, clearing the cover
+const TABLE_Y = -0.116; // just above the contact shadow: the end comes to rest there
+const SPRING = 26; // tail swing stiffness, ~0.8 Hz
+const DAMP = 5.6; // damping ratio ~0.55: one soft overshoot, then still
+const DRAG = 3; // how hard a turning leaf pulls the tail along
+console.assert(
+  RIB_W / 2 < GUTTER && GUTTER < W / SEG && RIB_Y < LEAF_Y,
+  "BookScene: the ribbon must fit in the gutter, under the leaf",
+);
 const INK = "#262a33";
 const MUTED = "#6f6a5f";
 const GOLD = "#9c7a30";
@@ -43,6 +56,11 @@ const PAPER = "#f6f1e6";
 const ease = (x: number) => {
   const t = Math.min(1, Math.max(0, x));
   return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
+};
+
+const smooth = (x: number) => {
+  const t = Math.min(1, Math.max(0, x));
+  return t * t * (3 - 2 * t);
 };
 
 function wrap(g: CanvasRenderingContext2D, text: string, max: number, lines: number) {
@@ -261,6 +279,10 @@ export function BookScene({
     book.add(crease);
 
     const leafGeo = new THREE.PlaneGeometry(W, H, SEG, 1);
+    // the first column starts GUTTER from the hinge; its texture starts there too, so the
+    // leaf shows exactly the part of the page it covers (the back face samples 1 - u)
+    const leafUv = leafGeo.attributes.uv as THREE_NS.BufferAttribute;
+    for (let v = 0; v < leafUv.count; v += SEG + 1) leafUv.setX(v, GUTTER / W);
     const shade = new Float32Array(leafGeo.attributes.position.count * 3).fill(1);
     leafGeo.setAttribute("color", new THREE.BufferAttribute(shade, 3));
     const leafMat = (map: THREE_NS.Texture, side: THREE_NS.Side) =>
@@ -295,9 +317,15 @@ export function BookScene({
         xs[s] = xs[s - 1] + Math.cos(theta) * ds;
         ys[s] = ys[s - 1] + Math.sin(theta) * ds;
       }
+      // the visible edge sits GUTTER along the first segment, leaving the spine to the ribbon
+      const k0 = GUTTER / ds;
+      const x0 = xs[1] * k0;
+      const y0 = LEAF_Y + (ys[1] - LEAF_Y) * k0;
       for (let v = 0; v < pos.count; v++) {
         const col = v % (SEG + 1);
-        pos.setXYZ(v, xs[col], ys[col], v <= SEG ? -H / 2 : H / 2);
+        const z = v <= SEG ? -H / 2 : H / 2;
+        if (col === 0) pos.setXYZ(v, x0, y0, z);
+        else pos.setXYZ(v, xs[col], ys[col], z);
         // darker where the sheet leaves the spine and where it curls the most
         const f = col / SEG;
         const k = 1 - lift * (0.22 * Math.exp(-f * 7) + 0.1 * curl * f);
@@ -314,21 +342,9 @@ export function BookScene({
       creaseMat.opacity = 0.3 * lift * (1 - Math.abs(tip) / W) + 0.12 * lift;
     };
 
-    /** Height of the leaf over `x`, or null when the leaf does not cover it. */
-    const leafHeightAt = (x: number) => {
-      if (!leaf.visible) return null;
-      for (let s = 0; s < SEG; s++) {
-        const a = xs[s];
-        const b = xs[s + 1];
-        if ((x - a) * (x - b) <= 0 && a !== b)
-          return ys[s] + ((x - a) / (b - a)) * (ys[s + 1] - ys[s]);
-      }
-      return null;
-    };
-
-    // the bookmark ribbon: tied at the head of the spine, lying in the gutter and hanging
-    // over the tail edge. It rests on whatever paper is under it and its loose end swings
-    // on a damped spring, nudged by page turns and by the book's tilt.
+    // the bookmark ribbon: tied at the head of the spine, lying flat down the gutter and
+    // draping over the tail edge onto the table. Only the hanging end moves: it swings on a
+    // damped spring, pulled along by a turning leaf and by the book's tilt.
     const ribbonGeo = new THREE.PlaneGeometry(RIB_W, 1, 1, RIB);
     const ribbon = new THREE.Mesh(
       ribbonGeo,
@@ -337,29 +353,34 @@ export function BookScene({
         metalness: 0.35,
         roughness: 0.45,
         side: THREE.DoubleSide,
+        // pulled a hair toward the camera so it never flickers against the page under it
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -1,
       }),
     );
     book.add(ribbon);
-    const rib = { y: RIB_Y, sway: 0, swayV: 0 };
+    const rib = { sway: 0, swayV: 0, drag: 0 };
     const shapeRibbon = () => {
       const pos = ribbonGeo.attributes.position as THREE_NS.BufferAttribute;
-      const L = H + TAIL;
-      for (let r = 0; r <= RIB; r++) {
-        const s = (r / RIB) * L;
-        let y = rib.y;
-        let z = -H / 2 + s;
-        if (s > H) {
-          const u = s - H;
-          z = H / 2 + u * Math.cos(DROP);
-          y = rib.y - u * Math.sin(DROP);
-        } else {
-          // eases from the tie at the head down to the resting height
-          y = RIB_Y + (rib.y - RIB_Y) * Math.min(1, s / (H * 0.35));
-        }
-        const loose = Math.max(0, (s - H * 0.5) / (L - H * 0.5));
-        const x = RIB_X + rib.sway * loose * loose;
+      const row = (r: number, x: number, y: number, z: number) => {
         pos.setXYZ(r * 2, x - RIB_W / 2, y, z);
         pos.setXYZ(r * 2 + 1, x + RIB_W / 2, y, z);
+      };
+      row(0, 0, RIB_Y, -H / 2);
+      row(1, 0, RIB_Y, H / 2);
+      const du = TAIL / (RIB - 1);
+      let y = RIB_Y;
+      let z = H / 2;
+      for (let r = 2; r <= RIB; r++) {
+        // flat at first so it clears the cover's lip, then falling, then lying on the table
+        const a = DROP * smooth(((r - 1.5) * du) / CURL_LEN);
+        const fall = Math.sin(a) * du;
+        const resting = y - fall <= TABLE_Y;
+        y = resting ? TABLE_Y : y - fall;
+        z += (resting ? 1 : Math.cos(a)) * du;
+        const loose = (r - 1) / (RIB - 1);
+        row(r, rib.sway * loose * loose, y, z);
       }
       pos.needsUpdate = true;
       ribbonGeo.computeVertexNormals();
@@ -443,9 +464,9 @@ export function BookScene({
             shownIndex = i;
             leaf.visible = true;
             bend(dir === 1 ? 0 : 1, dir, 0);
-            rib.swayV -= dir * 0.9; // the lifting sheet drags the loose end along
           }
         }
+        rib.drag = 0;
         if (flip) {
           // clicking back mid-turn reverses the leaf; clicking on speeds it up so the
           // next turn starts sooner. Either way no click is lost.
@@ -458,6 +479,8 @@ export function BookScene({
           const speed = Math.min(1, Math.abs(e - before) / Math.max(rate, 1e-4) / 3);
           const motion = back ? -flip.dir : flip.dir;
           bend(flip.dir === 1 ? e : 1 - e, motion, speed);
+          // the sheet sweeping over the gutter pulls the loose end its way, hardest mid-turn
+          rib.drag = -motion * speed;
           if (flip.t >= 1) {
             if (flip.dir === 1) draw(left, drawVerso, flip.page);
             else draw(right, drawRecto, flip.page);
@@ -473,13 +496,13 @@ export function BookScene({
           }
         }
 
-        // the ribbon rests on the leaf while the leaf covers it and drops back when it lifts
-        const under = leafHeightAt(RIB_X);
-        const restY = under == null ? RIB_Y : Math.max(RIB_Y, under + 0.008);
-        rib.y += (restY - rib.y) * Math.min(1, delta * (restY > rib.y ? 30 : 9));
+        // fixed 1/120 s substeps keep the swing the same at any frame rate
         const sag = -book.rotation.z * 1.6 - book.rotation.y * 0.8;
-        rib.swayV += (-(rib.sway - sag) * 26 - rib.swayV * 4.2) * delta;
-        rib.sway += rib.swayV * delta;
+        for (let left = delta; left > 1e-6; left -= 1 / 120) {
+          const h = Math.min(left, 1 / 120);
+          rib.swayV += (-(rib.sway - sag) * SPRING - rib.swayV * DAMP + rib.drag * DRAG) * h;
+          rib.sway += rib.swayV * h;
+        }
         shapeRibbon();
 
         // the graphite cover would vanish on the dark theme, so it lifts a shade there
