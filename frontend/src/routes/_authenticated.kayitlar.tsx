@@ -210,7 +210,9 @@ function EnrollmentsPage() {
           fetch(`${API}/enrollments/${id}`, {
             method: "DELETE",
             headers: authHeaders(),
-          }).then((res) => (res.ok ? id : null)),
+          })
+            .then((res) => (res.ok ? id : null))
+            .catch(() => null),
         ),
       );
       const deletedIds = results.filter((id): id is number => id !== null);

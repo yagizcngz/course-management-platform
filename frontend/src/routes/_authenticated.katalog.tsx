@@ -356,11 +356,12 @@ function CoursesPage() {
           fetch(`${API_BASE}/api/courses/${id}`, {
             method: "DELETE",
             headers,
-          }),
+          }).catch(() => null),
         ),
       );
 
-      if (responses.some((res) => !res.ok)) {
+      // one failed request must not hide the ones that did delete: the list is always refreshed
+      if (responses.some((res) => !res?.ok)) {
         showToast(t("courses.errors.deleteFailed"), "error");
       } else {
         showToast(t("courses.errors.deleteSuccess", { count: selectedCourseIds.length }));

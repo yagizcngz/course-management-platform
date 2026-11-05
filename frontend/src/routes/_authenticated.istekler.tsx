@@ -178,16 +178,18 @@ function RequestsPage() {
             fetch(`${API_BASE}/api/teachingrequests/${id}`, {
               method: "DELETE",
               headers,
-            }).then((res) => (res.ok ? id : null)),
+            })
+              .then((res) => (res.ok ? id : null))
+              .catch(() => null),
           ),
         )
       ).filter((id): id is number => id !== null);
       const supportDeleted = (
         await Promise.all(
           selectedSupportIds.map((id) =>
-            fetch(`${API_BASE}/api/supportrequests/${id}`, { method: "DELETE", headers }).then(
-              (res) => (res.ok ? id : null),
-            ),
+            fetch(`${API_BASE}/api/supportrequests/${id}`, { method: "DELETE", headers })
+              .then((res) => (res.ok ? id : null))
+              .catch(() => null),
           ),
         )
       ).filter((id): id is number => id !== null);

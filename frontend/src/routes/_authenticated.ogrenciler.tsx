@@ -184,7 +184,9 @@ function StudentsPage() {
           fetch(`${API_BASE}/api/students/${id}`, {
             method: "DELETE",
             headers,
-          }).then((res) => (res.ok ? id : null)),
+          })
+            .then((res) => (res.ok ? id : null))
+            .catch(() => null),
         ),
       );
       const deleted = results.filter((id): id is string | number => id !== null);
