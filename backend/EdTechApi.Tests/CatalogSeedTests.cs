@@ -91,6 +91,7 @@ namespace EdTechApi.Tests
         public void Subcategory_normalisation_is_scoped_to_category()
         {
             Assert.Equal("Analiz & Kalkülüs", BranchOptions.NormalizeSubCategory("matematik", " analiz & kalkülüs "));
+            Assert.Equal("Olasılık & İstatistik", BranchOptions.NormalizeSubCategory("Matematik", "olasılık & istatistik"));
             Assert.Null(BranchOptions.NormalizeSubCategory("Matematik", "Makine Öğrenmesi"));
             Assert.Null(BranchOptions.NormalizeSubCategory("Matematik", ""));
             Assert.Null(BranchOptions.NormalizeSubCategory("Yok", "Analiz & Kalkülüs"));

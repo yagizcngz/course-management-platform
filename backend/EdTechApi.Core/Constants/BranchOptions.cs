@@ -58,7 +58,14 @@ namespace EdTechApi.Core.Constants
         // Kategorinin listesindeki kanonik alt kategori yazımı; boş veya listede yoksa null.
         public static string? NormalizeSubCategory(string? category, string? value) =>
             string.IsNullOrWhiteSpace(value) ? null
-                : SubCategoriesOf(category).FirstOrDefault(s => string.Equals(s, value.Trim(), StringComparison.OrdinalIgnoreCase));
+                : SubCategoriesOf(category).FirstOrDefault(s => SameName(s, value.Trim()));
+
+        private static readonly System.Globalization.CultureInfo Turkish = System.Globalization.CultureInfo.GetCultureInfo("tr-TR");
+
+        // sıralı karşılaştırma "İ" ile "i"yi eşlemez ("İstatistik" / "istatistik"), Türkçe kültür eşler
+        private static bool SameName(string a, string b) =>
+            string.Equals(a, b, StringComparison.OrdinalIgnoreCase)
+            || string.Compare(a, b, Turkish, System.Globalization.CompareOptions.IgnoreCase) == 0;
 
         public static readonly string[] All = Defaults.Select(d => d.Name).ToArray();
 
