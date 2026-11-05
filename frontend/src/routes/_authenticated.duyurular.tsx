@@ -1,4 +1,5 @@
 import { readError } from "@/lib/auth";
+import { pillButton } from "@/lib/utils";
 import { formatDate } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -106,7 +107,7 @@ function AnnouncementsPage() {
         crumb={t("dashboard.announcements")}
         action={
           isAdmin ? (
-            <Button onClick={() => setIsModalOpen(true)} className="gap-2">
+            <Button onClick={() => setIsModalOpen(true)} className={pillButton.primary}>
               <Plus className="size-4" /> {t("dashboard.newAnnouncement", "Yeni Duyuru")}
             </Button>
           ) : undefined

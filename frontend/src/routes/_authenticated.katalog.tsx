@@ -1,3 +1,4 @@
+import { pillButton, chip } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "../components/PageHeader";
 import { Plus, X, Trash2, Filter } from "lucide-react";
@@ -416,10 +417,7 @@ function CoursesPage() {
             <div className="flex gap-2">
               {/* Sadece seçim yapıldığında görünen silme butonu */}
               {isEditMode && selectedCourseIds.length > 0 && (
-                <button
-                  onClick={() => setIsConfirmOpen(true)}
-                  className="flex items-center gap-2 bg-destructive text-white px-4 py-2 rounded-md text-xs font-bold hover:bg-destructive transition-colors animate-in fade-in"
-                >
+                <button onClick={() => setIsConfirmOpen(true)} className={pillButton.danger}>
                   <Trash2 className="size-4" />
                   {t("courses.deleteSelected", { count: selectedCourseIds.length })}
                 </button>
@@ -427,10 +425,7 @@ function CoursesPage() {
 
               {/* Tümünü Seç Butonu (Sadece düzenleme modunda) */}
               {isEditMode && (
-                <button
-                  onClick={handleSelectAll}
-                  className="flex items-center gap-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground px-4 py-2 rounded-md text-xs font-bold transition-colors"
-                >
+                <button onClick={handleSelectAll} className={pillButton.outline}>
                   {selectedCourseIds.length === filteredCourses.length && filteredCourses.length > 0
                     ? t("courses.clearSelection")
                     : t("courses.selectAll")}
@@ -438,17 +433,11 @@ function CoursesPage() {
               )}
 
               {/* Düzenleme modunu açıp kapatan buton */}
-              <button
-                onClick={toggleEditMode}
-                className="flex items-center gap-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground px-4 py-2 rounded-md text-xs font-bold transition-colors"
-              >
+              <button onClick={toggleEditMode} className={pillButton.outline}>
                 {isEditMode ? t("courses.cancel") : t("courses.editCourses")}
               </button>
 
-              <button
-                onClick={handleOpenAddModal}
-                className="flex items-center gap-2 bg-foreground text-background px-4 py-2 rounded-md text-xs font-bold hover:opacity-90 transition-opacity"
-              >
+              <button onClick={handleOpenAddModal} className={pillButton.primary}>
                 <Plus className="size-4" />
                 {t("courses.newCourse")}
               </button>
@@ -463,11 +452,7 @@ function CoursesPage() {
           <div className="mb-6">
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs font-bold transition-colors ${
-                isFilterOpen || selectedCategory
-                  ? "bg-foreground text-background"
-                  : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-              }`}
+              className={chip(isFilterOpen || !!selectedCategory)}
             >
               <Filter className="size-3.5" />
               {selectedCategory
@@ -481,11 +466,7 @@ function CoursesPage() {
               <div className="flex items-center gap-2 mt-3 flex-wrap animate-in fade-in slide-in-from-top-2 duration-200">
                 <button
                   onClick={() => handleCategorySelect("")}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-colors ${
-                    !selectedCategory
-                      ? "bg-foreground text-background"
-                      : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  }`}
+                  className={chip(!selectedCategory)}
                 >
                   {t("courses.allCategories", "Tumu")}
                 </button>
@@ -493,11 +474,7 @@ function CoursesPage() {
                   <button
                     key={cat}
                     onClick={() => handleCategorySelect(cat)}
-                    className={`px-3 py-1.5 rounded-md text-xs font-bold transition-colors ${
-                      selectedCategory === cat
-                        ? "bg-foreground text-background"
-                        : "bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                    }`}
+                    className={chip(selectedCategory === cat)}
                   >
                     {i18n.exists(`dynamic.categories.${cat}`)
                       ? t(`dynamic.categories.${cat}`)

@@ -1,4 +1,4 @@
-import { formatDate } from "@/lib/utils";
+import { formatDate, pillButton } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { createFileRoute } from "@tanstack/react-router";
@@ -236,17 +236,14 @@ function RequestsPage() {
                 confirmLabel={t("requests.deleteSelected", { count: totalSelected })}
                 onConfirm={handleDeleteSelected}
               >
-                <button className="flex items-center gap-2 bg-destructive text-white px-4 py-2 rounded-md text-xs font-bold hover:bg-destructive transition-colors animate-in fade-in">
+                <button className={pillButton.danger}>
                   <Trash2 className="size-4" />
                   {t("requests.deleteSelected", { count: totalSelected })}
                 </button>
               </ConfirmDialog>
             )}
 
-            <button
-              onClick={toggleEditMode}
-              className="flex items-center gap-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground px-4 py-2 rounded-md text-xs font-bold transition-colors"
-            >
+            <button onClick={toggleEditMode} className={pillButton.outline}>
               {isEditMode
                 ? t("requests.cancelEdit", "İptal")
                 : t("requests.editRequests", "İstekleri Düzenle")}

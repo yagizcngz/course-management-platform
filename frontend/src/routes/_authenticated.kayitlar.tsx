@@ -1,5 +1,5 @@
 import { readError } from "@/lib/auth";
-import { formatDate } from "@/lib/utils";
+import { formatDate, pillButton } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, X, AlertCircle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -261,28 +261,18 @@ function EnrollmentsPage() {
           <div className="flex items-center gap-2">
             {/* Sadece seçim yapıldığında görünen silme butonu */}
             {isEditMode && selectedEnrollmentIds.length > 0 && (
-              <button
-                onClick={() => setIsConfirmOpen(true)}
-                className="inline-flex items-center gap-2 rounded-lg bg-destructive px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-destructive animate-in fade-in"
-              >
+              <button onClick={() => setIsConfirmOpen(true)} className={pillButton.danger}>
                 <Trash2 className="h-4 w-4" />
                 {t("enrollments.deleteSelected", { count: selectedEnrollmentIds.length })}
               </button>
             )}
 
             {/* Düzenleme modunu açıp kapatan buton */}
-            <button
-              onClick={toggleEditMode}
-              className="inline-flex items-center gap-2 rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
-            >
+            <button onClick={toggleEditMode} className={pillButton.outline}>
               {isEditMode ? t("enrollments.cancel") : t("enrollments.editEnrollments")}
             </button>
 
-            <button
-              type="button"
-              onClick={handleOpenModal}
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-            >
+            <button type="button" onClick={handleOpenModal} className={pillButton.primary}>
               <Plus className="h-4 w-4" />
               {t("enrollments.newEnrollment")}
             </button>

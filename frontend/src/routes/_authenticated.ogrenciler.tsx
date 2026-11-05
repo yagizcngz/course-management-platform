@@ -1,5 +1,5 @@
 import { readError } from "@/lib/auth";
-import { initialsOf, formatDate } from "@/lib/utils";
+import { initialsOf, formatDate, pillButton } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "../components/PageHeader";
 import { Plus, X, Edit2, Trash2, Camera, Upload, Link2, Search } from "lucide-react";
@@ -412,26 +412,17 @@ function StudentsPage() {
         action={
           <div className="flex gap-2">
             {isEditMode && selectedStudentIds.length > 0 && (
-              <button
-                onClick={() => setIsDeleteModalOpen(true)}
-                className="flex items-center gap-2 bg-destructive text-white px-4 py-2 rounded-md text-xs font-bold hover:bg-destructive transition-colors animate-in fade-in"
-              >
+              <button onClick={() => setIsDeleteModalOpen(true)} className={pillButton.danger}>
                 <Trash2 className="size-4" />
                 {t("students.deleteSelected", { count: selectedStudentIds.length })}
               </button>
             )}
 
-            <button
-              onClick={toggleEditMode}
-              className="flex items-center gap-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground px-4 py-2 rounded-md text-xs font-bold transition-colors"
-            >
+            <button onClick={toggleEditMode} className={pillButton.outline}>
               {isEditMode ? t("students.cancel") : t("students.editStudents")}
             </button>
 
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-2 bg-foreground text-background px-4 py-2 rounded-md text-xs font-bold hover:opacity-90 transition-opacity"
-            >
+            <button onClick={() => setIsModalOpen(true)} className={pillButton.primary}>
               <Plus className="size-4" />
               {t("students.newStudent")}
             </button>

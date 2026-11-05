@@ -1,5 +1,5 @@
 import { readError } from "@/lib/auth";
-import { formatDate } from "@/lib/utils";
+import { formatDate, pillButton } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { createFileRoute } from "@tanstack/react-router";
@@ -216,7 +216,7 @@ function TaughtCoursesPage() {
       <PageHeader
         crumb={t("sidebar.taughtCourses")}
         action={
-          <Button onClick={() => setIsModalOpen(true)} className="gap-2">
+          <Button onClick={() => setIsModalOpen(true)} className={pillButton.primary}>
             <Plus className="size-4" /> {t("courses.newCourse")}
           </Button>
         }

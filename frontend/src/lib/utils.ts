@@ -25,3 +25,21 @@ export const formatDate = (raw: unknown, lang: string) => {
     ? d.toLocaleDateString(lang.startsWith("en") ? "en-GB" : "tr-TR")
     : "-";
 };
+
+const pill =
+  "inline-flex h-9 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 disabled:pointer-events-none disabled:opacity-50";
+
+/** Page-header actions share the pill shape and height of the search box and display toggles. */
+export const pillButton = {
+  outline: `${pill} border border-border bg-card text-foreground hover:bg-secondary`,
+  primary: `${pill} bg-primary text-primary-foreground hover:bg-primary/90`,
+  danger: `${pill} bg-destructive text-white hover:bg-destructive/90 animate-in fade-in`,
+};
+
+/** A filter chip; the active one is filled. */
+export const chip = (active: boolean) =>
+  `inline-flex h-8 items-center gap-2 rounded-full border px-3.5 text-xs font-medium transition-colors ${
+    active
+      ? "border-primary bg-primary text-primary-foreground"
+      : "border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
+  }`;

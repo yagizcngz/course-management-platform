@@ -24,7 +24,7 @@ export function PageHeader({ crumb, action, searchValue, onSearchChange }: PageH
             placeholder={t("searchPlaceholder")}
             value={searchValue || ""} // Kutudaki yazı
             onChange={(e) => onSearchChange(e.target.value)} // Yazı değiştikçe haber ver
-            className="bg-card border border-border text-sm px-4 py-2 rounded-full w-32 sm:w-64 transition-[box-shadow,border-color] focus:border-gold focus:ring-4 focus:ring-gold/15 outline-none"
+            className="h-9 bg-card border border-border text-sm px-4 rounded-full w-32 sm:w-64 transition-[box-shadow,border-color] focus:border-gold focus:ring-4 focus:ring-gold/15 outline-none"
           />
         )}
         {action}
