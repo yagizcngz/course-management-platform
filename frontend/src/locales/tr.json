@@ -979,7 +979,18 @@
       "fullCatalog": "Tüm katalog",
       "openInCatalog": "Katalogda aç",
       "allCategoriesLink": "{{count}} alanın tamamını keşfedin",
-      "allTeachersLink": "{{count}} eğitmenin tamamıyla tanışın"
+      "allTeachersLink": "{{count}} eğitmenin tamamıyla tanışın",
+      "bookSyllabus": "Müfredat",
+      "bookLessons_one": "{{count}} ders",
+      "bookLessons_other": "{{count}} ders",
+      "bookCapacity": "Kontenjan",
+      "bookRefund": "7 gün içinde cüzdanınıza tam iade",
+      "bookCta": "Kursu incele",
+      "bookSoon": "Müfredat hazırlanıyor",
+      "bookRole": "kitap",
+      "bookLabel": "Öne çıkan kurslar kitabı. Sayfa çevirmek için sol ve sağ ok tuşları, kursu açmak için Enter.",
+      "bookPages": "Kitabın sayfaları",
+      "bookGoTo": "{{no}}. kurs: {{title}}"
     },
     "help": {
       "title": "Yardım",

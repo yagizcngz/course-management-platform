@@ -1053,7 +1053,18 @@
       "allCategoriesLink_one": "Explore the discipline",
       "allCategoriesLink_other": "Explore all {{count}} disciplines",
       "allTeachersLink_one": "Meet our instructor",
-      "allTeachersLink_other": "Meet all {{count}} instructors"
+      "allTeachersLink_other": "Meet all {{count}} instructors",
+      "bookSyllabus": "Syllabus",
+      "bookLessons_one": "{{count}} lesson",
+      "bookLessons_other": "{{count}} lessons",
+      "bookCapacity": "Capacity",
+      "bookRefund": "Full refund to your wallet within 7 days",
+      "bookCta": "View course",
+      "bookSoon": "Syllabus in preparation",
+      "bookRole": "book",
+      "bookLabel": "Book of featured courses. Use the left and right arrow keys to turn pages, Enter to open the course.",
+      "bookPages": "Pages of the book",
+      "bookGoTo": "Course {{no}}: {{title}}"
     },
     "help": {
       "title": "Help",

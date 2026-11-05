@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { motion, useReducedMotion } from "motion/react";
-import { BookScene, type BookPage } from "../effects/three/BookScene";
+import { BookScene, useBookStrings, type BookPage } from "../effects/three/BookScene";
 import { CountUp, Reveal, SplitHeadline, Stagger, StaggerItem } from "../motion";
 import {
   getCourseImage,
@@ -77,30 +77,45 @@ function AtelierHero(p: LandingProps) {
     return () => window.clearInterval(id);
   }, [reduce, paused, book.length, interacted]);
 
+  // each spread is a whole course page: dossier on the left, syllabus and price on the right
   const pages: BookPage[] = useMemo(
     () =>
-      book.map((c, i) => ({
-        key: String(c.id),
-        no: i + 1,
-        total: book.length,
-        title: p.label("courses", c.title),
-        category: p.label("categories", c.category),
-        instructor: c.instructor,
-        price: price(c.price),
-      })),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- label changes with language, tracked by t
-    [bookKey, t],
+      book.map((c, i) => {
+        const teacher = p.teachers.find((m) => String(m.id ?? m.Id) === String(c.teacherId));
+        return {
+          key: String(c.id),
+          no: i + 1,
+          total: book.length,
+          title: p.label("courses", c.title),
+          category: p.label("categories", c.category),
+          subCategory: c.subCategory ? p.label("subCategories", c.subCategory) : undefined,
+          level: c.level ? t(`catalog.levels.${c.level}`) : t("catalog.allLevels"),
+          description: p.describe(c),
+          instructor: c.instructor,
+          instructorNote: teacher
+            ? getTeacherBranches(teacher)
+                .map((b) => p.label("categories", b))
+                .join(" · ")
+            : undefined,
+          capacity: c.maxCapacity || undefined,
+          lessons: p.outline[c.id] ?? [],
+          price: price(c.price),
+        };
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- label/describe change with language, tracked by t
+    [bookKey, t, p.outline, p.teachers],
   );
-  const strings = useMemo(
-    () => ({ instructor: t("guest.instructor"), catalog: t("guest.bookCatalog") }),
-    [t],
-  );
+  const strings = useBookStrings();
 
   const current: LandingCourse | undefined = book[Math.min(index, book.length - 1)];
   const go = (step: number) => {
     if (!book.length) return;
     setIndex((i) => (i + step + book.length) % book.length);
     setInteracted((n) => n + 1);
+  };
+  const jump = (n: number) => {
+    setIndex(n);
+    setInteracted((k) => k + 1);
   };
 
   // the largest disciplines first; the full list lives in the categories section
@@ -178,6 +193,18 @@ function AtelierHero(p: LandingProps) {
           onPointerLeave={() => setPaused(false)}
           onFocus={() => setPaused(true)}
           onBlur={() => setPaused(false)}
+          onKeyDown={(e) => {
+            if (e.target !== e.currentTarget) return;
+            if (e.key === "ArrowLeft") go(-1);
+            else if (e.key === "ArrowRight") go(1);
+            else if (e.key === "Enter" && current) p.onOpen(current);
+            else return;
+            e.preventDefault();
+          }}
+          tabIndex={0}
+          role="group"
+          aria-roledescription={t("guest.bookRole")}
+          aria-label={t("guest.bookLabel")}
         >
           <div className="mx-auto flex w-full max-w-lg items-baseline justify-between gap-4 border-b border-border pb-2">
             <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-gold">
@@ -200,14 +227,38 @@ function AtelierHero(p: LandingProps) {
               />
             </Link>
           </div>
-          <div className="relative h-[320px] sm:h-[420px] lg:h-[470px]">
+          <div className="relative h-[320px] sm:h-[460px] lg:h-[540px]">
             <BookScene
               pages={pages}
               index={Math.min(index, Math.max(0, pages.length - 1))}
               strings={strings}
               onActivate={current ? () => p.onOpen(current) : undefined}
+              onTurn={go}
             />
           </div>
+          {book.length > 1 && (
+            <ol
+              aria-label={t("guest.bookPages")}
+              className="mx-auto mb-3 flex w-full max-w-lg flex-wrap justify-center gap-1"
+            >
+              {book.map((c, n) => (
+                <li key={c.id}>
+                  <button
+                    type="button"
+                    onClick={() => jump(n)}
+                    aria-current={n === index ? "page" : undefined}
+                    aria-label={t("guest.bookGoTo", {
+                      no: n + 1,
+                      title: p.label("courses", c.title),
+                    })}
+                    className="h-7 min-w-8 rounded-full px-1.5 font-mono text-[11px] tabular-nums text-muted-foreground transition-colors hover:text-foreground aria-[current=page]:bg-primary aria-[current=page]:text-primary-foreground"
+                  >
+                    {String(n + 1).padStart(2, "0")}
+                  </button>
+                </li>
+              ))}
+            </ol>
+          )}
 
           <div className="mx-auto w-full max-w-lg border-t border-foreground/80 pt-3">
             {current ? (
@@ -253,10 +304,11 @@ function AtelierHero(p: LandingProps) {
                   </span>
                   <span className="text-lg tabular-nums">{price(current.price)}</span>
                   <span className="mt-1 text-sm text-muted-foreground">
-                    {t("guest.instructor")} {current.instructor} ·{" "}
-                    <span className="text-foreground underline decoration-border underline-offset-4 group-hover:decoration-gold">
-                      {t("guest.openCourse")}
-                    </span>
+                    {t("guest.instructor")} {current.instructor}
+                  </span>
+                  <span className="mt-3 inline-flex items-center gap-1.5 justify-self-end rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity group-hover:opacity-90">
+                    {t("guest.bookCta")}
+                    <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
                   </span>
                 </button>
               </>

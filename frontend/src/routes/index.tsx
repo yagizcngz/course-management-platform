@@ -37,7 +37,7 @@ function GuestHomepage() {
 function Landing({ variant }: { variant: Variant }) {
   const navigate = useNavigate();
   const lenis = useLenis();
-  const { courses, categories, teachers, label, describe, extra } = usePublicCatalog();
+  const { courses, categories, teachers, outline, label, describe, extra } = usePublicCatalog();
   const [stats, setStats] = useState<GuestStats | null>(null);
   const [popular, setPopular] = useState<LandingCourse[]>([]);
   const [query, setQuery] = useState("");
@@ -120,6 +120,7 @@ function Landing({ variant }: { variant: Variant }) {
     onOpen: setSelected,
     label,
     describe,
+    outline,
   };
   const Page = PAGES[variant];
 

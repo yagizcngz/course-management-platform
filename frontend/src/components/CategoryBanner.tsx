@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import type { CourseData } from "./courseHelpers";
 import { ContourScene, type Peak } from "./effects/three/ContourScene";
 import { FieldScene, type FieldRow } from "./effects/three/FieldScene";
-import { BookScene, type BookPage } from "./effects/three/BookScene";
+import { BookScene, useBookStrings, type BookPage } from "./effects/three/BookScene";
 import { SolarSystem } from "./effects/SolarSystem";
 import { price as formatPrice } from "./landing/catalog";
 
@@ -217,18 +217,25 @@ function Book({
         title: title(c),
         category,
         instructor: c.instructor || c.Instructor || "",
+        subCategory: (c.subCategory ?? c.SubCategory) || undefined,
+        level: (c.level ?? c.Level) ? t(`catalog.levels.${c.level ?? c.Level}`) : undefined,
+        description: c.description || c.Description,
+        capacity: Number(c.maxCapacity ?? c.MaxCapacity) || undefined,
         price: formatPrice(priceOf(c)),
       })),
-    [courses, category, title],
+    [courses, category, title, t],
   );
-  const strings = useMemo(
-    () => ({ instructor: t("guest.instructor"), catalog: t("guest.bookCatalog") }),
-    [t],
-  );
+  const strings = useBookStrings();
   const go = (step: number) => setIndex((n) => (n + step + courses.length) % courses.length);
   return (
     <>
-      <BookScene pages={pages} index={i} strings={strings} onActivate={() => onOpen(courses[i])} />
+      <BookScene
+        pages={pages}
+        index={i}
+        strings={strings}
+        onActivate={() => onOpen(courses[i])}
+        onTurn={courses.length > 1 ? go : undefined}
+      />
       {courses.length > 1 && (
         <div className="absolute bottom-3 right-4 flex items-center gap-1">
           <button

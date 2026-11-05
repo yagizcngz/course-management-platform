@@ -17,6 +17,7 @@ export interface LandingCourse {
   teacherId?: number | null;
   level?: string | null;
   subCategory?: string | null;
+  maxCapacity?: number;
   createdAt?: string;
   enrollments: unknown[];
 }
@@ -52,6 +53,8 @@ export interface LandingProps {
   label: (kind: "categories" | "courses" | "subCategories", value: string) => string;
   /** A course's description in the current language. */
   describe: (course: LandingCourse) => string;
+  /** Lesson titles by course id. */
+  outline: Record<string, string[]>;
 }
 
 /**
