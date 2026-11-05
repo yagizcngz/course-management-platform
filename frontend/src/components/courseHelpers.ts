@@ -11,6 +11,18 @@ export interface CategoryDto {
   Description?: string;
 }
 
+/** Category name -> its sub-categories, from the fixed taxonomy the API serves with each category. */
+export const fetchSubCategories = async (): Promise<Record<string, string[]>> => {
+  try {
+    const res = await fetch(`${API_BASE}/api/categories`);
+    if (!res.ok) return {};
+    const data: { name?: string; Name?: string; subCategories?: string[] }[] = await res.json();
+    return Object.fromEntries(data.map((c) => [c.name || c.Name || "", c.subCategories ?? []]));
+  } catch {
+    return {};
+  }
+};
+
 export const fetchCategories = async (token?: string): Promise<string[]> => {
   try {
     const headers: Record<string, string> = { "Content-Type": "application/json" };
@@ -49,6 +61,10 @@ export interface CourseData {
   thumbnail?: string;
   description?: string;
   Description?: string;
+  subCategory?: string | null;
+  SubCategory?: string | null;
+  level?: string | null;
+  Level?: string | null;
 }
 
 export interface EnrollmentDto {

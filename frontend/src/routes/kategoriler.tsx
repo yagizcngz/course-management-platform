@@ -69,6 +69,12 @@ function CategoriesDirectory() {
             const levels = LEVELS.map(
               (lv) => [lv, g.courses.filter((c) => c.level === lv).length] as const,
             ).filter(([, n]) => n > 0);
+            const subs = [
+              ...g.courses.reduce(
+                (m, c) => (c.subCategory ? m.set(c.subCategory, (m.get(c.subCategory) ?? 0) + 1) : m),
+                new Map<string, number>(),
+              ),
+            ].sort((a, b) => b[1] - a[1]);
             return (
               <li key={g.name} id={slug(g.name)} className="scroll-mt-20 border-b border-border">
                 <Reveal className="grid gap-8 py-12 lg:grid-cols-[3rem_14rem_1fr_1fr] lg:gap-10">
@@ -94,6 +100,22 @@ function CategoriesDirectory() {
                       <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                         {levels.map(([lv, n]) => `${n} ${t(`catalog.levels.${lv}`)}`).join(" · ")}
                       </p>
+                    )}
+                    {subs.length > 0 && (
+                      <ul aria-label={t("directory.subCategories")} className="mt-5 flex flex-wrap gap-2">
+                        {subs.map(([sub, n]) => (
+                          <li key={sub}>
+                            <Link
+                              to="/kurslar"
+                              search={{ category: g.name, subCategory: sub }}
+                              className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-sm text-muted-foreground transition-colors hover:border-gold hover:text-foreground"
+                            >
+                              {label("subCategories", sub)}
+                              <span className="font-mono text-[11px] tabular-nums opacity-70">{n}</span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
                     )}
                   </div>
                   <div className="flex flex-col">

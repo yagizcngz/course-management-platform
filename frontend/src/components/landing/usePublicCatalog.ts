@@ -41,7 +41,7 @@ export function usePublicCatalog() {
   }, []);
 
   const label = useCallback(
-    (kind: "categories" | "courses", value: string) =>
+    (kind: "categories" | "courses" | "subCategories", value: string) =>
       i18n.exists(`dynamic.${kind}.${value}`) ? t(`dynamic.${kind}.${value}`) : value,
     [i18n, t],
   );
@@ -63,9 +63,16 @@ export function usePublicCatalog() {
         `${m.branch ?? m.Branch ?? ""} ${m.aboutMe ?? m.AboutMe ?? ""}`,
       ]),
     );
+    // field names in both languages, so "calculus" and "kalkülüs" both match in either UI language
+    const both = (kind: string, value?: string | null) =>
+      value
+        ? ["tr", "en"]
+            .map((lng) => t(`dynamic.${kind}.${value}`, { lng, defaultValue: value }))
+            .join(" ")
+        : "";
     return (c: LandingCourse) =>
-      `${(outline[c.id] ?? []).join(" ")} ${byTeacher.get(String(c.teacherId)) ?? ""}`;
-  }, [teachers, outline]);
+      `${(outline[c.id] ?? []).join(" ")} ${byTeacher.get(String(c.teacherId)) ?? ""} ${both("categories", c.category)} ${both("subCategories", c.subCategory)}`;
+  }, [teachers, outline, t]);
 
   return { courses, categories, teachers, outline, label, describe, extra };
 }

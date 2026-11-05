@@ -19,6 +19,7 @@ import {
 
 import { parseJwt, isAdminRole, isStudentRole, isTeacherRole } from "@/lib/auth";
 import { API_BASE } from "@/components/courseHelpers";
+import { CourseTaxonomyFields } from "@/components/CourseTaxonomyFields";
 export const Route = createFileRoute("/_authenticated/katalog")({
   component: CoursesPage,
   validateSearch: (search: Record<string, unknown>) => ({
@@ -51,6 +52,8 @@ function CoursesPage() {
   const [newPrice, setNewPrice] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newCategory, setNewCategory] = useState("");
+  const [newSubCategory, setNewSubCategory] = useState("");
+  const [newLevel, setNewLevel] = useState("");
   // newTeacherId: teachers listesinden seçilen öğretmenin id'si (string olarak, select
   // elemanının value'su için). Boş string = "henüz öğretmen seçilmedi".
   const [newTeacherId, setNewTeacherId] = useState("");
@@ -194,6 +197,8 @@ function CoursesPage() {
     setNewPrice("");
     setNewDescription("");
     setNewCategory("");
+    setNewSubCategory("");
+    setNewLevel("");
     setNewTeacherId("");
     setIsModalOpen(false);
   };
@@ -237,6 +242,8 @@ function CoursesPage() {
         body: JSON.stringify({
           Title: newTitle,
           Category: newCategory,
+          SubCategory: newSubCategory || null,
+          Level: newLevel || null,
           Instructor: instructorName,
           TeacherId: Number(newTeacherId),
           MaxCapacity: Number(newCapacity) || 0,
@@ -730,6 +737,15 @@ function CoursesPage() {
                   </select>
                 </div>
               </div>
+
+              <CourseTaxonomyFields
+                category={newCategory}
+                subCategory={newSubCategory}
+                onSubCategoryChange={setNewSubCategory}
+                level={newLevel}
+                onLevelChange={setNewLevel}
+                selectClassName="w-full p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-foreground transition-colors"
+              />
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">

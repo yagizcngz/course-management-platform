@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useEffect, useState } from "react";
+import { CourseTaxonomyFields } from "./CourseTaxonomyFields";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { useLenis } from "lenis/react";
@@ -64,6 +65,8 @@ export function CourseDetailModal({
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editCategory, setEditCategory] = useState("");
+  const [editSubCategory, setEditSubCategory] = useState("");
+  const [editLevel, setEditLevel] = useState("");
   const [editPrice, setEditPrice] = useState("");
   const [editCapacity, setEditCapacity] = useState("");
   // editTeacherId: teachers listesinden seçilen öğretmenin id'si (string olarak, select
@@ -99,6 +102,19 @@ export function CourseDetailModal({
     ? t(`dynamic.categories.${originalCategory}`)
     : originalCategory;
   const instructor = originalInstructor;
+  const subCategory = course.subCategory ?? course.SubCategory;
+  const level = course.level ?? course.Level;
+  // "Kategori · Alt kategori · Seviye" line over the cover
+  const kicker = [
+    category,
+    subCategory &&
+      (i18n.exists(`dynamic.subCategories.${subCategory}`)
+        ? t(`dynamic.subCategories.${subCategory}`)
+        : subCategory),
+    level && t(`catalog.levels.${level}`, level),
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   const price = course.price || course.Price || "0";
   const navigate = useNavigate();
@@ -288,6 +304,8 @@ export function CourseDetailModal({
     setEditTitle(course.title || course.Title || "");
     const currentCategory = course.category || course.Category || "";
     setEditCategory(currentCategory);
+    setEditSubCategory(subCategory ?? "");
+    setEditLevel(level ?? "");
     setEditPrice(String(course.price ?? course.Price ?? ""));
     setEditCapacity(String(course.maxCapacity ?? course.MaxCapacity ?? ""));
 
@@ -402,6 +420,8 @@ export function CourseDetailModal({
         body: JSON.stringify({
           Title: editTitle,
           Category: editCategory,
+          SubCategory: editSubCategory || null,
+          Level: editLevel || null,
           Instructor: instructorToSend,
           TeacherId: teacherIdToSend,
           MaxCapacity: Number(editCapacity) || 0,
@@ -418,6 +438,10 @@ export function CourseDetailModal({
           Title: editTitle,
           category: editCategory,
           Category: editCategory,
+          subCategory: editSubCategory || null,
+          SubCategory: editSubCategory || null,
+          level: editLevel || null,
+          Level: editLevel || null,
           instructor: instructorToSend,
           Instructor: instructorToSend,
           teacherId: teacherIdToSend,
@@ -494,7 +518,7 @@ export function CourseDetailModal({
           />
           <div className="absolute bottom-4 left-6 right-6 text-white">
             <span className="text-[10px] font-mono uppercase tracking-widest opacity-90">
-              {category}
+              {kicker}
             </span>
             <h2 id="course-modal-title" className="text-2xl font-bold leading-tight">
               {title}
@@ -777,6 +801,15 @@ export function CourseDetailModal({
                   </p>
                 </div>
               </div>
+
+              <CourseTaxonomyFields
+                category={editCategory}
+                subCategory={editSubCategory}
+                onSubCategoryChange={setEditSubCategory}
+                level={editLevel}
+                onLevelChange={setEditLevel}
+                selectClassName="w-full p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-foreground transition-colors"
+              />
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">

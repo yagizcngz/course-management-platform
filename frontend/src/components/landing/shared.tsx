@@ -16,6 +16,7 @@ export interface LandingCourse {
   description?: string;
   teacherId?: number | null;
   level?: string | null;
+  subCategory?: string | null;
   createdAt?: string;
   enrollments: unknown[];
 }
@@ -48,7 +49,7 @@ export interface LandingProps {
   scrollToCourses: () => void;
   onClear: () => void;
   onOpen: (course: LandingCourse) => void;
-  label: (kind: "categories" | "courses", value: string) => string;
+  label: (kind: "categories" | "courses" | "subCategories", value: string) => string;
   /** A course's description in the current language. */
   describe: (course: LandingCourse) => string;
 }

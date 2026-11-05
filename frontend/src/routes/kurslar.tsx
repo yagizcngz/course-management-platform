@@ -20,6 +20,7 @@ type Sort = (typeof SORTS)[number];
 interface CatalogSearch {
   q?: string;
   category?: string;
+  subCategory?: string;
   level?: Level;
   price?: PriceBand;
   sort?: Sort;
@@ -36,6 +37,7 @@ export const Route = createFileRoute("/kurslar")({
   validateSearch: (s: Record<string, unknown>): CatalogSearch => ({
     q: text(s.q),
     category: text(s.category),
+    subCategory: text(s.subCategory),
     level: pick(LEVELS, s.level),
     price: pick(PRICES, s.price),
     sort: pick(SORTS, s.sort),
@@ -75,6 +77,7 @@ function CoursesCatalog() {
     const list = courses.filter(
       (c) =>
         (!search.category || c.category === search.category) &&
+        (!search.subCategory || c.subCategory === search.subCategory) &&
         (!search.level || c.level === search.level) &&
         inBand(Number(c.price), search.price) &&
         matchesQuery(c, search.q ?? "", label, extra(c)),
@@ -89,7 +92,17 @@ function CoursesCatalog() {
     if (sort === "title")
       list.sort((a, b) => label("courses", a.title).localeCompare(label("courses", b.title), "tr"));
     return list;
-  }, [courses, search.category, search.level, search.price, search.q, sort, label, extra]);
+  }, [
+    courses,
+    search.category,
+    search.subCategory,
+    search.level,
+    search.price,
+    search.q,
+    sort,
+    label,
+    extra,
+  ]);
 
   const counts = useMemo(() => {
     const m = new Map<string, number>();
@@ -100,11 +113,25 @@ function CoursesCatalog() {
     ...categories.filter((c) => counts.has(c)),
     ...[...counts.keys()].filter((c) => !categories.includes(c)),
   ];
+  // sub-fields of the chosen category, most courses first
+  const subCounts = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const c of courses ?? [])
+      if (c.category === search.category && c.subCategory)
+        m.set(c.subCategory, (m.get(c.subCategory) ?? 0) + 1);
+    return [...m].sort((a, b) => b[1] - a[1]);
+  }, [courses, search.category]);
   const filtered = !!(search.q || search.category || search.level || search.price);
   // the list re-staggers when the filter changes, so new cards never stay hidden
-  const listKey = [search.q, search.category, search.level, search.price, sort, search.view].join(
-    "|",
-  );
+  const listKey = [
+    search.q,
+    search.category,
+    search.subCategory,
+    search.level,
+    search.price,
+    sort,
+    search.view,
+  ].join("|");
 
   const levelLabel = (level?: string | null) =>
     level ? t(`catalog.levels.${level}`, level) : t("catalog.allLevels");
@@ -150,7 +177,7 @@ function CoursesCatalog() {
                   <button
                     type="button"
                     aria-pressed={on}
-                    onClick={() => set({ category: name ?? undefined })}
+                    onClick={() => set({ category: name ?? undefined, subCategory: undefined })}
                     className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
                       on
                         ? "border-primary bg-primary text-primary-foreground"
@@ -167,6 +194,34 @@ function CoursesCatalog() {
             })}
           </ul>
         </nav>
+
+        {/* sub-fields of the chosen discipline */}
+        {search.category && subCounts.length > 0 && (
+          <div
+            role="group"
+            aria-label={t("catalog.subCategoryFilter")}
+            className="-mx-4 -mt-2 overflow-x-auto px-4 pb-5 sm:mx-0 sm:px-0 lg:overflow-visible"
+          >
+            <ul className="flex items-center gap-x-1 gap-y-2 max-lg:min-w-max lg:flex-wrap">
+              <li className="mr-2 font-mono text-[11px] uppercase tracking-[0.14em] text-gold">
+                {t("catalog.subCategoryFilter")}
+              </li>
+              {[[null, counts.get(search.category) ?? 0] as const, ...subCounts].map(([sub, n]) => (
+                <li key={sub ?? "all"}>
+                  <button
+                    type="button"
+                    aria-pressed={(search.subCategory ?? null) === sub}
+                    onClick={() => set({ subCategory: sub ?? undefined })}
+                    className="rounded-full px-3 py-1 text-sm text-muted-foreground transition-colors hover:text-foreground aria-pressed:bg-secondary aria-pressed:font-medium aria-pressed:text-foreground"
+                  >
+                    {sub ? label("subCategories", sub) : t("catalog.allSubCategories")}
+                    <span className="ml-1.5 font-mono text-[11px] tabular-nums opacity-70">{n}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* level, price, sort, view */}
         <div className="flex flex-col gap-4 border-y border-border py-4 lg:flex-row lg:items-center lg:justify-between">
@@ -255,7 +310,13 @@ function CoursesCatalog() {
             type="button"
             onClick={() => {
               setQuery("");
-              set({ q: undefined, category: undefined, level: undefined, price: undefined });
+              set({
+                q: undefined,
+                category: undefined,
+                subCategory: undefined,
+                level: undefined,
+                price: undefined,
+              });
             }}
             className="mt-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground underline decoration-gold underline-offset-4 hover:text-foreground"
           >
@@ -287,6 +348,7 @@ function CoursesCatalog() {
                   meta={
                     <span className="mt-1 block font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                       {levelLabel(course.level)}
+                      {course.subCategory && ` · ${label("subCategories", course.subCategory)}`}
                     </span>
                   }
                 />
@@ -318,6 +380,11 @@ function CoursesCatalog() {
                   </span>
                   <span className="hidden text-sm text-muted-foreground sm:block">
                     {label("categories", course.category)}
+                    {course.subCategory && (
+                      <span className="mt-0.5 block text-xs opacity-80">
+                        {label("subCategories", course.subCategory)}
+                      </span>
+                    )}
                   </span>
                   <span className="hidden font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground sm:block">
                     {levelLabel(course.level)}

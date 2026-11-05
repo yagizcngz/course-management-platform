@@ -6,8 +6,8 @@ export function fold(s: string) {
 }
 
 /**
- * Every word of the query must appear in the title, category, instructor, description
- * or `extra` (the course's lesson titles and its teacher's branch and bio).
+ * Every word of the query must appear in the title, category, sub-category, instructor,
+ * description or `extra` (lesson titles, the teacher's branch and bio, field names in both languages).
  */
 export function matchesQuery(
   course: LandingCourse,
@@ -23,6 +23,8 @@ export function matchesQuery(
       label("courses", course.title),
       course.category,
       label("categories", course.category),
+      course.subCategory ?? "",
+      course.subCategory ? label("subCategories", course.subCategory) : "",
       course.instructor,
       course.description ?? "",
       extra,

@@ -17,6 +17,7 @@ import {
 import { CourseDetailModal } from "@/components/CourseDetailModal";
 
 import { API_BASE } from "@/components/courseHelpers";
+import { CourseTaxonomyFields } from "@/components/CourseTaxonomyFields";
 import { teacherOnly } from "@/hooks/useAdminGuard";
 export const Route = createFileRoute("/_authenticated/verdigim-kurslar")({
   component: teacherOnly(TaughtCoursesPage),
@@ -36,6 +37,8 @@ function TaughtCoursesPage() {
   const [newPrice, setNewPrice] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newCategory, setNewCategory] = useState("");
+  const [newSubCategory, setNewSubCategory] = useState("");
+  const [newLevel, setNewLevel] = useState("");
 
   const [selectedCourse, setSelectedCourse] = useState<CourseData | null>(null);
   const [dbTeachers, setDbTeachers] = useState<TeacherLiteDto[]>([]);
@@ -157,6 +160,8 @@ function TaughtCoursesPage() {
         body: JSON.stringify({
           Title: newTitle,
           Category: newCategory,
+          SubCategory: newSubCategory || null,
+          Level: newLevel || null,
           Instructor: `${profile.firstName} ${profile.lastName}`.trim(),
           TeacherId: meTeacher ? meTeacher.id || meTeacher.Id : 0,
           MaxCapacity: Number(newCapacity) || 0,
@@ -171,6 +176,8 @@ function TaughtCoursesPage() {
         // Reset form
         setNewTitle("");
         setNewCategory("");
+        setNewSubCategory("");
+        setNewLevel("");
         setNewCapacity("");
         setNewPrice("");
         setNewDescription("");
@@ -384,6 +391,15 @@ function TaughtCoursesPage() {
                   ))}
                 </select>
               </div>
+              <CourseTaxonomyFields
+                category={newCategory}
+                subCategory={newSubCategory}
+                onSubCategoryChange={setNewSubCategory}
+                level={newLevel}
+                onLevelChange={setNewLevel}
+                labelClassName="text-sm font-medium block"
+                selectClassName="w-full rounded-md border p-2 text-sm bg-background"
+              />
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium mb-1 block">{t("courses.capacity")}</label>
