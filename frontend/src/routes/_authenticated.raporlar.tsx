@@ -269,13 +269,16 @@ function ReportsPage() {
       }).length,
   );
 
-  const maxCount = Math.max(...monthCounts, 1);
-
+  // Farklı bir yıla denk gelen aylarda karışıklık olmasın diye kısa yıl ekleniyor (örn. "Oca '25")
+  const monthLabel = (year: number, month: number) =>
+    t(`reports.months.${month}`) + (year !== currentYear ? ` '${String(year).slice(2)}` : "");
   const dynamicMonthlyTrend = trendMonths.map(({ year, month }, index) => ({
-    // Farklı bir yıla denk gelen aylarda karışıklık olmasın diye kısa yıl ekleniyor (örn. "Oca '25")
-    m: t(`reports.months.${month}`) + (year !== currentYear ? ` '${String(year).slice(2)}` : ""),
-    v: Math.round((monthCounts[index] / maxCount) * 100),
+    m: monthLabel(year, month),
     raw: monthCounts[index],
+  }));
+  const revenueTrend = trendMonths.map(({ year, month }) => ({
+    m: monthLabel(year, month),
+    raw: monthRevenue(year, month),
   }));
 
   return (
@@ -557,34 +560,73 @@ function ReportsPage() {
               </span>
             }
           />
-          <div className="bg-card border border-border p-6 relative">
-            {isLoading && (
-              <div className="absolute inset-0 z-10 bg-background/50 backdrop-blur-sm flex items-center justify-center font-mono text-xs font-bold animate-pulse">
-                {t("reports.loadingChart")}
-              </div>
-            )}
-            <div className="flex items-end gap-2 h-64">
-              {dynamicMonthlyTrend.map((d) => (
-                <div key={d.m} className="flex-1 flex flex-col items-center gap-2 group">
-                  <div className="w-full flex items-end h-full relative">
-                    {/* Hover durumunda gerçek rakamı gösteren Tooltip */}
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-foreground text-background text-[10px] font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                      {t("reports.enrollmentCount", { count: d.raw })}
-                    </div>
-                    <div
-                      className="w-full bg-accent/80 hover:bg-accent transition-all duration-500 rounded-t-sm"
-                      style={{ height: `${(d.v / 100) * 200}px` }}
-                    />
-                  </div>
-                  <span className="text-[10px] font-mono text-muted-foreground uppercase">
-                    {d.m}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <BarTrend
+            data={dynamicMonthlyTrend}
+            loading={isLoading}
+            loadingText={t("reports.loadingChart")}
+            tooltip={(n) => t("reports.enrollmentCount", { count: n })}
+          />
+        </section>
+
+        <section className="space-y-4">
+          <SectionHeader
+            title={t("reports.revenueTrendTitle")}
+            right={
+              <span className="text-[10px] font-mono text-muted-foreground uppercase">
+                {t("reports.revenueTrendUnit")}
+              </span>
+            }
+          />
+          <BarTrend
+            data={revenueTrend}
+            loading={isLoading}
+            loadingText={t("reports.loadingChart")}
+            tooltip={(n) => formatTry(n)}
+          />
         </section>
       </div>
     </>
+  );
+}
+
+/** Twelve monthly bars scaled to the largest month, with the exact value on hover. */
+function BarTrend({
+  data,
+  loading,
+  loadingText,
+  tooltip,
+}: {
+  data: { m: string; raw: number }[];
+  loading: boolean;
+  loadingText: string;
+  tooltip: (raw: number) => string;
+}) {
+  const max = Math.max(...data.map((d) => d.raw), 1);
+  return (
+    <div className="bg-card border border-border p-6 relative">
+      {loading && (
+        <div className="absolute inset-0 z-10 bg-background/50 backdrop-blur-sm flex items-center justify-center font-mono text-xs font-bold animate-pulse">
+          {loadingText}
+        </div>
+      )}
+      <div className="flex items-end gap-2 h-64">
+        {data.map((d) => (
+          <div key={d.m} className="flex-1 min-w-0 flex flex-col items-center gap-2 group">
+            <div className="w-full flex items-end h-full relative">
+              <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-foreground text-background text-[10px] font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+                {tooltip(d.raw)}
+              </div>
+              <div
+                className="w-full bg-accent/80 hover:bg-accent transition-all duration-500 rounded-t-sm"
+                style={{ height: `${(d.raw / max) * 200}px` }}
+              />
+            </div>
+            <span className="text-[10px] font-mono text-muted-foreground uppercase truncate max-w-full">
+              {d.m}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
