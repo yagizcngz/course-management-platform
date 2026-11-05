@@ -25,7 +25,7 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import type { TFunction } from "i18next";
 
 import { parseJwt, authHeaders, getToken, isAdminRole } from "@/lib/auth";
-import { formatTry } from "@/lib/utils";
+import { formatTry, initialsOf } from "@/lib/utils";
 import { API_BASE } from "@/components/courseHelpers";
 const translateRole = (role: string, t: TFunction) => {
   const r = String(role).toLowerCase();
@@ -115,13 +115,7 @@ export function AppSidebar() {
 
       // Token'dan türetilen varsayılan kullanıcı (profil alınamazsa)
       const applyTokenFallback = () => {
-        const initials = currentName
-          .split(" ")
-          .filter(Boolean)
-          .slice(0, 2)
-          .map((n) => n[0])
-          .join("")
-          .toUpperCase();
+        const initials = initialsOf(currentName);
         setCurrentUser({
           name: currentName,
           role: currentRole,
@@ -145,13 +139,7 @@ export function AppSidebar() {
               currentName = fullName;
             }
 
-            const initials = currentName
-              .split(" ")
-              .filter(Boolean)
-              .slice(0, 2)
-              .map((n) => n[0])
-              .join("")
-              .toUpperCase();
+            const initials = initialsOf(currentName);
             setCurrentUser({
               name: currentName,
               role: currentRole,

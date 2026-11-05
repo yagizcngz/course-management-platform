@@ -1,3 +1,4 @@
+import { initialsOf } from "@/lib/utils";
 import {
   X,
   CheckCircle2,
@@ -291,14 +292,7 @@ export function CourseDetailModal({
     return profileOf(nameMatch);
   })();
 
-  const instructorInitials =
-    instructor
-      .split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((p) => p[0])
-      .join("")
-      .toUpperCase() || "E";
+  const instructorInitials = initialsOf(instructor) || "E";
 
   const handleStartEdit = () => {
     setEditTitle(course.title || course.Title || "");

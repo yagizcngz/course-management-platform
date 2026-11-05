@@ -1,3 +1,4 @@
+import { initialsOf } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "../components/PageHeader";
 import { Plus, X, Edit2, Trash2, Upload, Link2, Search } from "lucide-react";
@@ -568,7 +569,7 @@ function TeachersPage() {
                       ? t(`dynamic.categories.${rawBranch}`)
                       : rawBranch
                     : "-";
-                  const initials = fullName.slice(0, 2).toUpperCase();
+                  const initialsText = initialsOf(fullName);
                   const dateRaw = teacher.date || teacher.Date;
                   const date = dateRaw ? new Date(dateRaw).toLocaleDateString("tr-TR") : "-";
                   const currentId = teacher.id || teacher.Id;
@@ -591,7 +592,7 @@ function TeachersPage() {
                           title={t("teachers.viewProfile")}
                         >
                           <div className="size-10 rounded bg-muted grid place-items-center text-[10px] font-mono text-muted-foreground shrink-0 uppercase group-hover:bg-foreground group-hover:text-background transition-colors duration-300">
-                            {initials}
+                            {initialsText}
                           </div>
                           <div>
                             <div className="font-semibold group-hover:underline">{fullName}</div>
@@ -685,10 +686,7 @@ function TeachersPage() {
                     />
                   ) : (
                     <div className="size-20 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-2xl font-mono uppercase">
-                      {`${editFirstName || ""} ${editLastName || ""}`
-                        .trim()
-                        .slice(0, 2)
-                        .toUpperCase() || "?"}
+                      {initialsOf(`${editFirstName || ""} ${editLastName || ""}`) || "?"}
                     </div>
                   )}
 
@@ -852,10 +850,9 @@ function TeachersPage() {
                     />
                   ) : (
                     <div className="size-24 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-3xl font-mono uppercase shadow-md">
-                      {`${selectedProfileTeacher.firstName || selectedProfileTeacher.FirstName || ""} ${selectedProfileTeacher.lastName || selectedProfileTeacher.LastName || ""}`
-                        .trim()
-                        .slice(0, 2)
-                        .toUpperCase()}
+                      {initialsOf(
+                        `${selectedProfileTeacher.firstName || selectedProfileTeacher.FirstName || ""} ${selectedProfileTeacher.lastName || selectedProfileTeacher.LastName || ""}`,
+                      )}
                     </div>
                   )}
                 </div>

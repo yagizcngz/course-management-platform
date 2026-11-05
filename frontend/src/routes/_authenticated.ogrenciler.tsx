@@ -1,3 +1,4 @@
+import { initialsOf } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "../components/PageHeader";
 import { Plus, X, Edit2, Trash2, Camera, Upload, Link2, Search } from "lucide-react";
@@ -505,7 +506,7 @@ function StudentsPage() {
                     `${s.firstName || s.FirstName || ""} ${s.lastName || s.LastName || ""}`.trim() ||
                     t("students.unnamedStudent");
                   const email = s.email || s.Email || "-";
-                  const initials = s.initials || fullName.slice(0, 2).toUpperCase();
+                  const initialsText = s.initials || initialsOf(fullName);
 
                   const studentFullName = fullName.trim().toLowerCase();
                   const rawStudentNumber = s.studentNumber || s.StudentNumber || "";
@@ -538,7 +539,7 @@ function StudentsPage() {
                           title={t("students.viewProfile")}
                         >
                           <div className="size-10 rounded bg-muted grid place-items-center text-[10px] font-mono text-muted-foreground shrink-0 uppercase group-hover:bg-foreground group-hover:text-background transition-colors duration-300">
-                            {initials}
+                            {initialsText}
                           </div>
                           <div>
                             <div className="font-semibold group-hover:underline">{fullName}</div>
@@ -629,10 +630,7 @@ function StudentsPage() {
                     />
                   ) : (
                     <div className="size-20 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-2xl font-mono uppercase">
-                      {`${editFirstName || ""} ${editLastName || ""}`
-                        .trim()
-                        .slice(0, 2)
-                        .toUpperCase() || "?"}
+                      {initialsOf(`${editFirstName || ""} ${editLastName || ""}`) || "?"}
                     </div>
                   )}
 
@@ -772,13 +770,10 @@ function StudentsPage() {
                     />
                   ) : (
                     <div className="size-24 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-3xl font-mono uppercase shadow-md">
-                      {(
+                      {initialsOf(
                         selectedProfileStudent.name ||
-                        `${selectedProfileStudent.firstName || selectedProfileStudent.FirstName || ""} ${selectedProfileStudent.lastName || selectedProfileStudent.LastName || ""}`
-                      )
-                        .trim()
-                        .slice(0, 2)
-                        .toUpperCase()}
+                          `${selectedProfileStudent.firstName || selectedProfileStudent.FirstName || ""} ${selectedProfileStudent.lastName || selectedProfileStudent.LastName || ""}`,
+                      )}
                     </div>
                   )}
                 </div>
