@@ -133,7 +133,7 @@
       "intro": "Giriş bilgilerinizi, şifrenizi ve bildirim tercihlerinizi buradan yönetin. Yöneticiler eğitmen başvurusu kodlarını, öğretmen payını ve kategori ağacını da buradan düzenler."
     },
     "login": {
-      "panelTitle": "Her beceri bir *yıldız*. Onları birleştirip kendi yolunu çiz.",
+      "panelTitle": "Bıraktığın *sayfadan* devam et.",
       "welcomeBack": "Tekrar *hoş geldin*",
       "welcome": "Hoş Geldiniz!",
       "pleaseEnterDetails": "Lütfen bilgilerinizi giriniz",
@@ -147,10 +147,17 @@
       "registerNow": "Hemen Kaydol",
       "returnHome": "Ana Sayfaya Dön",
       "invalidCredentials": "Kullanıcı adı veya şifre hatalı!",
-      "serverError": "Sunucuya ulaşılamıyor. Backend (C# API) çalışıyor mu?"
+      "serverError": "Sunucuya ulaşılamıyor. Backend (C# API) çalışıyor mu?",
+      "panelEyebrow": "Okuma odası",
+      "demo": {
+        "title": "Demo",
+        "student": "Öğrenci",
+        "teacher": "Eğitmen",
+        "admin": "Yönetici"
+      }
     },
     "register": {
-      "panelTitle": "Hedefin *merkezde*, kursların onun etrafında.",
+      "panelTitle": "Her kurs rafına yeni bir *cilt* ekler.",
       "heading": "Hesabını *oluştur*",
       "title": "Yeni Hesap Aç",
       "firstName": "Ad",
@@ -191,7 +198,14 @@
       "inviteHint": "Yöneticiden aldığınız geçerli kod eğitmen hesabınızı hemen açar. Boş bırakırsanız başvurunuz onaya gönderilir.",
       "applicationSent": "Hesabınız oluşturuldu. Eğitmen başvurunuz yönetici onayını bekliyor; bu sürede öğrenci olarak giriş yapabilirsiniz.",
       "teacherReady": "Eğitmen hesabınız oluşturuldu. Şimdi giriş yapabilirsiniz.",
-      "codeStillValid": "E-posta kodunuz 5 dakikalık süresi boyunca geçerli: alanı düzeltip tekrar gönderin."
+      "codeStillValid": "E-posta kodunuz 5 dakikalık süresi boyunca geçerli: alanı düzeltip tekrar gönderin.",
+      "panelEyebrow": "Yeni kayıt · Öğrenci",
+      "panelEyebrowTeacher": "Yeni kayıt · Eğitmen",
+      "roleStudentDesc": "Kurslara katıl, ilerlemeni izle, rozet kazan.",
+      "roleTeacherDesc": "Branşında kurs ver; başvurun onaylanınca başla.",
+      "codeExpiresIn": "Kod {{time}} daha geçerli",
+      "codeExpired": "Kodun süresi doldu.",
+      "resendCode": "Yeni kod gönder"
     },
     "dashboard": {
       "alerts": {

@@ -5,12 +5,15 @@ import { useTranslation } from "react-i18next";
 import { API_BASE, fetchCategories } from "@/components/courseHelpers";
 import { readError } from "@/lib/auth";
 import { AuthShell, authButtonClass, authInputClass, authLabelClass } from "@/components/AuthShell";
-import { SolarSystem } from "@/components/effects/SolarSystem";
+import { FolioScene } from "@/components/effects/three/FolioScene";
+import { GraduationCap, Presentation } from "lucide-react";
+import { motion } from "motion/react";
 import { SplitHeadline } from "@/components/motion";
 import { toast } from "sonner";
 
 const MIN_BIO = 40;
 const MIN_PASSWORD = 8; // AuthController.MinPasswordLength
+const CODE_TTL_MS = 5 * 60 * 1000; // AuthController keeps the e-mail code for five minutes
 export const Route = createFileRoute("/register")({
   component: RegisterPage,
 });
@@ -39,6 +42,17 @@ function RegisterPage() {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const [codeSentAt, setCodeSentAt] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  // ticks once a second only while a code is waiting to be used
+  useEffect(() => {
+    if (!isEmailSent) return;
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [isEmailSent]);
+  const codeLeft = codeSentAt ? Math.max(0, CODE_TTL_MS - (now - codeSentAt)) : 0;
+  const codeClock = `${Math.floor(codeLeft / 60000)}:${String(Math.floor((codeLeft % 60000) / 1000)).padStart(2, "0")}`;
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,6 +130,9 @@ function RegisterPage() {
 
       if (response.ok) {
         setIsEmailSent(true);
+        setCodeSentAt(Date.now());
+        setNow(Date.now());
+        setVerificationCode("");
         setSuccessMsg(t("register.emailSentSuccess"));
       } else {
         setError(await readError(response, t("register.codeSendError")));
@@ -131,10 +148,30 @@ function RegisterPage() {
     i18n.exists(`dynamic.categories.${c}`) ? t(`dynamic.categories.${c}`) : c,
   );
 
+  // each filled step pulls one more book into place on the panel
+  const steps = [
+    !!firstName.trim(),
+    !!lastName.trim(),
+    isEmailSent && verificationCode.trim().length === 6,
+    !!username.trim(),
+    password.length >= MIN_PASSWORD,
+    ...(asTeacher ? [!!branch, aboutMe.trim().length >= MIN_BIO] : []),
+  ];
+  const done = steps.filter(Boolean).length;
+
   return (
     <AuthShell
       caption={t("register.panelTitle")}
-      panel={<SolarSystem categories={categoryLabels} />}
+      eyebrow={t(asTeacher ? "register.panelEyebrowTeacher" : "register.panelEyebrow")}
+      steps={{ done, total: steps.length }}
+      panel={
+        <FolioScene
+          progress={done / steps.length}
+          arrangement={asTeacher ? "shelf" : "stack"}
+          lit={false}
+          shake={0}
+        />
+      }
     >
       <h1 className="font-serif text-5xl leading-none">
         <SplitHeadline text={t("register.heading")} />
@@ -235,6 +272,31 @@ function RegisterPage() {
               value={verificationCode}
               onChange={(e) => setVerificationCode(e.target.value)}
             />
+            {codeLeft > 0 ? (
+              <div className="mt-2" role="timer" aria-live="off">
+                <div className="h-1 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-gold transition-[width] duration-1000 ease-linear"
+                    style={{ width: `${(codeLeft / CODE_TTL_MS) * 100}%` }}
+                  />
+                </div>
+                <p className="mt-1.5 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground tabular-nums">
+                  {t("register.codeExpiresIn", { time: codeClock })}
+                </p>
+              </div>
+            ) : (
+              <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-destructive">
+                {t("register.codeExpired")}
+                <button
+                  type="button"
+                  onClick={handleSendVerificationEmail}
+                  disabled={isSending}
+                  className="font-medium text-gold underline-offset-4 hover:underline disabled:opacity-50"
+                >
+                  {t("register.resendCode")}
+                </button>
+              </p>
+            )}
           </div>
         )}
 
@@ -280,18 +342,40 @@ function RegisterPage() {
 
         <fieldset>
           <legend className={authLabelClass}>{t("register.roleLabel")}</legend>
-          <div className="grid grid-cols-2 gap-1 rounded-xl border border-border bg-secondary/60 p-1">
-            {([false, true] as const).map((teacher) => (
-              <button
-                key={String(teacher)}
-                type="button"
-                aria-pressed={asTeacher === teacher}
-                onClick={() => setAsTeacher(teacher)}
-                className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground aria-pressed:bg-card aria-pressed:text-foreground aria-pressed:shadow-sm"
-              >
-                {t(teacher ? "register.roleTeacher" : "register.roleStudent")}
-              </button>
-            ))}
+          <div className="grid grid-cols-2 gap-1 rounded-2xl border border-border bg-secondary/60 p-1">
+            {([false, true] as const).map((teacher) => {
+              const Icon = teacher ? Presentation : GraduationCap;
+              const active = asTeacher === teacher;
+              return (
+                <button
+                  key={String(teacher)}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => setAsTeacher(teacher)}
+                  className="relative rounded-xl px-3 py-2.5 text-left transition-colors"
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="role-pill"
+                      className="absolute inset-0 rounded-xl border border-gold/50 bg-card shadow-sm"
+                      transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    />
+                  )}
+                  <span className="relative flex items-center gap-2 text-sm font-medium">
+                    <Icon
+                      aria-hidden="true"
+                      className={`size-4 ${active ? "text-gold" : "text-muted-foreground"}`}
+                    />
+                    <span className={active ? "text-foreground" : "text-muted-foreground"}>
+                      {t(teacher ? "register.roleTeacher" : "register.roleStudent")}
+                    </span>
+                  </span>
+                  <span className="relative mt-0.5 block text-[11px] leading-snug text-muted-foreground">
+                    {t(teacher ? "register.roleTeacherDesc" : "register.roleStudentDesc")}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </fieldset>
 
@@ -372,7 +456,11 @@ function RegisterPage() {
           </div>
         )}
 
-        <button type="submit" disabled={!isEmailSent} className={`${authButtonClass} mt-2`}>
+        <button
+          type="submit"
+          disabled={!isEmailSent || codeLeft === 0}
+          className={`${authButtonClass} mt-2`}
+        >
           {t("register.createAccountButton")}
         </button>
       </form>

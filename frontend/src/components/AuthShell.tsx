@@ -13,10 +13,15 @@ export function AuthShell({
   children,
   panel,
   caption,
+  eyebrow,
+  steps,
 }: {
   children: ReactNode;
   panel: ReactNode;
   caption: string;
+  eyebrow: string;
+  /** Filled form steps, drawn as ticks in the panel's corner. */
+  steps: { done: number; total: number };
 }) {
   return (
     <div className="grid min-h-screen bg-background font-display text-foreground lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
@@ -34,6 +39,20 @@ export function AuthShell({
         style={panelVars}
       >
         {panel}
+        <div className="absolute inset-x-10 top-9 flex items-center justify-between gap-6 font-mono text-[11px] uppercase tracking-[0.18em] text-[hsl(40_30%_93%/0.65)]">
+          <span>{eyebrow}</span>
+          <span className="flex items-center gap-3 tabular-nums">
+            <span aria-hidden="true" className="flex gap-1">
+              {Array.from({ length: steps.total }, (_, i) => (
+                <span
+                  key={i}
+                  className={`h-1 w-5 rounded-full transition-colors duration-500 ${i < steps.done ? "bg-[hsl(42_60%_62%)]" : "bg-[hsl(40_30%_93%/0.18)]"}`}
+                />
+              ))}
+            </span>
+            {String(steps.done).padStart(2, "0")}/{String(steps.total).padStart(2, "0")}
+          </span>
+        </div>
         <div className="absolute inset-x-10 bottom-10">
           <p className="max-w-md font-serif text-4xl leading-[1.1]">
             <SplitHeadline text={caption} />

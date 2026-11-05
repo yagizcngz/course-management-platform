@@ -1,17 +1,28 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { Eye, EyeOff } from "lucide-react";
 import { motion } from "motion/react";
 
-import { API_BASE, fetchCategories } from "@/components/courseHelpers";
+import { API_BASE } from "@/components/courseHelpers";
 import { AuthShell, authButtonClass, authInputClass, authLabelClass } from "@/components/AuthShell";
-import { ConstellationSky } from "@/components/effects/ConstellationSky";
+import { FolioScene } from "@/components/effects/three/FolioScene";
 import { SplitHeadline } from "@/components/motion";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
+
+// development only: frontend/.env.development.local sets the seeded demo password
+// (Seed:DemoPassword); production builds never show the pills
+const DEMO_PASSWORD: string | undefined = import.meta.env.DEV
+  ? import.meta.env.VITE_DEMO_PASSWORD
+  : undefined;
+const DEMO_ACCOUNTS = [
+  { username: "demo_student", label: "login.demo.student" },
+  { username: "demo_teacher", label: "login.demo.teacher" },
+  { username: "demo_admin", label: "login.demo.admin" },
+] as const;
 
 // Singleton AudioContext to prevent "too many contexts" error
 let audioCtx: AudioContext | null = null;
@@ -72,7 +83,7 @@ const playSuccess = () => {
 };
 
 function LoginPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate({ from: "/login" });
 
   const [username, setUsername] = useState("");
@@ -81,11 +92,7 @@ function LoginPage() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
   const [isHappy, setIsHappy] = useState(false);
-  const [categories, setCategories] = useState<string[]>([]);
-
-  useEffect(() => {
-    fetchCategories().then(setCategories);
-  }, []);
+  const [failures, setFailures] = useState(0);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,19 +126,22 @@ function LoginPage() {
 
   const triggerError = (msg: string) => {
     setError(msg);
+    setFailures((n) => n + 1);
     setIsShaking(true);
     playError();
     setTimeout(() => setIsShaking(false), 500);
   };
 
-  const categoryLabels = categories.map((c) =>
-    i18n.exists(`dynamic.categories.${c}`) ? t(`dynamic.categories.${c}`) : c,
-  );
+  const filled = Number(!!username.trim()) + Number(!!password);
 
   return (
     <AuthShell
       caption={t("login.panelTitle")}
-      panel={<ConstellationSky categories={categoryLabels} lit={isHappy} />}
+      eyebrow={t("login.panelEyebrow")}
+      steps={{ done: filled, total: 2 }}
+      panel={
+        <FolioScene progress={filled / 2} arrangement="stack" lit={isHappy} shake={failures} />
+      }
     >
       <motion.div
         animate={isShaking ? { x: [0, -10, 10, -6, 6, 0] } : { x: 0 }}
@@ -141,6 +151,29 @@ function LoginPage() {
           <SplitHeadline text={t("login.welcomeBack")} />
         </h1>
         <p className="mt-3 text-sm text-muted-foreground">{t("login.pleaseEnterDetails")}</p>
+
+        {DEMO_PASSWORD && (
+          <div className="mt-6 flex flex-wrap items-center gap-2">
+            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+              {t("login.demo.title")}
+            </span>
+            {DEMO_ACCOUNTS.map((d) => (
+              <button
+                key={d.username}
+                type="button"
+                aria-pressed={username === d.username}
+                onClick={() => {
+                  setUsername(d.username);
+                  setPassword(DEMO_PASSWORD);
+                  setError("");
+                }}
+                className="h-7 rounded-full border border-border bg-card px-3 text-xs font-medium text-muted-foreground transition-colors hover:border-gold/60 hover:text-foreground aria-pressed:border-gold aria-pressed:text-foreground"
+              >
+                {t(d.label)}
+              </button>
+            ))}
+          </div>
+        )}
 
         {error && (
           <div

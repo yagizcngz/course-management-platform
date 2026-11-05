@@ -133,7 +133,7 @@
       "intro": "Manage your sign-in details, password and notification preferences here. Admins also edit instructor application codes, the instructor share and the category tree."
     },
     "login": {
-      "panelTitle": "Every skill is a *star*. Connect them into your own path.",
+      "panelTitle": "Pick up from the *page* you left.",
       "welcomeBack": "Welcome *back*",
       "welcome": "Welcome!",
       "pleaseEnterDetails": "Please enter your details",
@@ -147,10 +147,17 @@
       "registerNow": "Register Now",
       "returnHome": "Return Home",
       "invalidCredentials": "Invalid username or password!",
-      "serverError": "Cannot connect to server. Is Backend (C# API) running?"
+      "serverError": "Cannot connect to server. Is Backend (C# API) running?",
+      "panelEyebrow": "Reading room",
+      "demo": {
+        "title": "Demo",
+        "student": "Student",
+        "teacher": "Instructor",
+        "admin": "Admin"
+      }
     },
     "register": {
-      "panelTitle": "Your goal at the *centre*, your courses around it.",
+      "panelTitle": "Every course adds a *volume* to your shelf.",
       "heading": "Create your *account*",
       "title": "Create New Account",
       "firstName": "First Name",
@@ -191,7 +198,14 @@
       "inviteHint": "A valid code from an admin activates your instructor account at once. Leave it empty to send an application instead.",
       "applicationSent": "Account created. Your instructor application is waiting for admin approval; meanwhile you can sign in as a learner.",
       "teacherReady": "Instructor account created. You can sign in now.",
-      "codeStillValid": "Your email code is still valid for its 5 minutes: fix the field and submit again."
+      "codeStillValid": "Your email code is still valid for its 5 minutes: fix the field and submit again.",
+      "panelEyebrow": "New account · Student",
+      "panelEyebrowTeacher": "New account · Instructor",
+      "roleStudentDesc": "Join courses, track progress, earn badges.",
+      "roleTeacherDesc": "Teach in your field once your application is approved.",
+      "codeExpiresIn": "Code valid for {{time}}",
+      "codeExpired": "The code has expired.",
+      "resendCode": "Send a new code"
     },
     "dashboard": {
       "alerts": {
