@@ -62,6 +62,39 @@ namespace EdTechApi.Tests
             // her kategoride en az dört kurs; Türkçe kursları da katalogda
             Assert.All(courses.GroupBy(c => c.Category), g => Assert.True(g.Count() >= 4, g.Key));
             Assert.True(courses.Count(c => c.Category == "Türk Dili ve Edebiyatı") >= 5);
+            // alt kategoriler kursun kendi kategorisinden; yeni kategoriler de dolu
+            Assert.All(courses.Where(c => c.SubCategory != null),
+                c => Assert.Contains(c.SubCategory!, BranchOptions.SubCategoriesOf(c.Category)));
+            Assert.True(courses.Count(c => c.SubCategory != null) >= courses.Count - 1);
+            Assert.True(courses.Count(c => c.Category == "Hukuk & Kamu Yönetimi") >= 4);
+            Assert.True(courses.Count(c => c.Category == "Mühendislik & Robotik") >= 4);
+        }
+
+        [Fact]
+        public void Seed_keeps_valid_subcategory_and_fixes_invalid_one()
+        {
+            CatalogSeed.SeedCategories(_db);
+            CatalogSeed.SeedCatalog(_db);
+            var calc = _db.Courses.Single(c => c.Title == "Kalkülüs ve Analiz");
+            var geo = _db.Courses.Single(c => c.Title == "Matematik Geometri");
+            calc.SubCategory = "TYT-AYT Matematik"; // yöneticinin geçerli seçimi
+            geo.SubCategory = "Makine Öğrenmesi";   // başka kategoriye ait, geçersiz
+            _db.SaveChanges();
+
+            CatalogSeed.SeedCatalog(_db);
+
+            Assert.Equal("TYT-AYT Matematik", _db.Courses.Single(c => c.Id == calc.Id).SubCategory);
+            Assert.Equal("Geometri & Trigonometri", _db.Courses.Single(c => c.Id == geo.Id).SubCategory);
+        }
+
+        [Fact]
+        public void Subcategory_normalisation_is_scoped_to_category()
+        {
+            Assert.Equal("Analiz & Kalkülüs", BranchOptions.NormalizeSubCategory("matematik", " analiz & kalkülüs "));
+            Assert.Null(BranchOptions.NormalizeSubCategory("Matematik", "Makine Öğrenmesi"));
+            Assert.Null(BranchOptions.NormalizeSubCategory("Matematik", ""));
+            Assert.Null(BranchOptions.NormalizeSubCategory("Yok", "Analiz & Kalkülüs"));
+            Assert.All(BranchOptions.All, name => Assert.NotEmpty(BranchOptions.SubCategoriesOf(name)));
         }
 
         [Fact]

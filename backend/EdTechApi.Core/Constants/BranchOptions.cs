@@ -23,8 +23,42 @@ namespace EdTechApi.Core.Constants
             ("Fotoğrafçılık & Sinema", "Dijital fotoğrafçılık, sinema dili, film analizi ve kısa film yapımı. Işığı, kadrajı ve kurguyu anlayarak görüntüyle hikâye anlatmayı öğreten atölyeler."),
             ("Türk Dili ve Edebiyatı", "Türkçe dil bilgisi, paragraf ve anlam bilgisi, metin analizi, kompozisyon, Cumhuriyet dönemi edebiyatı ve Osmanlı Türkçesi paleografyası. Anadil bilincini, etkili sözlü ve yazılı iletişimi ile zengin edebiyat geleneğimizi akademik derinlikle kazandıran dersler."),
             ("Psikoloji & Bilişsel Bilimler", "Gelişim psikolojisi, bilişsel modeller, zihin felsefesi, sosyal psikoloji, deneysel desenler ve davranışsal araştırma yöntemleri. İnsan davranışını, düşünme süreçlerini ve zihnin biyolojik ile hesaplamalı temellerini bilimsel yöntemlerle inceleyen dersler."),
+            ("Hukuk & Kamu Yönetimi", "Anayasa ve idare hukuku, borçlar ve ticaret hukuku, bilişim ve kişisel verilerin korunması hukuku. Kuralları gerekçeleriyle okuyan, somut olay çözümüyle pekiştiren ve kamu yönetiminin işleyişini anlatan dersler."),
+            ("Mühendislik & Robotik", "Gömülü sistemler, elektronik, robotik, kontrol sistemleri ve CAD ile mekanik tasarım. Devreyi kurup kodlayan, mekanizmayı çizip üreten, proje odaklı mühendislik atölyeleri."),
             ("Genel","Etkili çalışma teknikleri, zaman yönetimi ve genel kültür. Her alandaki öğrenmeyi destekleyen, branşlar arası beceri eğitimleri."),
         };
+
+        // Kategori -> alt kategori sözlüğü; adlar frontend'de dynamic.subCategories anahtarlarıyla aynı tutulmalı.
+        public static readonly Dictionary<string, string[]> SubCategories = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Matematik"] = new[] { "Analiz & Kalkülüs", "Lineer Cebir & Soyut Matematik", "Geometri & Trigonometri", "Olasılık & İstatistik", "TYT-AYT Matematik" },
+            ["Türk Dili ve Edebiyatı"] = new[] { "Paragraf & Anlam Bilgisi", "Türkçe Dil Bilgisi & Yazım", "Modern Türk Edebiyatı", "Divan & Halk Edebiyatı", "Akademik Yazım & Hitabet" },
+            ["Yazılım"] = new[] { "Web Geliştirme (Frontend & Backend)", "Mobil Uygulama Geliştirme", "Veri Yapıları & Algoritmalar", "Siber Güvenlik & Ağ", "Bulut Mimarisi & DevOps", "Oyun Geliştirme" },
+            ["Veri Bilimi & Yapay Zeka"] = new[] { "Makine Öğrenmesi", "Derin Öğrenme & NLP", "Veri Analizi & Görselleştirme", "Büyük Veri & Veri Mühendisliği" },
+            ["Fen Bilimleri"] = new[] { "Klasik & Kuantum Fiziği", "Genel & Organik Kimya", "Moleküler Biyoloji & Genetik", "Astronomi & Astrofizik", "YKS Fen Bilimleri" },
+            ["Coğrafya"] = new[] { "Fiziki Coğrafya & Jeomorfoloji", "Beşeri & Ekonomik Coğrafya", "Türkiye Coğrafyası & Jeopolitik", "CBS & Harita Okuma" },
+            ["Sosyal Bilimler"] = new[] { "Türk & Dünya Tarihi", "Sosyoloji & Toplum Bilimleri", "Siyaset Bilimi & Uluslararası İlişkiler", "Temel Hukuk & Anayasa" },
+            ["Edebiyat & Felsefe"] = new[] { "Klasik & Modern Felsefe", "Mantık & Eleştirel Düşünme", "Dünya Edebiyatı & Karşılaştırmalı Metinler", "Etik & Estetik" },
+            ["Psikoloji & Bilişsel Bilimler"] = new[] { "Bilişsel Psikoloji & Nörobilim", "Gelişim & Sosyal Psikoloji", "Deneysel Araştırma Yöntemleri", "Davranış Bilimleri" },
+            ["Ekonomi & Finans"] = new[] { "Mikro & Makroekonomi", "Finansal Piyasalar & Yatırım", "Muhasebe & Kurumsal Finans", "Girişimcilik & Strateji" },
+            ["Yabancı Dil"] = new[] { "Genel İngilizce (A1–C1)", "Akademik & İş İngilizcesi (IELTS/TOEFL)", "Almanca", "İspanyolca & Fransızca" },
+            ["Tasarım"] = new[] { "UI/UX & Ürün Tasarımı", "Grafik Tasarım & Tipografi", "3B Modelleme & Hareketli Grafik", "Marka Kimliği & İllüstrasyon" },
+            ["Sanat"] = new[] { "Karakalem & Desen Atölyesi", "Renk Kuramı & Yağlıboya", "Sanat Tarihi & Eser Analizi", "Heykel & Seramik" },
+            ["Müzik"] = new[] { "Piyano & Klavye", "Gitar & Telli Çalgılar", "Müzik Teorisi, Armoni & Solfej", "Müzik Prodüksiyonu & Ses Tasarımı" },
+            ["Fotoğrafçılık & Sinema"] = new[] { "Dijital Fotoğrafçılık & Işık", "Sinema Dili & Film Analizi", "Senaryo & Kısa Film Yapımı", "Video Kurgu & Renk Düzenleme" },
+            ["Spor"] = new[] { "Fonksiyonel Antrenman & Kondisyon", "Hareket Bilimi & Sakatlık Önleme", "Beslenme & Sporcu Sağlığı", "Zihin-Beden & Esneklik" },
+            ["Hukuk & Kamu Yönetimi"] = new[] { "Anayasa & İdare Hukuku", "Borçlar & Ticaret Hukuku", "Bilişim & Kişisel Veriler Hukuku" },
+            ["Mühendislik & Robotik"] = new[] { "Gömülü Sistemler & Elektronik", "Robotik & Kontrol Sistemleri", "CAD & Mekanik Tasarım" },
+            ["Genel"] = new[] { "Öğrenmeyi Öğrenme & Hafıza Teknikleri", "Zaman Yönetimi & Verimlilik", "Araştırma Yöntemleri & Bilimsel Etik" },
+        };
+
+        public static string[] SubCategoriesOf(string? category) =>
+            category != null && SubCategories.TryGetValue(category.Trim(), out var subs) ? subs : Array.Empty<string>();
+
+        // Kategorinin listesindeki kanonik alt kategori yazımı; boş veya listede yoksa null.
+        public static string? NormalizeSubCategory(string? category, string? value) =>
+            string.IsNullOrWhiteSpace(value) ? null
+                : SubCategoriesOf(category).FirstOrDefault(s => string.Equals(s, value.Trim(), StringComparison.OrdinalIgnoreCase));
 
         public static readonly string[] All = Defaults.Select(d => d.Name).ToArray();
 

@@ -16,6 +16,8 @@ namespace EdTechApi.Core.Entities
         public bool IsFeatured { get; set; } = false;
         // Beginner, Intermediate, Advanced; boşsa "tüm seviyeler" sayılır
         public string? Level { get; set; }
+        // BranchOptions.SubCategories içinden, kategorisine ait bir alt kategori; boşsa "genel"
+        public string? SubCategory { get; set; }
 
         // --- YENİ EKLENEN SÜTUN ---
         // Kurs kapak fotoğrafının göreli URL'i (örn. /uploads/course-images/xxx.png).

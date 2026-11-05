@@ -20,7 +20,7 @@ namespace EdTechApi.Business.Services
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                query = query.Where(c => c.Title.Contains(search) || c.Description.Contains(search) || c.Category.Contains(search) || c.Instructor.Contains(search));
+                query = query.Where(c => c.Title.Contains(search) || c.Description.Contains(search) || c.Category.Contains(search) || (c.SubCategory != null && c.SubCategory.Contains(search)) || c.Instructor.Contains(search));
             }
 
             if (!string.IsNullOrWhiteSpace(category))
@@ -70,6 +70,8 @@ namespace EdTechApi.Business.Services
             course.MaxCapacity = updatedCourse.MaxCapacity;
             course.Price = updatedCourse.Price;
             course.Category = updatedCourse.Category;
+            course.SubCategory = updatedCourse.SubCategory;
+            course.Level = updatedCourse.Level;
             course.Description = updatedCourse.Description;
             course.ImageUrl = updatedCourse.ImageUrl;
 

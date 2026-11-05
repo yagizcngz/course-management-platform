@@ -196,6 +196,11 @@ namespace EdTechApi.API.Controllers
             }
             var normalizedCategory = category.Name;
             course.Category = normalizedCategory;
+            // kategoriye ait olmayan alt kategori sessizce düşer; seviye yalnızca bilinen üç değerden biri olabilir
+            course.SubCategory = BranchOptions.NormalizeSubCategory(normalizedCategory, course.SubCategory);
+            if (!string.IsNullOrWhiteSpace(course.Level) && course.Level is not ("Beginner" or "Intermediate" or "Advanced"))
+                return (false, "Geçersiz seviye. Beginner, Intermediate veya Advanced olmalı.");
+            if (string.IsNullOrWhiteSpace(course.Level)) course.Level = null;
 
             if (course.TeacherId == null)
             {

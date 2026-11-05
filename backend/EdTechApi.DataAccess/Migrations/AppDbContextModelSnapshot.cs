@@ -113,6 +113,9 @@ namespace EdTechApi.DataAccess.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("SubCategory")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("TeacherId")
                         .HasColumnType("int");
 
