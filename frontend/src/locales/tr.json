@@ -985,7 +985,6 @@
       "teacherOf": "{{branch}} eğitmeni",
       "teacherCount": "{{count}} eğitmen",
       "bookTop": "Öne çıkan {{count}} kurs",
-      "bookMatches": "{{total}} sonuçtan ilk {{count}}",
       "fullCatalog": "Tüm katalog",
       "openInCatalog": "Katalogda aç",
       "allCategoriesLink": "{{count}} alanın tamamını keşfedin",

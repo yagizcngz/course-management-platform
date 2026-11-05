@@ -22,8 +22,6 @@ const FACULTY_PREVIEW = 9;
 const CATEGORY_PREVIEW = 8;
 // the book is a showcase, not the catalogue: a few spreads are enough and keep it light
 const BOOK_LIMIT = 10;
-// a search or category shows only its best few; the full list is right below the hero
-const BOOK_FILTER_LIMIT = 3;
 // the course whose spread holds the ribbon, kept across visits
 const RIBBON_KEY = "ekurs_book_ribbon_course";
 
@@ -34,8 +32,8 @@ const accent = (text: string) =>
     .join(" ");
 
 /**
- * A — Atelier. The catalogue is a notebook: every spread is a whole course page, and the
- * search narrows what the book holds.
+ * A — Atelier. The catalogue is a notebook: every spread is a whole course page. The book
+ * always shows the top courses; the search filters the course list below the hero.
  */
 export function VariantAtelier(p: LandingProps) {
   return (
@@ -54,15 +52,14 @@ function AtelierHero(p: LandingProps) {
   const { t } = useTranslation();
   const reduce = useReducedMotion();
   const navigate = useNavigate();
-  // the ten most popular courses (the API sorts by enrolment), or the best few matches
-  const limit = p.matches ? BOOK_FILTER_LIMIT : BOOK_LIMIT;
-  const book = (p.matches ?? p.courses ?? []).slice(0, limit);
+  // the ten most popular courses (the API sorts by enrolment); search never changes them
+  const book = (p.courses ?? []).slice(0, BOOK_LIMIT);
   const bookKey = book.map((c) => c.id).join(",");
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [interacted, setInteracted] = useState(0);
 
-  // a new set of pages (search, category, first load) opens at its first course
+  // a new set of pages (first load) opens at its first course
   const [seenKey, setSeenKey] = useState(bookKey);
   if (seenKey !== bookKey) {
     setSeenKey(bookKey);
@@ -137,7 +134,7 @@ function AtelierHero(p: LandingProps) {
     if (!id) localStorage.setItem(RIBBON_KEY, (id = String(firstId)));
     setMarked(id);
   }, [firstId]);
-  // -1 when the marked course is not in this (filtered) book: no ribbon then
+  // -1 when the marked course is not in the book: no ribbon then
   const ribbonAt = book.findIndex((c) => String(c.id) === marked);
   const mark = () => {
     if (!current) return;
@@ -189,11 +186,7 @@ function AtelierHero(p: LandingProps) {
         >
           <div className="mx-auto flex w-full max-w-lg items-baseline justify-between gap-4 border-b border-border pb-2">
             <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-gold">
-              {p.matches
-                ? p.matches.length > limit
-                  ? t("guest.bookMatches", { count: book.length, total: p.matches.length })
-                  : t("guest.matchCount", { count: p.matches.length })
-                : t("guest.bookTop", { count: BOOK_LIMIT })}
+              {t("guest.bookTop", { count: BOOK_LIMIT })}
             </span>
             <Link
               to="/kurslar"
@@ -265,7 +258,7 @@ function AtelierHero(p: LandingProps) {
             </div>
           ) : (
             <p className="mx-auto w-full max-w-lg border-t border-border py-3 text-sm text-muted-foreground">
-              {p.courses === null ? t("common.loading") : t("guest.noMatch")}
+              {p.courses === null ? t("common.loading") : t("guest.noCourses")}
             </p>
           )}
         </div>

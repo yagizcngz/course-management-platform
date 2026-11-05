@@ -1066,8 +1066,6 @@
       "teacherCount_one": "{{count}} teacher",
       "teacherCount_other": "{{count}} teachers",
       "bookTop": "Top {{count}} featured courses",
-      "bookMatches_one": "First {{count}} of {{total}} matches",
-      "bookMatches_other": "First {{count}} of {{total}} matches",
       "fullCatalog": "Full catalogue",
       "openInCatalog": "Open in the catalogue",
       "allCategoriesLink_one": "Explore the discipline",
