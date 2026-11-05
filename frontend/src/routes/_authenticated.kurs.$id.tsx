@@ -207,7 +207,7 @@ function CoursePage() {
       <PageHeader crumb={course.title} />
       <div className="p-4 md:p-8 max-w-6xl mx-auto w-full grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="space-y-4 min-w-0">
-          <div className="aspect-video w-full bg-primary rounded-lg overflow-hidden flex items-center justify-center">
+          <div className="aspect-video w-full bg-night rounded-xl overflow-hidden flex items-center justify-center">
             {hasAccess && active?.videoUrl ? (
               (() => {
                 const p = toPlayable(active.videoUrl);
@@ -231,7 +231,7 @@ function CoursePage() {
                 );
               })()
             ) : (
-              <div className="text-muted-foreground text-sm flex flex-col items-center gap-2 px-6 text-center">
+              <div className="text-white/70 text-sm flex flex-col items-center gap-2 px-6 text-center">
                 {hasAccess ? <PlayCircle className="size-8" /> : <Lock className="size-8" />}
                 {hasAccess
                   ? lessons.length === 0

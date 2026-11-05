@@ -52,13 +52,13 @@ const ROSETTE = Array.from({ length: 32 }, (_, i) => {
 
 /** An engraved medal: rosette, ribbon tails and the badge's glyph; grey until earned. */
 export function Medal({ badge, className }: { badge: Badge; className?: string }) {
-  const metal = badge.earned ? "var(--gold)" : "var(--border)";
+  const metal = badge.earned ? "var(--gold)" : "var(--muted-foreground)";
   const ink = badge.earned ? "var(--gold)" : "var(--muted-foreground)";
   return (
     <svg
       viewBox="0 0 64 72"
       aria-hidden="true"
-      className={cn("shrink-0", !badge.earned && "opacity-70", className)}
+      className={cn("shrink-0", !badge.earned && "opacity-40", className)}
     >
       <path d="M21 44 13 70l8.5-5.5L27 71l5-24Z" fill={metal} opacity={0.75} />
       <path d="M43 44l8 26-8.5-5.5L37 71l-5-24Z" fill={metal} opacity={0.55} />
