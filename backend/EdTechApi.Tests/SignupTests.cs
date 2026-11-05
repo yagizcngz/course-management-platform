@@ -56,6 +56,13 @@ namespace EdTechApi.Tests
         };
 
         [Fact]
+        public void Password_hash_never_serialises()
+        {
+            var json = System.Text.Json.JsonSerializer.Serialize(new Teacher { User = new User { Username = "t", Password = "$2a$hash" } });
+            Assert.DoesNotContain("$2a$hash", json);
+        }
+
+        [Fact]
         public async Task Failed_signup_keeps_the_email_code_until_one_succeeds()
         {
             _cache.Set("new@test.example", "123456", TimeSpan.FromMinutes(5));

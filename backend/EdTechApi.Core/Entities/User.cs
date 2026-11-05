@@ -4,6 +4,8 @@ namespace EdTechApi.Core.Entities
     {
         public int Id { get; set; }
         public string Username { get; set; } = string.Empty;
+        // parola özeti hiçbir yanıtta dışarı çıkmaz (ilişkili varlıklarla serileşse bile)
+        [System.Text.Json.Serialization.JsonIgnore]
         public string Password { get; set; } = string.Empty;
 
         // YENİ EKLENEN ALANLAR
