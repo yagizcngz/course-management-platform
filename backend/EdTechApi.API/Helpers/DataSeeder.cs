@@ -1,9 +1,10 @@
 using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace EdTechApi.API.Helpers
 {
-    // Başlangıç verileri: ilk yönetici (her ortamda) ve demo hesaplar (yalnızca Development, Seed:DemoUsers=true).
+    // Başlangıç verileri: ilk yönetici ve kategoriler (her ortamda); demo katalog ve demo hesaplar (yalnızca Development, Seed:DemoUsers=true).
     public static class DataSeeder
     {
         public static void Run(AppDbContext db, IConfiguration config, bool isDevelopment)
@@ -17,8 +18,18 @@ namespace EdTechApi.API.Helpers
                 db.SaveChanges();
             }
 
+            CatalogSeed.SeedCategories(db);
+            if (isDevelopment && config["Seed:DemoUsers"] == "true") CatalogSeed.SeedCatalog(db);
+
             var demoPass = config["Seed:DemoPassword"];
             if (!isDevelopment || config["Seed:DemoUsers"] != "true" || string.IsNullOrWhiteSpace(demoPass)) return;
+
+            // silinmiş (soft-delete) demo öğretmen/öğrenci profilleri geri yüklenir; demo hesaplar her zaman kullanılabilir kalır
+            foreach (var t in db.Teachers.IgnoreQueryFilters().Where(t => t.IsDeleted && t.User != null && t.User.Username == "demo_teacher"))
+            { t.IsDeleted = false; t.DeletedAt = null; }
+            foreach (var s in db.Students.IgnoreQueryFilters().Where(s => s.IsDeleted && s.User != null && s.User.Username == "demo_student"))
+            { s.IsDeleted = false; s.DeletedAt = null; }
+            db.SaveChanges();
 
             if (!db.Users.Any(u => u.Username == "demo_admin"))
             {

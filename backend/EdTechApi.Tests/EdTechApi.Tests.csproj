@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\EdTechApi.API\EdTechApi.API.csproj" />
     <ProjectReference Include="..\EdTechApi.Business\EdTechApi.Business.csproj" />
     <ProjectReference Include="..\EdTechApi.DataAccess\EdTechApi.DataAccess.csproj" />
   </ItemGroup>

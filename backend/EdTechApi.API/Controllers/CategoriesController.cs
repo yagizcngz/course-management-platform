@@ -83,33 +83,10 @@ namespace EdTechApi.API.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost("seed")]
-        public async Task<IActionResult> SeedDefaultCategories()
+        public IActionResult SeedDefaultCategories()
         {
-            var defaults = new List<Category>
-            {
-                new Category { Name = "Yazılım", Description = "Yazılım ve Programlama Eğitimleri" },
-                new Category { Name = "Sosyal Bilimler", Description = "Tarih, Coğrafya ve Sosyal Bilimler Eğitimleri" },
-                new Category { Name = "Fen Bilimleri", Description = "Fizik, Kimya, Biyoloji ve Fen Eğitimleri" },
-                new Category { Name = "Yabancı Dil", Description = "İngilizce ve Diğer Diller" },
-                new Category { Name = "Sanat", Description = "Müzik, Resim ve Görsel Sanatlar" },
-                new Category { Name = "Müzik", Description = "Enstrüman ve Vokal Eğitimleri" },
-                new Category { Name = "Spor", Description = "Beden Eğitimi ve Spor Dersleri" },
-                new Category { Name = "Tasarım", Description = "Grafik Tasarım ve UI/UX Eğitimleri" },
-                new Category { Name = "Genel", Description = "Genel Kültür ve Diğer Konular" },
-                new Category { Name = "Matematik", Description = "Temel ve İleri Seviye Matematik Eğitimleri" }
-            };
-
-            int count = 0;
-            foreach (var def in defaults)
-            {
-                if (!await _context.Categories.AnyAsync(c => c.Name.ToLower() == def.Name.ToLower()))
-                {
-                    _context.Categories.Add(def);
-                    count++;
-                }
-            }
-            if (count > 0) await _context.SaveChangesAsync();
-            
+            // eksikleri ekler, boş/eski kısa açıklamaları günceller (liste: BranchOptions.Defaults)
+            var count = EdTechApi.API.Helpers.CatalogSeed.SeedCategories(_context);
             return Ok(new { message = $"{count} varsayılan kategori eklendi." });
         }
     }

@@ -36,9 +36,21 @@ namespace EdTechApi.API.Controllers
             return PhysicalFile(path, contentType, enableRangeProcessing: true);
         }
 
+        // Herkese açık arama dizini: kurs kimliği -> sıralı ders başlıkları (video bağlantısı içermez).
+        [AllowAnonymous]
+        [HttpGet("/api/lessons/outline")]
+        public async Task<IActionResult> Outline() =>
+            Ok((await _context.Lessons.AsNoTracking()
+                    .OrderBy(l => l.Order).ThenBy(l => l.Id)
+                    .Select(l => new { l.CourseId, l.Title })
+                    .ToListAsync())
+                .GroupBy(l => l.CourseId)
+                .ToDictionary(g => g.Key.ToString(), g => g.Select(l => l.Title).ToList()));
+
         public record LessonRequest(string Title, string? Description, string? VideoUrl, int? Order);
 
         // Herkes ders başlıklarını görür; video bağlantısı yalnızca kayıtlı öğrenci, kursun öğretmeni ve yöneticiye döner.
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetAll(int courseId)
         {
@@ -134,6 +146,7 @@ namespace EdTechApi.API.Controllers
         private async Task<bool> IsEnrolledAsync(int courseId)
         {
             var username = User.GetUsername();
+            if (username == null) return false;
             return await _context.Enrollments.AnyAsync(e => e.CourseId == courseId && e.Student.User != null && e.Student.User.Username == username);
         }
     }
