@@ -24,7 +24,14 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 
 import type { TFunction } from "i18next";
 
-import { parseJwt, authHeaders, getToken, isAdminRole } from "@/lib/auth";
+import {
+  parseJwt,
+  authHeaders,
+  getToken,
+  getRoleFromToken,
+  isAdminRole,
+  isTeacherRole,
+} from "@/lib/auth";
 import { formatTry, initialsOf } from "@/lib/utils";
 import { API_BASE } from "@/components/courseHelpers";
 const translateRole = (role: string, t: TFunction) => {
@@ -75,9 +82,9 @@ export function AppSidebar() {
     photo?: string;
     rawRole?: string;
   }>({
-    name: "Kullanıcı",
+    name: t("common.user"),
     role: t("profile.roles.student"),
-    initials: "K",
+    initials: initialsOf(t("common.user")),
     rawRole: "user",
   });
 
@@ -93,17 +100,14 @@ export function AppSidebar() {
 
     lastTokenRef.current = token;
 
-    let currentName = storedUsername || "Kullanıcı";
+    let currentName = storedUsername || t("common.user");
     let currentRole = t("profile.roles.student");
     let currentRawRole = "user";
 
     if (token) {
       const payload = parseJwt(token);
       if (payload) {
-        const rawRole =
-          payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
-          payload.role ||
-          "";
+        const rawRole = getRoleFromToken(token);
 
         currentRawRole = rawRole || "user";
         currentRole = translateRole(rawRole || "user", t);
@@ -127,7 +131,7 @@ export function AppSidebar() {
       const loadProfileData = async () => {
         try {
           const res = await fetch(`${API_BASE}/api/profile/me`, {
-            headers: { Authorization: `Bearer ${token}` },
+            headers: authHeaders(),
           });
 
           if (res.ok) {
@@ -158,9 +162,9 @@ export function AppSidebar() {
       loadProfileData();
     } else {
       setCurrentUser({
-        name: "Kullanıcı",
+        name: t("common.user"),
         role: t("profile.roles.student"),
-        initials: "K",
+        initials: initialsOf(t("common.user")),
         rawRole: "user",
       });
     }
@@ -171,11 +175,15 @@ export function AppSidebar() {
   const showBalance = !!currentUser.rawRole && !isAdminRole(currentUser.rawRole);
   useEffect(() => {
     if (!showBalance || !getToken()) return;
-    const load = () =>
+    // only the latest request may set the balance: a slow older answer must not overwrite a newer one
+    let seq = 0;
+    const load = () => {
+      const mine = ++seq;
       fetch(`${API_BASE}/api/wallet/me`, { headers: authHeaders() })
         .then((r) => (r.ok ? r.json() : null))
-        .then((d) => d && setBalance(d.balance))
+        .then((d) => d && mine === seq && setBalance(d.balance))
         .catch(() => {});
+    };
     load();
     window.addEventListener("wallet-changed", load);
     return () => window.removeEventListener("wallet-changed", load);
@@ -221,7 +229,7 @@ export function AppSidebar() {
       return true;
     }
 
-    if (role === "admin" || role === "superadmin") {
+    if (isAdminRole(role)) {
       // Admins don't teach courses usually, but they can see everything else
       if (item.url === "/verdigim-kurslar") return false;
       if (item.url === "/kurslarim") return false;
@@ -230,7 +238,7 @@ export function AppSidebar() {
       return true;
     }
 
-    if (role === "teacher") {
+    if (isTeacherRole(role)) {
       if (item.url === "/verdigim-kurslar") return true;
       if (item.url === "/kurslarim") return true;
       if (item.url === "/yardim-taleplerim") return true;

@@ -27,6 +27,8 @@ export function usePublicCatalog() {
   const [courses, setCourses] = useState<LandingCourse[] | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [teachers, setTeachers] = useState<TeacherLiteDto[]>([]);
+  // an empty list after a failed or empty fetch must read "no instructors", not "loading" forever
+  const [teachersLoaded, setTeachersLoaded] = useState(false);
   const [outline, setOutline] = useState<Record<string, OutlineLesson[]>>({});
 
   useEffect(() => {
@@ -34,7 +36,9 @@ export function usePublicCatalog() {
       setCourses(Array.isArray(data) ? data : []),
     );
     fetchCategories().then(setCategories);
-    fetchPublicTeachers().then(setTeachers);
+    fetchPublicTeachers()
+      .then(setTeachers)
+      .finally(() => setTeachersLoaded(true));
     getJson<Record<string, OutlineLesson[]>>(`${API_BASE}/api/lessons/outline`).then(
       (data) => data && setOutline(data),
     );
@@ -74,5 +78,5 @@ export function usePublicCatalog() {
       `${(outline[c.id] ?? []).map((l) => l.title).join(" ")} ${byTeacher.get(String(c.teacherId)) ?? ""} ${both("categories", c.category)} ${both("subCategories", c.subCategory)}`;
   }, [teachers, outline, t]);
 
-  return { courses, categories, teachers, outline, label, describe, extra };
+  return { courses, categories, teachers, teachersLoaded, outline, label, describe, extra };
 }

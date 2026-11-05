@@ -372,7 +372,7 @@ function CoursesCatalog() {
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <span className="min-w-0">
-                    <span className="block font-serif text-xl leading-tight decoration-gold underline-offset-4 group-hover:underline">
+                    <span className="block font-serif text-xl leading-tight break-words decoration-gold underline-offset-4 group-hover:underline">
                       {label("courses", course.title)}
                     </span>
                     <span className="mt-1 block truncate text-xs text-muted-foreground">

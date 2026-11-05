@@ -5,6 +5,8 @@ import { useTranslation } from "react-i18next";
 import { adminOnly } from "../hooks/useAdminGuard";
 
 import { API_BASE } from "@/components/courseHelpers";
+import { authHeaders } from "@/lib/auth";
+import { toast } from "sonner";
 import { formatTry, formatDate } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/raporlar")({
   head: () => ({
@@ -143,38 +145,46 @@ function ReportsPage() {
   // Veritabanından verileri çek
   useEffect(() => {
     const fetchReportsData = async () => {
-      const token = localStorage.getItem("jwt_token");
-      const headers = { Authorization: `Bearer ${token}` };
+      const headers = authHeaders();
+      // each request settles on its own: one failure must not blank the whole report
+      const get = (path: string) => fetch(`${API_BASE}${path}`, { headers }).catch(() => null);
+      const json = async <T,>(res: Response | null, set: (v: T) => void) => {
+        if (res?.ok) set(await res.json());
+        return !!res?.ok;
+      };
 
       try {
-        const [sRes, cRes, eRes, tRes, dsRes, dcRes, dtRes, deRes] = await Promise.all([
-          fetch(`${API_BASE}/api/students`, { headers }),
-          fetch(`${API_BASE}/api/courses`, { headers }),
-          fetch(`${API_BASE}/api/enrollments`, { headers }),
-          fetch(`${API_BASE}/api/teachers`, { headers }),
-          fetch(`${API_BASE}/api/students/deleted`, { headers }),
-          fetch(`${API_BASE}/api/courses/deleted`, { headers }),
-          fetch(`${API_BASE}/api/teachers/deleted`, { headers }),
-          fetch(`${API_BASE}/api/enrollments/deleted`, { headers }),
+        const [sRes, cRes, eRes, tRes, dsRes, dcRes, dtRes, deRes, salesRes] = await Promise.all([
+          get("/api/students"),
+          get("/api/courses"),
+          get("/api/enrollments"),
+          get("/api/teachers"),
+          get("/api/students/deleted"),
+          get("/api/courses/deleted"),
+          get("/api/teachers/deleted"),
+          get("/api/enrollments/deleted"),
+          get("/api/wallet/summary"),
         ]);
-        const salesRes = await fetch(`${API_BASE}/api/wallet/summary`, { headers });
-        if (salesRes.ok) setSales(await salesRes.json());
-
-        if (sRes.ok) setDbStudents(await sRes.json());
-        if (cRes.ok) setDbCourses(await cRes.json());
-        if (eRes.ok) setDbEnrollments(await eRes.json());
-        if (tRes.ok) setDbTeachers(await tRes.json());
-        if (dsRes.ok) setDeletedStudents(await dsRes.json());
-        if (dcRes.ok) setDeletedCourses(await dcRes.json());
-        if (dtRes.ok) setDeletedTeachers(await dtRes.json());
-        if (deRes.ok) setDeletedEnrollments(await deRes.json());
-      } catch (err) {
-        console.error("Rapor verisi çekme hatası:", err);
+        const ok = await Promise.all([
+          json(sRes, setDbStudents),
+          json(cRes, setDbCourses),
+          json(eRes, setDbEnrollments),
+          json(tRes, setDbTeachers),
+          json(dsRes, setDeletedStudents),
+          json(dcRes, setDeletedCourses),
+          json(dtRes, setDeletedTeachers),
+          json(deRes, setDeletedEnrollments),
+          json(salesRes, setSales),
+        ]);
+        if (ok.includes(false)) toast.error(t("common.loadFailed"));
+      } catch {
+        toast.error(t("common.loadFailed"));
       } finally {
         setIsLoading(false);
       }
     };
     fetchReportsData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- load once; t only words the failure toast
   }, []);
 
   // --- DİNAMİK KPI (BÜYÜME) HESAPLAMALARI ---
@@ -190,7 +200,8 @@ function ReportsPage() {
   let studentsBeforeThisMonth = 0;
   dbStudents.forEach((s) => {
     const dRaw = s.createdAt || s.CreatedAt || s.date || s.Date;
-    const d = dRaw ? new Date(dRaw) : new Date();
+    if (!dRaw) return; // no date: not counted as new this month
+    const d = new Date(dRaw);
     if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
       studentsThisMonth++;
     } else if (d < new Date(currentYear, currentMonth, 1)) {
@@ -209,7 +220,8 @@ function ReportsPage() {
   let enrollmentsPrev30 = 0;
   dbEnrollments.forEach((e) => {
     const dRaw = e.enrollmentDate || e.EnrollmentDate || e.date || e.Date;
-    const d = dRaw ? new Date(dRaw) : new Date();
+    if (!dRaw) return; // no date: not counted as new this month
+    const d = new Date(dRaw);
     if (d >= thirtyDaysAgo) {
       enrollmentsLast30++;
     } else if (d >= sixtyDaysAgo && d < thirtyDaysAgo) {

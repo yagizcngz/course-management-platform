@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
@@ -31,6 +32,7 @@ const checkAndHandleExpiry = (navigate: ReturnType<typeof useNavigate>) => {
 };
 
 function AuthenticatedLayout() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   // keyed on the resolved location: the pending one changes first, which remounted the
   // old page mid-navigation (on logout it refetched without a token and got 401s)
@@ -69,7 +71,7 @@ function AuthenticatedLayout() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground animate-pulse">
-          Yükleniyor...
+          {t("common.loading")}
         </div>
       </div>
     );

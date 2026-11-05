@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { API_BASE } from "@/components/courseHelpers";
-import { formatTry } from "@/lib/utils";
+import { formatDateTime, formatTry } from "@/lib/utils";
 import { authHeaders, getRoleFromToken, isTeacherRole, readError } from "@/lib/auth";
 
 export const Route = createFileRoute("/_authenticated/cuzdan")({
@@ -26,7 +26,7 @@ interface WalletTransaction {
 const QUICK_AMOUNTS = [100, 250, 500, 1000];
 
 function WalletPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [balance, setBalance] = useState<number | null>(null);
   const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
   const [amount, setAmount] = useState("");
@@ -192,7 +192,7 @@ function WalletPage() {
                         {x.description && x.type !== "TopUp" ? ` · ${x.description}` : ""}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(x.createdAt).toLocaleString()}
+                        {formatDateTime(x.createdAt, i18n.language)}
                       </p>
                     </div>
                     <span

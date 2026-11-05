@@ -32,7 +32,11 @@ export function CourseTaxonomyFields({
   const [tree, setTree] = useState<Record<string, string[]> | null>(null);
   useEffect(() => {
     taxonomy ??= fetchSubCategories();
-    taxonomy.then(setTree);
+    taxonomy.then((tree) => {
+      // a failed fetch comes back empty: do not keep it, so the next form tries again
+      if (Object.keys(tree).length === 0) taxonomy = null;
+      setTree(tree);
+    });
   }, []);
 
   const options = tree?.[category] ?? [];

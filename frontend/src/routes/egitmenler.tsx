@@ -45,7 +45,7 @@ function FacultyDirectory() {
   const { t } = useTranslation();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: "/egitmenler" });
-  const { courses, categories, teachers, label } = usePublicCatalog();
+  const { courses, categories, teachers, teachersLoaded, label } = usePublicCatalog();
   const [selected, setSelected] = useState<LandingCourse | null>(null);
   const [query, setQuery] = useState(search.q ?? "");
 
@@ -151,7 +151,7 @@ function FacultyDirectory() {
 
         {list.length === 0 && (
           <p role="status" className="py-24 text-center text-muted-foreground">
-            {teachers.length ? t("faculty.empty") : t("common.loading")}
+            {teachersLoaded ? t("faculty.empty") : t("common.loading")}
           </p>
         )}
 

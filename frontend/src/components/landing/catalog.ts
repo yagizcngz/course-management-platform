@@ -1,3 +1,4 @@
+import { formatTry } from "@/lib/utils";
 import type { LandingCourse, LandingProps } from "./shared";
 
 /** Lower-cases with Turkish rules and folds diacritics, so "yazilim" finds "Yazılım". */
@@ -33,7 +34,7 @@ export function matchesQuery(
   return words.every((w) => hay.includes(w));
 }
 
-export const price = (n: number) => `₺${Number(n).toLocaleString("tr-TR")}`;
+export const price = (n: number) => formatTry(Number(n), 0);
 
 /** Courses grouped by category, in the order the categories endpoint returns them. */
 export function groupByCategory(courses: LandingCourse[], categories: string[]) {
