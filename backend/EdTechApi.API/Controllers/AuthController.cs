@@ -256,7 +256,9 @@ namespace EdTechApi.API.Controllers
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username || u.Email == request.Username);
 
-            if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
+            // kapatılmış hesabın parolası yoktur; doğrulamaya hiç girmez
+            if (user == null || user.Role == EdTechApi.Business.Services.AccountRetirement.DeletedRole
+                || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
             {
                 _memoryCache.Set(lockKey, failures + 1, LoginLockout);
                 return Unauthorized("Geçersiz kullanıcı adı veya şifre.");

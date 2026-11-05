@@ -49,6 +49,20 @@ namespace EdTechApi.Tests
         private decimal BalanceOf(User u) => _db.Users.AsNoTracking().Single(x => x.Id == u.Id).Balance;
         private bool IsEnrolled() => _db.Enrollments.Any(e => e.CourseId == _course.Id);
 
+        [Fact]
+        public async Task Deleting_a_buyer_keeps_the_sales_history_and_frees_the_username()
+        {
+            await _wallet.TopUpAsync(_studentUser.Id, 200m);
+            await _wallet.PurchaseCourseAsync(_studentUser, _course.Id);
+            var student = _db.Students.Single(s => s.UserId == _studentUser.Id);
+
+            await new StudentService(_db).DeleteStudentAsync(student.Id);
+
+            Assert.Equal(3, _db.WalletTransactions.Count()); // top-up, purchase, teacher earning
+            Assert.False(_db.Users.Any(u => u.Username == "s" || u.Email == "s@test"));
+            Assert.Equal(AccountRetirement.DeletedRole, _db.Users.Single(u => u.Id == _studentUser.Id).Role);
+        }
+
         [Theory]
         [InlineData(0)]
         [InlineData(-5)]

@@ -50,18 +50,14 @@ namespace EdTechApi.Business.Services
                 student.IsDeleted = true;
                 student.DeletedAt = DateTime.UtcNow;
 
-                // Bağlı olan giriş hesabını (User) ise tamamen siliyoruz — Student
-                // aksine burada geçmiş kaydı tutmaya gerek yok, ve kullanıcı adının
-                // tekrar kullanılabilir olması için User satırının DB'den kalkması lazım.
+                // Bağlı giriş hesabı kapatılır (AccountRetirement): kullanıcı adı boşa çıkar, cüzdan geçmişi kalır.
                 if (student.UserId.HasValue)
                 {
                     var user = await _context.Users.FindAsync(student.UserId.Value);
                     if (user != null)
                     {
-                        // FK constraint'e takılmamak için önce bağlantıyı kaldırıyoruz,
-                        // sonra User'ı siliyoruz.
                         student.UserId = null;
-                        _context.Users.Remove(user);
+                        AccountRetirement.Retire(user);
                     }
                 }
 

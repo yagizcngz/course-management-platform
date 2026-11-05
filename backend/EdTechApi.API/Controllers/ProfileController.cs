@@ -95,7 +95,7 @@ namespace EdTechApi.API.Controllers
                 return NoContent();
             }
 
-            _context.Users.Remove(user);
+            EdTechApi.Business.Services.AccountRetirement.Retire(user);
             await _context.SaveChangesAsync();
             return NoContent();
         }
