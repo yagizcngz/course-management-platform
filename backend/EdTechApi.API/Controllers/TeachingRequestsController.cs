@@ -1,3 +1,4 @@
+using EdTechApi.API.Helpers;
 using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
 using Microsoft.AspNetCore.Authorization;
@@ -24,8 +25,7 @@ namespace EdTechApi.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateRequest([FromBody] CreateTeachingRequestDto dto)
         {
-            var username = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            var username = User.GetUsername();
                 
             if (string.IsNullOrEmpty(username)) return Unauthorized();
             
@@ -69,8 +69,7 @@ namespace EdTechApi.API.Controllers
         [HttpGet("my-requests")]
         public async Task<IActionResult> GetMyRequests()
         {
-            var username = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            var username = User.GetUsername();
                 
             if (string.IsNullOrEmpty(username)) return Unauthorized();
             
@@ -99,8 +98,7 @@ namespace EdTechApi.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllRequests()
         {
-            var username = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            var username = User.GetUsername();
                 
             if (string.IsNullOrEmpty(username)) return Unauthorized();
             
@@ -130,8 +128,7 @@ namespace EdTechApi.API.Controllers
         [HttpPost("{id}/approve")]
         public async Task<IActionResult> ApproveRequest(int id)
         {
-            var username = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            var username = User.GetUsername();
                 
             if (string.IsNullOrEmpty(username)) return Unauthorized();
             
@@ -170,8 +167,7 @@ namespace EdTechApi.API.Controllers
         [HttpPost("{id}/reject")]
         public async Task<IActionResult> RejectRequest(int id)
         {
-            var username = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            var username = User.GetUsername();
                 
             if (string.IsNullOrEmpty(username)) return Unauthorized();
             
@@ -192,8 +188,7 @@ namespace EdTechApi.API.Controllers
         [HttpDelete("clear-resolved")]
         public async Task<IActionResult> ClearResolvedRequests()
         {
-            var username = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            var username = User.GetUsername();
                 
             if (string.IsNullOrEmpty(username)) return Unauthorized();
             
@@ -220,8 +215,7 @@ namespace EdTechApi.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRequest(int id)
         {
-            var username = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            var username = User.GetUsername();
                 
             if (string.IsNullOrEmpty(username)) return Unauthorized();
             

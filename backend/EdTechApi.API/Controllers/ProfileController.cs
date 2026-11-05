@@ -1,3 +1,4 @@
+using EdTechApi.API.Helpers;
 using EdTechApi.Business.Interfaces;
 using EdTechApi.DataAccess.Context;
 using Microsoft.AspNetCore.Authorization;
@@ -285,9 +286,7 @@ namespace EdTechApi.API.Controllers
 
         private string? GetCurrentUsername()
         {
-            return User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
-                ?? User.Identity?.Name;
+            return User.GetUsername();
         }
     }
 

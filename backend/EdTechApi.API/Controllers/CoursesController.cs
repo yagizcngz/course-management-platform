@@ -28,8 +28,7 @@ namespace EdTechApi.API.Controllers
         [HttpGet("recommended")]
         public async Task<IActionResult> GetRecommended([FromQuery] int count = 5)
         {
-            var username = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            var username = User.GetUsername();
                 
             if (string.IsNullOrEmpty(username)) return Unauthorized();
 
@@ -93,8 +92,7 @@ namespace EdTechApi.API.Controllers
 
             if (newCourse.TeacherId == null || newCourse.TeacherId == 0)
             {
-                var username = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                    ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+                var username = User.GetUsername();
                 if (!string.IsNullOrEmpty(username))
                 {
                     var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
@@ -175,8 +173,7 @@ namespace EdTechApi.API.Controllers
 
         private async Task<int?> GetOwnTeacherIdAsync()
         {
-            var username = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            var username = User.GetUsername();
             if (string.IsNullOrEmpty(username)) return null;
             return await _context.Teachers
                 .Where(t => t.User != null && t.User.Username == username)

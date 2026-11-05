@@ -13,7 +13,8 @@ namespace EdTechApi.API.Helpers
     public static class ClaimsPrincipalExtensions
     {
         public static string? GetUsername(this ClaimsPrincipal user) =>
-            user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? user.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? user.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+            ?? user.Identity?.Name;
 
         public static bool IsAdmin(this ClaimsPrincipal user) =>
             user.IsInRole("Admin") || user.IsInRole("SuperAdmin") || user.IsInRole("superadmin");

@@ -35,8 +35,7 @@ namespace EdTechApi.API.Controllers
             int? userId = null;
             if (User.Identity?.IsAuthenticated == true)
             {
-                var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                            ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+                var username = User.GetUsername();
                 
                 var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
                 if (currentUser != null)
@@ -107,8 +106,7 @@ namespace EdTechApi.API.Controllers
         [Authorize]
         public async Task<IActionResult> GetMyRequests()
         {
-            var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                        ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            var username = User.GetUsername();
 
             var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
             if (currentUser == null)
@@ -117,6 +115,7 @@ namespace EdTechApi.API.Controllers
             }
 
             var requests = await _context.SupportRequests
+                .AsNoTracking()
                 .Where(x => x.UserId == currentUser.Id)
                 .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();

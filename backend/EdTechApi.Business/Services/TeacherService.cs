@@ -16,7 +16,7 @@ namespace EdTechApi.Business.Services
 
         public async Task<IEnumerable<Teacher>> GetAllTeachersAsync()
         {
-            return await _context.Teachers.ToListAsync();
+            return await _context.Teachers.AsNoTracking().ToListAsync();
         }
 
         public async Task<Teacher?> GetTeacherByIdAsync(int id)

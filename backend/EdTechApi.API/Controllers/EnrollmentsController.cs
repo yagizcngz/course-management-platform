@@ -29,8 +29,7 @@ namespace EdTechApi.API.Controllers
         [HttpPost("join/{courseId}")]
         public async Task<IActionResult> JoinCourse(int courseId)
         {
-            var username = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            var username = User.GetUsername();
                 
             if (string.IsNullOrEmpty(username)) return Unauthorized();
 
@@ -56,8 +55,7 @@ namespace EdTechApi.API.Controllers
         [HttpDelete("leave/{courseId}")]
         public async Task<IActionResult> LeaveCourse(int courseId)
         {
-            var username = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            var username = User.GetUsername();
                 
             if (string.IsNullOrEmpty(username)) return Unauthorized();
 
@@ -82,8 +80,7 @@ namespace EdTechApi.API.Controllers
         [HttpGet("my-courses")]
         public async Task<IActionResult> GetMyCourses()
         {
-            var username = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value;
+            var username = User.GetUsername();
                 
             if (string.IsNullOrEmpty(username)) return Unauthorized();
 

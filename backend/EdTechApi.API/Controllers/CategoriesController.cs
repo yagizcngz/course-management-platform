@@ -21,7 +21,7 @@ namespace EdTechApi.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var categories = await _context.Categories.ToListAsync();
+            var categories = await _context.Categories.AsNoTracking().ToListAsync();
             return Ok(categories);
         }
 

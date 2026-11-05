@@ -65,6 +65,7 @@ namespace EdTechApi.API.Controllers
             var hasAccess = canEdit || studentId != null;
             var key = _config["Jwt:Key"]!;
             var lessons = (await _context.Lessons
+                .AsNoTracking()
                 .Where(l => l.CourseId == courseId)
                 .OrderBy(l => l.Order).ThenBy(l => l.Id)
                 .ToListAsync())

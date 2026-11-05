@@ -34,6 +34,7 @@ namespace EdTechApi.Business.Services
             }
 
             return await query
+                .AsNoTracking()
                 .OrderByDescending(c => c.Enrollments.Count)
                 .ToListAsync();
         }
@@ -41,6 +42,7 @@ namespace EdTechApi.Business.Services
         public async Task<IEnumerable<Course>> GetPopularCoursesAsync(int count)
         {
             return await _context.Courses
+                .AsNoTracking()
                 .OrderByDescending(c => c.Enrollments.Count)
                 .Take(count)
                 .ToListAsync();
@@ -118,6 +120,7 @@ namespace EdTechApi.Business.Services
                 .ToListAsync();
 
             return await _context.Courses
+                .AsNoTracking()
                 .Where(c => !enrolledCourseIds.Contains(c.Id))
                 .OrderByDescending(c => c.CreatedAt)
                 .Take(count)

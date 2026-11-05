@@ -125,8 +125,6 @@ namespace EdTechApi.API.Controllers
         // ikisini de ve ham "sub" değerini de kontrol ediyoruz.
         private string? GetCurrentUsername()
         {
-            return User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
-                ?? User.Identity?.Name;
+            return User.GetUsername();
         }
 }}
