@@ -31,6 +31,28 @@ namespace EdTechApi.API.Controllers
             return Ok(teachers);
         }
 
+        // Misafirlerin de görebildiği eğitmen vitrini: e-posta, numara ve hesap bilgisi dönmez.
+        // Profilini gizli yapan (IsProfilePublic=false) öğretmenin biyografisi ve fotoğrafı gösterilmez.
+        [AllowAnonymous]
+        [HttpGet("public")]
+        public async Task<IActionResult> GetPublic()
+        {
+            var teachers = await _context.Teachers.AsNoTracking()
+                .OrderBy(t => t.FirstName).ThenBy(t => t.LastName)
+                .Select(t => new
+                {
+                    t.Id,
+                    t.FirstName,
+                    t.LastName,
+                    t.Branch,
+                    AboutMe = t.User == null || t.User.IsProfilePublic ? t.AboutMe : null,
+                    ProfilePictureUrl = t.User == null || t.User.IsProfilePublic ? t.ProfilePictureUrl : null,
+                    Courses = t.Courses.Select(c => new { c.Id, c.Title, c.Category }).ToList()
+                })
+                .ToListAsync();
+            return Ok(teachers);
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {

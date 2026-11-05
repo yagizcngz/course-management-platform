@@ -87,7 +87,10 @@ namespace EdTechApi.API.Controllers
             if (string.IsNullOrEmpty(username)) return Unauthorized();
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-            if (user == null || (user.Role.ToLower() != "student" && user.Role.ToLower() != "user" && user.Role.ToLower() != "teacher")) return StatusCode(403, "Only participants can view their courses.");
+            if (user == null) return Unauthorized();
+            // Yöneticiler kursa katılmaz; ortak sayfalar bu ucu her rol için çağırdığından 403 yerine boş liste.
+            var role = user.Role.ToLower();
+            if (role != "student" && role != "user" && role != "teacher") return Ok(new List<object>());
 
             var student = await _context.Students.FirstOrDefaultAsync(s => s.UserId == user.Id);
             if (student == null) return Ok(new List<object>());

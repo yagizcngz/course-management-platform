@@ -20,7 +20,7 @@ namespace EdTechApi.Business.Services
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                query = query.Where(c => c.Title.Contains(search) || c.Description.Contains(search));
+                query = query.Where(c => c.Title.Contains(search) || c.Description.Contains(search) || c.Category.Contains(search) || c.Instructor.Contains(search));
             }
 
             if (!string.IsNullOrWhiteSpace(category))

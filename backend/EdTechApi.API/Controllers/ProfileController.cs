@@ -14,12 +14,45 @@ namespace EdTechApi.API.Controllers
     public class ProfileController : ControllerBase
     {
         private readonly IStudentService _studentService;
+        private readonly ITeacherService _teacherService;
         private readonly AppDbContext _context;
 
-        public ProfileController(IStudentService studentService, AppDbContext context)
+        public ProfileController(IStudentService studentService, ITeacherService teacherService, AppDbContext context)
         {
             _studentService = studentService;
+            _teacherService = teacherService;
             _context = context;
+        }
+
+        // Self-service account deletion; reuses the admin soft-delete so reports stay correct.
+        [HttpDelete("me")]
+        public async Task<IActionResult> DeleteMe()
+        {
+            var username = GetCurrentUsername();
+            if (string.IsNullOrEmpty(username)) return Unauthorized();
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            if (user == null) return NotFound();
+            if (user.Role == "Admin" || user.Role == "SuperAdmin" || user.Role == "superadmin")
+                return BadRequest("Yönetici hesapları buradan silinemez.");
+
+            var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == user.Id);
+            if (teacher != null)
+            {
+                await _teacherService.DeleteTeacherAsync(teacher.Id);
+                return NoContent();
+            }
+
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.UserId == user.Id);
+            if (student != null)
+            {
+                await _studentService.DeleteStudentAsync(student.Id);
+                return NoContent();
+            }
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+            return NoContent();
         }
 
         [HttpGet("me")]
