@@ -16,12 +16,57 @@ namespace EdTechApi.API.Controllers
         private readonly IStudentService _studentService;
         private readonly ITeacherService _teacherService;
         private readonly AppDbContext _context;
+        private readonly IEnrollmentService _enrollmentService;
 
-        public ProfileController(IStudentService studentService, ITeacherService teacherService, AppDbContext context)
+        public ProfileController(IStudentService studentService, ITeacherService teacherService, AppDbContext context, IEnrollmentService enrollmentService)
         {
             _studentService = studentService;
             _teacherService = teacherService;
             _context = context;
+            _enrollmentService = enrollmentService;
+        }
+
+        // Rozetler için ham sayılar (öğrenme ve öğretme); rozet kuralları arayüzde, lib/badges.ts
+        [HttpGet("achievements")]
+        public async Task<IActionResult> GetAchievements()
+        {
+            var username = GetCurrentUsername();
+            if (string.IsNullOrEmpty(username)) return Unauthorized();
+            var userId = await _context.Users.Where(u => u.Username == username).Select(u => (int?)u.Id).FirstOrDefaultAsync();
+            if (userId == null) return NotFound();
+
+            object? learning = null;
+            var studentId = await _context.Students.Where(s => s.UserId == userId).Select(s => (int?)s.Id).FirstOrDefaultAsync();
+            if (studentId != null)
+            {
+                var courses = await _context.Enrollments.AsNoTracking().Where(e => e.StudentId == studentId)
+                    .Select(e => new { e.CourseId, e.Course.Category }).ToListAsync();
+                var progress = await _enrollmentService.GetProgressAsync(studentId.Value, courses.Select(c => c.CourseId).ToList());
+                learning = new
+                {
+                    completedLessons = await _context.LessonCompletions.CountAsync(c => c.StudentId == studentId),
+                    courses = courses.Select(c => new
+                    {
+                        c.CourseId, c.Category, progress[c.CourseId].Percent,
+                        CompletedAt = progress[c.CourseId].IsComplete ? progress[c.CourseId].LastCompletedAt : null
+                    })
+                };
+            }
+
+            object? teaching = null;
+            var teacher = await _context.Teachers.AsNoTracking().FirstOrDefaultAsync(t => t.UserId == userId);
+            if (teacher != null)
+            {
+                var courseIds = await _context.Courses.Where(c => c.TeacherId == teacher.Id).Select(c => c.Id).ToListAsync();
+                teaching = new
+                {
+                    JoinedAt = teacher.CreatedAt,
+                    Courses = courseIds.Count,
+                    Students = await _context.Enrollments.Where(e => courseIds.Contains(e.CourseId)).Select(e => e.StudentId).Distinct().CountAsync(),
+                    Lessons = await _context.Lessons.CountAsync(l => courseIds.Contains(l.CourseId))
+                };
+            }
+            return Ok(new { learning, teaching });
         }
 
         // Self-service account deletion; reuses the admin soft-delete so reports stay correct.
