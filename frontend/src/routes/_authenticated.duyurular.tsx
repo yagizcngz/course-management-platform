@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/_authenticated/duyurular")({
 });
 
 function AnnouncementsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [announcements, setAnnouncements] = useState<AnnouncementData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -130,7 +131,7 @@ function AnnouncementsPage() {
                   <div className="flex justify-between items-center">
                     <h4 className="font-bold text-lg">{ann.title}</h4>
                     <span className="text-[11px] font-mono bg-muted text-muted-foreground px-2 py-1 rounded">
-                      {new Date(ann.createdAt).toLocaleDateString()}
+                      {formatDate(ann.createdAt, i18n.language)}
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap">{ann.content}</p>

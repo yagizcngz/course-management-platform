@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { createFileRoute } from "@tanstack/react-router";
@@ -303,7 +304,7 @@ function TaughtCoursesPage() {
                           : r.courseTitle || r.CourseTitle}
                       </h3>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {new Date(r.createdAt).toLocaleDateString()}
+                        {formatDate(r.createdAt, i18n.language)}
                       </p>
                     </div>
                     <div className="mt-auto pt-2">

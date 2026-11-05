@@ -1,4 +1,4 @@
-import { initialsOf } from "@/lib/utils";
+import { initialsOf, formatDate } from "@/lib/utils";
 import {
   X,
   CheckCircle2,
@@ -1001,11 +1001,7 @@ export function CourseDetailModal({
                                 <span className="font-semibold text-foreground/70">
                                   {t("courseModal.enrollmentDate", "Kayıt Tarihi")}:
                                 </span>{" "}
-                                {enr.enrollmentDate || enr.EnrollmentDate
-                                  ? new Date(
-                                      enr.enrollmentDate || enr.EnrollmentDate || "",
-                                    ).toLocaleDateString()
-                                  : "-"}
+                                {formatDate(enr.enrollmentDate || enr.EnrollmentDate, i18n.language)}
                               </p>
                             </div>
                           </div>

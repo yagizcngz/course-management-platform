@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, X, AlertCircle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -351,7 +352,7 @@ function EnrollmentsPage() {
                         : rawCourseTitle;
 
                     const rawDate = pick(e.enrollmentDate, e.EnrollmentDate);
-                    const dateText = rawDate ? new Date(rawDate).toLocaleDateString("tr-TR") : "-";
+                    const dateText = formatDate(rawDate, i18n.language);
 
                     return (
                       <tr

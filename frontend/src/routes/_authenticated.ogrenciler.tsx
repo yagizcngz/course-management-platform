@@ -1,4 +1,4 @@
-import { initialsOf } from "@/lib/utils";
+import { initialsOf, formatDate } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "../components/PageHeader";
 import { Plus, X, Edit2, Trash2, Camera, Upload, Link2, Search } from "lucide-react";
@@ -519,7 +519,7 @@ function StudentsPage() {
                   const calculatedStatus =
                     studentEnrollments.length > 0 ? t("students.active") : t("students.inactive");
                   const dateRaw = s.createdAt || s.CreatedAt || s.date || s.Date;
-                  const date = dateRaw ? new Date(dateRaw).toLocaleDateString() : "-";
+                  const date = formatDate(dateRaw, i18n.language);
                   const currentId = s.id || s.Id;
 
                   return (

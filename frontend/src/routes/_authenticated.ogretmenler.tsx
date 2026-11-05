@@ -1,4 +1,4 @@
-import { initialsOf } from "@/lib/utils";
+import { initialsOf, formatDate } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "../components/PageHeader";
 import { Plus, X, Edit2, Trash2, Upload, Link2, Search } from "lucide-react";
@@ -27,6 +27,8 @@ interface TeacherData {
   Branch?: string;
   date?: string;
   Date?: string;
+  createdAt?: string;
+  CreatedAt?: string;
   profilePictureUrl?: string;
   ProfilePictureUrl?: string;
   aboutMe?: string;
@@ -570,8 +572,8 @@ function TeachersPage() {
                       : rawBranch
                     : "-";
                   const initialsText = initialsOf(fullName);
-                  const dateRaw = teacher.date || teacher.Date;
-                  const date = dateRaw ? new Date(dateRaw).toLocaleDateString("tr-TR") : "-";
+                  const dateRaw = teacher.createdAt || teacher.CreatedAt || teacher.date || teacher.Date;
+                  const date = formatDate(dateRaw, i18n.language);
                   const currentId = teacher.id || teacher.Id;
                   const calculatedStatus = getTeacherStatus(teacher);
 

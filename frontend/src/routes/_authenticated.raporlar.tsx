@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { adminOnly } from "../hooks/useAdminGuard";
 
 import { API_BASE } from "@/components/courseHelpers";
-import { formatTry } from "@/lib/utils";
+import { formatTry, formatDate } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/raporlar")({
   head: () => ({
     meta: [
@@ -43,6 +43,8 @@ interface StudentData {
   Course?: string;
   date?: string;
   Date?: string;
+  createdAt?: string;
+  CreatedAt?: string;
   status?: string;
   Status?: string;
   initials?: string;
@@ -187,7 +189,7 @@ function ReportsPage() {
   let studentsThisMonth = 0;
   let studentsBeforeThisMonth = 0;
   dbStudents.forEach((s) => {
-    const dRaw = s.date || s.Date;
+    const dRaw = s.createdAt || s.CreatedAt || s.date || s.Date;
     const d = dRaw ? new Date(dRaw) : new Date();
     if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
       studentsThisMonth++;
@@ -372,7 +374,7 @@ function ReportsPage() {
                           const dateObj = new Date(latestDateRaw as string);
                           displayDate = isNaN(dateObj.getTime())
                             ? (latestDateRaw as string)
-                            : dateObj.toLocaleDateString("tr-TR");
+                            : formatDate(dateObj, i18n.language);
                         }
                       }
 
@@ -385,13 +387,10 @@ function ReportsPage() {
                               ? t(`dynamic.courses.${rawCourseFallback}`)
                               : rawCourseFallback
                             : "-";
-                      const dateRaw = s.date || s.Date;
                       const date =
                         displayDate !== "-"
                           ? displayDate
-                          : dateRaw
-                            ? new Date(dateRaw).toLocaleDateString("tr-TR")
-                            : "-";
+                          : formatDate(s.createdAt || s.CreatedAt || s.date || s.Date, i18n.language);
 
                       return (
                         <tr

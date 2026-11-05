@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { createFileRoute } from "@tanstack/react-router";
@@ -331,7 +332,7 @@ function RequestsPage() {
                                     </div>
                                     <div className="text-xs text-muted-foreground mt-1">
                                       {t("requests.dateLabel", "Tarih:")}{" "}
-                                      {new Date(request.createdAt).toLocaleDateString()}
+                                      {formatDate(request.createdAt, i18n.language)}
                                     </div>
                                   </div>
                                 </div>
@@ -586,7 +587,7 @@ function InstructorApplications() {
                 {a.aboutMe}
               </p>
               <div className="mt-2 text-xs text-muted-foreground">
-                {t("requests.dateLabel")} {new Date(a.createdAt).toLocaleDateString()}
+                {t("requests.dateLabel")} {formatDate(a.createdAt, i18n.language)}
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-3">
