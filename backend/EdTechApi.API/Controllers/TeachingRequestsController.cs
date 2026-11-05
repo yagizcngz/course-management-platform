@@ -145,6 +145,9 @@ namespace EdTechApi.API.Controllers
             if (request == null) return NotFound();
             
             if (request.Status != "Pending") return BadRequest("Request is not pending.");
+            // kurs ya da öğretmen bu arada silinmiş olabilir (soft-delete filtresi navigasyonu boş bırakır)
+            if (request.Course == null || request.Teacher == null)
+                return BadRequest("Kurs veya öğretmen artık mevcut değil.");
 
             request.Status = "Accepted";
             request.Course.TeacherId = request.TeacherId;

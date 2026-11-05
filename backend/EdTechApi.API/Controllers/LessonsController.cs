@@ -108,8 +108,9 @@ namespace EdTechApi.API.Controllers
         {
             var lesson = await _context.Lessons.Include(l => l.Course).ThenInclude(c => c!.Teacher)
                 .FirstOrDefaultAsync(l => l.Id == id && l.CourseId == courseId);
-            if (lesson == null) return NotFound("Ders bulunamadı.");
-            if (!await CanEditAsync(lesson.Course!)) return StatusCode(403, "Bu kursun derslerini düzenleyemezsiniz.");
+            // silinmiş bir kursun dersi: kurs filtresi navigasyonu boş bırakır
+            if (lesson?.Course == null) return NotFound("Ders bulunamadı.");
+            if (!await CanEditAsync(lesson.Course)) return StatusCode(403, "Bu kursun derslerini düzenleyemezsiniz.");
             if (string.IsNullOrWhiteSpace(request.Title)) return BadRequest("Ders başlığı zorunludur.");
 
             lesson.Title = request.Title.Trim();
@@ -125,8 +126,8 @@ namespace EdTechApi.API.Controllers
         {
             var lesson = await _context.Lessons.Include(l => l.Course).ThenInclude(c => c!.Teacher)
                 .FirstOrDefaultAsync(l => l.Id == id && l.CourseId == courseId);
-            if (lesson == null) return NotFound("Ders bulunamadı.");
-            if (!await CanEditAsync(lesson.Course!)) return StatusCode(403, "Bu kursun derslerini düzenleyemezsiniz.");
+            if (lesson?.Course == null) return NotFound("Ders bulunamadı.");
+            if (!await CanEditAsync(lesson.Course)) return StatusCode(403, "Bu kursun derslerini düzenleyemezsiniz.");
 
             lesson.IsDeleted = true;
             lesson.DeletedAt = DateTime.UtcNow;
