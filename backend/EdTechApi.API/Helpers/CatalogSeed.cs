@@ -257,10 +257,11 @@ namespace EdTechApi.API.Helpers
         public static void SeedDemoLearning(AppDbContext db)
         {
             var teacher = db.Teachers.Include(t => t.Courses).FirstOrDefault(t => t.User != null && t.User.Username == "demo_teacher");
-            if (teacher != null && teacher.Courses.Count == 0)
+            if (teacher != null && teacher.Courses.Count < 3)
             {
                 var branches = Branches(teacher);
-                foreach (var c in db.Courses.Where(c => branches.Contains(c.Category)).OrderBy(c => c.Id).Take(3).ToList())
+                foreach (var c in db.Courses.Where(c => branches.Contains(c.Category) && c.TeacherId != teacher.Id)
+                             .OrderBy(c => c.Id).Take(3 - teacher.Courses.Count).ToList())
                 {
                     c.TeacherId = teacher.Id;
                     c.Instructor = FullName(teacher);
