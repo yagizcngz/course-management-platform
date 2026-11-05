@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { createFileRoute } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { authHeaders, readError } from "@/lib/auth";
+import { formatDateTime } from "@/lib/utils";
 
 import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/_authenticated/yardim-taleplerim")({
@@ -24,7 +27,7 @@ interface SupportRequest {
 }
 
 function MySupportRequestsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [requests, setRequests] = useState<SupportRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,15 +37,18 @@ function MySupportRequestsPage() {
       if (!token) return;
 
       const res = await fetch(`${API_BASE}/api/supportrequests/my-requests`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: authHeaders(),
       });
 
       if (res.ok) {
         const data = await res.json();
         setRequests(data);
+      } else {
+        toast.error(await readError(res, t("common.loadFailed")));
       }
     } catch (error) {
       console.error("Failed to fetch requests:", error);
+      toast.error(t("common.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -99,7 +105,7 @@ function MySupportRequestsPage() {
                                 })}
                               </div>
                               <div className="text-xs text-muted-foreground mt-1">
-                                {new Date(request.createdAt).toLocaleString()}
+                                {formatDateTime(request.createdAt, i18n.language)}
                               </div>
                             </div>
                             <div>
@@ -127,7 +133,7 @@ function MySupportRequestsPage() {
                                   </span>
                                   <span>
                                     {request.repliedAt
-                                      ? new Date(request.repliedAt).toLocaleString()
+                                      ? formatDateTime(request.repliedAt, i18n.language)
                                       : ""}
                                   </span>
                                 </div>

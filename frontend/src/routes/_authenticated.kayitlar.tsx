@@ -1,4 +1,4 @@
-import { readError } from "@/lib/auth";
+import { authHeaders, readError } from "@/lib/auth";
 import { formatDate, pillButton } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, X, AlertCircle, Trash2 } from "lucide-react";
@@ -78,15 +78,6 @@ function EnrollmentsPage() {
   const showToast = (message: string, type: "success" | "error" = "success") =>
     type === "error" ? toast.error(message) : toast.success(message);
 
-  const authHeaders = () => {
-    const token = localStorage.getItem("jwt_token");
-
-    return {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    };
-  };
-
   const fetchEnrollments = useCallback(async () => {
     try {
       const res = await fetch(`${API}/enrollments`, {
@@ -98,8 +89,9 @@ function EnrollmentsPage() {
       }
     } catch (err) {
       console.error("Kayıtlar yüklenirken hata:", err);
+      showToast(t("common.loadFailed"), "error");
     }
-  }, []);
+  }, [t]);
 
   const fetchStudentsAndCourses = useCallback(async () => {
     try {
@@ -117,8 +109,9 @@ function EnrollmentsPage() {
       }
     } catch (err) {
       console.error("Öğrenci/kurs listesi yüklenirken hata:", err);
+      showToast(t("common.loadFailed"), "error");
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -394,6 +387,7 @@ function EnrollmentsPage() {
               <button
                 type="button"
                 onClick={handleCloseModal}
+                aria-label={t("common.close")}
                 className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
               >
                 <X className="h-5 w-5" />

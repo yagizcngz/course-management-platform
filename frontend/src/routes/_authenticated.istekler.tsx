@@ -1,4 +1,5 @@
-import { formatDate, pillButton } from "@/lib/utils";
+import { formatDate, formatDateTime, pillButton } from "@/lib/utils";
+import { authHeaders, readError } from "@/lib/auth";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { createFileRoute } from "@tanstack/react-router";
@@ -64,18 +65,15 @@ function RequestsPage() {
       }
 
       const [trRes, srRes] = await Promise.all([
-        fetch(`${API_BASE}/api/teachingrequests`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch(`${API_BASE}/api/supportrequests`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
+        fetch(`${API_BASE}/api/teachingrequests`, { headers: authHeaders() }),
+        fetch(`${API_BASE}/api/supportrequests`, { headers: authHeaders() }),
       ]);
 
       if (trRes.ok) setTeachingRequests(await trRes.json());
       if (srRes.ok) setSupportRequests(await srRes.json());
     } catch (error) {
       console.error("Failed to fetch requests:", error);
+      toast.error(t("common.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -87,37 +85,35 @@ function RequestsPage() {
 
   const handleApprove = async (id: number) => {
     try {
-      const token = localStorage.getItem("jwt_token");
       const res = await fetch(`${API_BASE}/api/teachingrequests/${id}/approve`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: authHeaders(),
       });
       if (res.ok) {
-        toast.success("Request approved.");
+        toast.success(t("requests.approvedToast"));
         fetchRequests();
       } else {
-        toast.error(t("requests.serverError", "Sunucu hatası."));
+        toast.error(await readError(res, t("requests.serverError")));
       }
     } catch {
-      toast.error("Error occurred.");
+      toast.error(t("requests.serverError"));
     }
   };
 
   const handleReject = async (id: number) => {
     try {
-      const token = localStorage.getItem("jwt_token");
       const res = await fetch(`${API_BASE}/api/teachingrequests/${id}/reject`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: authHeaders(),
       });
       if (res.ok) {
-        toast.success("Request rejected.");
+        toast.success(t("requests.rejectedToast"));
         fetchRequests();
       } else {
-        toast.error(t("requests.serverError", "Sunucu hatası."));
+        toast.error(await readError(res, t("requests.serverError")));
       }
     } catch {
-      toast.error("Error occurred.");
+      toast.error(t("requests.serverError"));
     }
   };
 
@@ -125,13 +121,9 @@ function RequestsPage() {
     if (!replyText[id]) return toast.error(t("requests.emptyReply", "Yanıt boş olamaz."));
 
     try {
-      const token = localStorage.getItem("jwt_token");
       const res = await fetch(`${API_BASE}/api/supportrequests/${id}/reply`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: authHeaders(),
         body: JSON.stringify({ replyMessage: replyText[id] }),
       });
 
@@ -169,8 +161,7 @@ function RequestsPage() {
     if (selectedTeachingIds.length === 0 && selectedSupportIds.length === 0) return;
 
     try {
-      const token = localStorage.getItem("jwt_token");
-      const headers = { Authorization: `Bearer ${token}` };
+      const headers = authHeaders();
 
       const teachingDeleted = (
         await Promise.all(
@@ -224,6 +215,13 @@ function RequestsPage() {
   });
 
   const totalSelected = selectedTeachingIds.length + selectedSupportIds.length;
+
+  const roleLabel = (role: string) => {
+    if (role === "User" || role === "Student") return t("profile.roles.student");
+    if (role === "Teacher") return t("profile.roles.teacher");
+    if (role === "Admin" || role === "SuperAdmin") return t("profile.roles.admin");
+    return role;
+  };
 
   return (
     <>
@@ -309,7 +307,7 @@ function RequestsPage() {
                               className={`transition-colors ${selectedTeachingIds.includes(request.id) ? "border-destructive bg-destructive/10" : ""}`}
                             >
                               <CardContent className="p-6 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
+                                <div className="flex min-w-0 flex-1 items-center gap-4">
                                   {isEditMode && (
                                     <input
                                       type="checkbox"
@@ -318,7 +316,7 @@ function RequestsPage() {
                                       onChange={() => handleSelectTeaching(request.id)}
                                     />
                                   )}
-                                  <div>
+                                  <div className="min-w-0">
                                     <div className="font-semibold text-lg">
                                       {request.teacherName}
                                     </div>
@@ -426,7 +424,7 @@ function RequestsPage() {
                               <div
                                 className={`p-4 border-b border-border flex items-center justify-between ${selectedSupportIds.includes(request.id) ? "bg-destructive/10" : "bg-muted/50"}`}
                               >
-                                <div className="flex items-center gap-4">
+                                <div className="flex min-w-0 flex-1 items-center gap-4">
                                   {isEditMode && (
                                     <input
                                       type="checkbox"
@@ -435,16 +433,14 @@ function RequestsPage() {
                                       onChange={() => handleSelectSupport(request.id)}
                                     />
                                   )}
-                                  <div>
+                                  <div className="min-w-0">
                                     <div className="font-semibold text-foreground flex items-center gap-2">
                                       {request.name}
                                       <Badge variant="outline" className="text-xs">
-                                        {request.userRole === "User"
-                                          ? t("profile.roles.student", "Öğrenci")
-                                          : request.userRole}
+                                        {roleLabel(request.userRole)}
                                       </Badge>
                                     </div>
-                                    <div className="text-sm text-muted-foreground mt-1">
+                                    <div className="text-sm text-muted-foreground mt-1 break-all">
                                       {request.email} {request.phone && `| ${request.phone}`}
                                     </div>
                                   </div>
@@ -456,7 +452,7 @@ function RequestsPage() {
                                       : t("requests.statusPending", "Bekliyor")}
                                   </Badge>
                                   <div className="text-xs text-muted-foreground mt-2">
-                                    {new Date(request.createdAt).toLocaleString()}
+                                    {formatDateTime(request.createdAt, i18n.language)}
                                   </div>
                                 </div>
                               </div>
@@ -471,7 +467,7 @@ function RequestsPage() {
                                       <span>{t("requests.yourReply", "Sizin Yanıtınız")}</span>
                                       <span>
                                         {request.repliedAt
-                                          ? new Date(request.repliedAt).toLocaleString()
+                                          ? formatDateTime(request.repliedAt, i18n.language)
                                           : ""}
                                       </span>
                                     </div>
@@ -539,10 +535,14 @@ function InstructorApplications() {
   const [items, setItems] = useState<InstructorApplication[] | null>(null);
 
   const load = async () => {
-    const res = await fetch(`${API_BASE}/api/TeacherApplications`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("jwt_token")}` },
-    }).catch(() => null);
-    setItems(res?.ok ? await res.json() : []);
+    try {
+      const res = await fetch(`${API_BASE}/api/TeacherApplications`, { headers: authHeaders() });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setItems(await res.json());
+    } catch {
+      setItems([]);
+      toast.error(t("common.loadFailed"));
+    }
   };
 
   useEffect(() => {
@@ -552,7 +552,7 @@ function InstructorApplications() {
   const decide = async (id: number, action: "approve" | "reject") => {
     const res = await fetch(`${API_BASE}/api/TeacherApplications/${id}/${action}`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${localStorage.getItem("jwt_token")}` },
+      headers: authHeaders(),
     }).catch(() => null);
     if (res?.ok) {
       toast.success(
@@ -576,7 +576,7 @@ function InstructorApplications() {
           <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <div className="text-lg font-semibold">{a.fullName}</div>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-muted-foreground break-all">
                 @{a.username} · {a.email}
               </div>
               <div className="mt-2 text-sm">
