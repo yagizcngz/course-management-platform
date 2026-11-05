@@ -948,7 +948,9 @@
       "deleteConfirmTitle": "Seçili {{count}} istek silinsin mi?",
       "deleteConfirmBody": "Silinen istekler listeden kalkar ve geri alınamaz.",
       "cancelConfirmTitle": "Ders verme isteği geri alınsın mı?",
-      "cancelConfirmBody": "İstek yöneticinin onay listesinden kalkar. Dilerseniz daha sonra yeniden gönderebilirsiniz."
+      "cancelConfirmBody": "İstek yöneticinin onay listesinden kalkar. Dilerseniz daha sonra yeniden gönderebilirsiniz.",
+      "approvedToast": "İstek onaylandı.",
+      "rejectedToast": "İstek reddedildi."
     },
     "backendErrors": {
       "emailInUse": "Bu e-posta adresi zaten kullanımda.",
@@ -1183,7 +1185,9 @@
       "cancel": "Vazgeç",
       "confirm": "Onayla",
       "close": "Kapat",
-      "preview": "Önizleme"
+      "preview": "Önizleme",
+      "loadFailed": "Veriler yüklenemedi. Sayfayı yenileyip tekrar deneyin.",
+      "user": "Kullanıcı"
     },
     "wallet": {
       "title": "Cüzdan",

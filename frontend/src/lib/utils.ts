@@ -15,8 +15,25 @@ export const initialsOf = (name: string) =>
     .join("")
     .toLocaleUpperCase("tr");
 
-export const formatTry = (value: number) =>
-  new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(value);
+/** Turkish lira; pass 0 for whole-lira prices on cards ("₺899"). */
+export const formatTry = (value: number, fractionDigits = 2) =>
+  new Intl.NumberFormat("tr-TR", {
+    style: "currency",
+    currency: "TRY",
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  }).format(value);
+
+/** Date and time in the UI language's format, or "-" when missing or unparseable. */
+export const formatDateTime = (raw: unknown, lang: string) => {
+  const d = raw ? new Date(raw as string) : null;
+  return d && !isNaN(d.getTime())
+    ? d.toLocaleString(lang.startsWith("en") ? "en-GB" : "tr-TR", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      })
+    : "-";
+};
 
 /** A date in the UI language's format, or "-" when it is missing or unparseable. */
 export const formatDate = (raw: unknown, lang: string) => {

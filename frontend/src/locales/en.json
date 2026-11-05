@@ -1023,7 +1023,9 @@
       "deleteConfirmTitle": "Delete {{count}} selected requests?",
       "deleteConfirmBody": "Deleted requests leave the list and cannot be restored.",
       "cancelConfirmTitle": "Withdraw this teaching request?",
-      "cancelConfirmBody": "The request leaves the admin approval list. You can send it again later."
+      "cancelConfirmBody": "The request leaves the admin approval list. You can send it again later.",
+      "approvedToast": "Request approved.",
+      "rejectedToast": "Request rejected."
     },
     "backendErrors": {
       "emailInUse": "This email address is already in use.",
@@ -1266,7 +1268,9 @@
       "cancel": "Cancel",
       "confirm": "Confirm",
       "close": "Close",
-      "preview": "Preview"
+      "preview": "Preview",
+      "loadFailed": "Could not load the data. Refresh the page and try again.",
+      "user": "User"
     },
     "wallet": {
       "title": "Wallet",
