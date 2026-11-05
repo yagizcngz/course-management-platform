@@ -30,12 +30,12 @@ export function useThemeToggle() {
 export function Logo({ className = "text-2xl" }: { className?: string }) {
   return (
     <Link to="/" className={`font-serif leading-none text-foreground ${className}`}>
-      E-<span className="text-gold-shimmer italic">Kurs</span>
+      E-<span className="text-gold italic">Kurs</span>
     </Link>
   );
 }
 
-export function PublicControls() {
+export function PublicControls({ hideThemeToggle = false }: { hideThemeToggle?: boolean }) {
   const { t, i18n } = useTranslation();
   const { isDark, toggle } = useThemeToggle();
   const next = i18n.language?.startsWith("tr") ? "en" : "tr";
@@ -53,25 +53,62 @@ export function PublicControls() {
       >
         {next}
       </button>
-      <button
-        type="button"
-        onClick={toggle}
-        aria-label={t("header.toggleTheme")}
-        className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-      >
-        {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-      </button>
+      {!hideThemeToggle && (
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label={t("header.toggleTheme")}
+          className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+        >
+          {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </button>
+      )}
     </div>
   );
 }
 
-export function PublicHeader({ children }: { children?: ReactNode }) {
+/** Section links of the public site; the hash targets live on the landing page. */
+export const PUBLIC_LINKS = [
+  { key: "courses", to: "/", hash: "courses" },
+  { key: "categories", to: "/", hash: "categories" },
+  { key: "teachers", to: "/", hash: "teachers" },
+  { key: "about", to: "/hakkimizda", hash: undefined },
+] as const;
+
+function PublicNav() {
+  const { t } = useTranslation();
+  return (
+    <nav aria-label={t("publicNav.label")} className="hidden items-center gap-1 lg:flex">
+      {PUBLIC_LINKS.map((l) => (
+        <Link
+          key={l.key}
+          to={l.to}
+          hash={l.hash}
+          activeOptions={{ exact: true, includeHash: true }}
+          className="rounded-full px-3 py-2 text-sm text-muted-foreground transition-colors hover:text-foreground data-[status=active]:text-foreground"
+        >
+          {t(`publicNav.${l.key}`)}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+/** `hideThemeToggle` is for pages with a fixed palette, where the toggle would do nothing. */
+export function PublicHeader({
+  children,
+  hideThemeToggle,
+}: {
+  children?: ReactNode;
+  hideThemeToggle?: boolean;
+}) {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border/70 bg-background/70 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Logo />
+        <PublicNav />
         <div className="flex items-center gap-2 sm:gap-3">
-          <PublicControls />
+          <PublicControls hideThemeToggle={hideThemeToggle} />
           {children}
         </div>
       </div>

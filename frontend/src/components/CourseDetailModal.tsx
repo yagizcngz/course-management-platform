@@ -9,11 +9,16 @@ import {
   Upload,
   Link2,
   MoreVertical,
+  ListOrdered,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
+import { useLenis } from "lenis/react";
+import { authHeaders } from "@/lib/auth";
+
+type SyllabusLesson = { id: number; title: string; description?: string | null; order: number };
 
 import {
   API_BASE,
@@ -22,6 +27,7 @@ import {
   getCourseEnrollments,
   getTeacherFullName,
   getTeachersInBranch,
+  getTeacherBranches,
   type CourseData,
   type EnrollmentDto,
   type TeacherLiteDto,
@@ -207,19 +213,58 @@ export function CourseDetailModal({
     }
   };
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  // freeze the page behind the dialog: Lenis (landing page) would otherwise keep
+  // consuming wheel/touch events and move the background instead of the dialog
+  const lenis = useLenis();
+  useEffect(() => {
+    lenis?.stop();
+    const html = document.documentElement;
+    const prev = html.style.overflow;
+    html.style.overflow = "hidden";
+    return () => {
+      html.style.overflow = prev;
+      lenis?.start();
+    };
+  }, [lenis]);
+
+  // public syllabus: lesson titles are visible to everyone, video links only to students
+  const [lessons, setLessons] = useState<SyllabusLesson[] | null>(null);
+  useEffect(() => {
+    if (courseId == null) return;
+    let alive = true;
+    setLessons(null);
+    fetch(`${API_BASE}/api/courses/${courseId}/lessons`, { headers: authHeaders() })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => alive && setLessons(Array.isArray(d?.lessons) ? d.lessons : []))
+      .catch(() => alive && setLessons([]));
+    return () => {
+      alive = false;
+    };
+  }, [courseId]);
+
   const courseEnrollments = getCourseEnrollments(course, enrollments);
 
   // Eğitmen profili (fotoğraf + bio): önce TeacherId ile kesin eşleşme deneniyor.
   // TeacherId'si olmayan eski kurslar için isimle eşleştirme geriye dönük uyumluluk
   // amacıyla hâlâ deneniyor, ama artık ikincil (fallback) yöntem.
+  const profileOf = (m: TeacherLiteDto) => ({
+    photoUrl: m.profilePictureUrl || m.ProfilePictureUrl || "",
+    bio: m.aboutMe || m.AboutMe || "",
+    branches: getTeacherBranches(m),
+    // the teacher's other courses; only the public endpoint returns them
+    courses: (m.courses ?? []).filter((c) => String(c.id) !== String(courseId)),
+  });
   const instructorProfile = (() => {
     if (teacherId !== undefined && teacherId !== null && teacherId !== "") {
       const match = teachers.find((t) => String(t.id ?? t.Id) === String(teacherId));
       if (match) {
-        return {
-          photoUrl: match.profilePictureUrl || match.ProfilePictureUrl || "",
-          bio: match.aboutMe || match.AboutMe || "",
-        };
+        return profileOf(match);
       }
     }
 
@@ -227,10 +272,7 @@ export function CourseDetailModal({
     if (!target) return null;
     const nameMatch = teachers.find((t) => getTeacherFullName(t).trim().toLowerCase() === target);
     if (!nameMatch) return null;
-    return {
-      photoUrl: nameMatch.profilePictureUrl || nameMatch.ProfilePictureUrl || "",
-      bio: nameMatch.aboutMe || nameMatch.AboutMe || "",
-    };
+    return profileOf(nameMatch);
   })();
 
   const instructorInitials =
@@ -420,14 +462,22 @@ export function CourseDetailModal({
 
   return (
     <div
+      data-lenis-prevent
       onClick={onClose}
       className="fixed inset-0 z-200 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
     >
       <div
+        data-lenis-prevent
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="course-modal-title"
         onClick={(e) => e.stopPropagation()}
-        className="bg-card border border-border rounded-2xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 duration-200"
+        className="bg-card border border-border rounded-2xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto overscroll-contain relative animate-in zoom-in-95 duration-200"
       >
         <button
+          type="button"
+          autoFocus
+          aria-label={t("common.close", "Kapat")}
           onClick={onClose}
           className="absolute top-4 right-4 z-10 bg-background/80 backdrop-blur-sm rounded-full p-1.5 text-foreground hover:bg-background transition-colors"
         >
@@ -446,7 +496,9 @@ export function CourseDetailModal({
             <span className="text-[10px] font-mono uppercase tracking-widest opacity-90">
               {category}
             </span>
-            <h2 className="text-2xl font-bold leading-tight">{title}</h2>
+            <h2 id="course-modal-title" className="text-2xl font-bold leading-tight">
+              {title}
+            </h2>
           </div>
         </div>
 
@@ -459,12 +511,13 @@ export function CourseDetailModal({
               {canViewParticipants ? (
                 <button
                   type="button"
+                  disabled={courseEnrollments.length === 0}
                   onClick={() =>
                     document
                       .getElementById("participants-section")
                       ?.scrollIntoView({ behavior: "smooth" })
                   }
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-background text-xs font-bold hover:bg-foreground/5 cursor-pointer transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-background text-xs font-bold hover:bg-foreground/5 cursor-pointer disabled:cursor-default transition-colors"
                 >
                   <Users className="size-3.5" />
                   {capacity
@@ -477,12 +530,15 @@ export function CourseDetailModal({
               ) : (
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-background text-xs font-bold">
                   <Users className="size-3.5" />
-                  {capacity
-                    ? t("courseModal.capacityFull", {
-                        enrolled: courseEnrollments.length,
-                        capacity,
-                      })
-                    : t("courseModal.capacityRegistered", { enrolled: courseEnrollments.length })}
+                  {/* guests get no enrollment list, so a count would always read 0 */}
+                  {!currentUserRole && capacity
+                    ? t("courseModal.capacityOnly", { capacity })
+                    : capacity
+                      ? t("courseModal.capacityFull", {
+                          enrolled: courseEnrollments.length,
+                          capacity,
+                        })
+                      : t("courseModal.capacityRegistered", { enrolled: courseEnrollments.length })}
                 </div>
               )}
             </div>
@@ -790,10 +846,49 @@ export function CourseDetailModal({
 
               <div>
                 <h3 className="text-sm font-bold text-foreground/80 mb-3 flex items-center gap-2">
+                  <ListOrdered className="size-4" />
+                  {t("courseModal.syllabus")}
+                  {lessons && lessons.length > 0 && (
+                    <span className="ml-auto font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                      {t("courseModal.lessonCount", { count: lessons.length })}
+                    </span>
+                  )}
+                </h3>
+                {lessons === null ? (
+                  <div className="space-y-2" aria-busy="true">
+                    {[0, 1, 2].map((i) => (
+                      <div key={i} className="h-12 animate-pulse rounded-lg bg-muted" />
+                    ))}
+                  </div>
+                ) : lessons.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">{t("lessons.empty")}</p>
+                ) : (
+                  <ol className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-background">
+                    {lessons.map((l, i) => (
+                      <li key={l.id} className="flex gap-4 px-4 py-3">
+                        <span className="pt-0.5 font-mono text-xs tabular-nums text-muted-foreground">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground">{l.title}</p>
+                          {l.description && (
+                            <p className="mt-0.5 text-sm leading-6 text-muted-foreground">
+                              {l.description}
+                            </p>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </div>
+
+              <div>
+                <h3 className="text-sm font-bold text-foreground/80 mb-3 flex items-center gap-2">
                   <User className="size-4" />
                   {t("courseModal.instructorProfile")}
                 </h3>
-                <div className="flex items-center gap-4 bg-background border border-border rounded-xl p-4">
+                <div className="flex items-start gap-4 bg-background border border-border rounded-xl p-4">
                   {instructorProfile?.photoUrl ? (
                     <img
                       src={resolveImageSrc(instructorProfile.photoUrl)}
@@ -807,12 +902,39 @@ export function CourseDetailModal({
                   )}
                   <div className="min-w-0">
                     <p className="font-bold">{instructor}</p>
-                    <p className="text-[11px] text-muted-foreground uppercase tracking-widest mb-1">
-                      {t("courseModal.instructorRole")}
+                    <p className="text-[11px] text-muted-foreground uppercase tracking-widest mb-2">
+                      {instructorProfile?.branches.length
+                        ? instructorProfile.branches
+                            .map((b) =>
+                              i18n.exists(`dynamic.categories.${b}`)
+                                ? t(`dynamic.categories.${b}`)
+                                : b,
+                            )
+                            .join(" · ")
+                        : t("courseModal.instructorRole")}
                     </p>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
+                    <p className="text-sm text-muted-foreground leading-6 whitespace-pre-line">
                       {instructorProfile?.bio || t("courseModal.noInstructorBio")}
                     </p>
+                    {!!instructorProfile?.courses.length && (
+                      <div className="mt-3 border-t border-border pt-3">
+                        <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-1.5">
+                          {t("courseModal.otherCourses")}
+                        </p>
+                        <ul className="flex flex-wrap gap-1.5">
+                          {instructorProfile.courses.map((c) => (
+                            <li
+                              key={c.id}
+                              className="rounded-full border border-border px-2.5 py-0.5 text-xs text-foreground"
+                            >
+                              {i18n.exists(`dynamic.courses.${c.title}`)
+                                ? t(`dynamic.courses.${c.title}`)
+                                : c.title}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

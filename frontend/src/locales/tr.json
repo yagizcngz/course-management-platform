@@ -1,6 +1,9 @@
 {
   "translation": {
-    "header": { "language": "Dili değiştir", "toggleTheme": "Koyu modu aç/kapat" },
+    "header": {
+      "language": "Dili değiştir",
+      "toggleTheme": "Koyu modu aç/kapat"
+    },
     "searchPlaceholder": "Sistemde ara...",
     "sidebar": {
       "openMenu": "Menüyü aç",
@@ -145,7 +148,8 @@
       "emailSentSuccess": "Doğrulama kodu e-postanıza gönderildi.",
       "codeSendError": "Kod gönderilirken bir hata oluştu!",
       "registerError": "Kayıt olurken bir hata oluştu!",
-      "serverError": "Sunucuya ulaşılamıyor."
+      "serverError": "Sunucuya ulaşılamıyor.",
+      "changeEmail": "E-postayı değiştir"
     },
     "dashboard": {
       "alerts": {
@@ -181,7 +185,8 @@
       "newAnnouncement": "Yeni Duyuru",
       "announcementTitle": "Başlık",
       "announcementContent": "İçerik",
-      "create": "Oluştur"
+      "create": "Oluştur",
+      "byCategory": "Kategorilere göre"
     },
     "profile": {
       "breadcrumb": "/ profil / benim",
@@ -231,19 +236,29 @@
         "Spor": "Spor",
         "Tasarım": "Tasarım",
         "Genel": "Genel",
-        "Matematik": "Matematik"
+        "Matematik": "Matematik",
+        "Coğrafya": "Coğrafya",
+        "Veri Bilimi & Yapay Zeka": "Veri Bilimi & Yapay Zeka",
+        "Ekonomi & Finans": "Ekonomi & Finans",
+        "Edebiyat & Felsefe": "Edebiyat & Felsefe",
+        "Fotoğrafçılık & Sinema": "Fotoğrafçılık & Sinema"
       },
       "categoryDescriptions": {
-        "Yazılım": "Yazılım ve Programlama Eğitimleri",
-        "Sosyal Bilimler": "Tarih, Coğrafya ve Sosyal Bilimler Eğitimleri",
-        "Fen Bilimleri": "Fizik, Kimya, Biyoloji ve Fen Eğitimleri",
-        "Yabancı Dil": "İngilizce ve Diğer Diller",
-        "Sanat": "Müzik, Resim ve Görsel Sanatlar",
-        "Müzik": "Enstrüman ve Vokal Eğitimleri",
-        "Spor": "Beden Eğitimi ve Spor Dersleri",
-        "Tasarım": "Grafik Tasarım ve UI/UX Eğitimleri",
-        "Genel": "Genel Kültür ve Diğer Konular",
-        "Matematik": "Temel ve İleri Seviye Matematik Eğitimleri"
+        "Yazılım": "Programlama dilleri, web ve backend geliştirme, veri yapıları ve algoritmalar. Sıfırdan başlayanlardan profesyonel geliştiricilere kadar, proje odaklı ve uygulamalı yazılım eğitimleri.",
+        "Sosyal Bilimler": "Tarih, Cumhuriyet tarihi ve toplum bilimleri. Olayları kaynaklarıyla, neden-sonuç ilişkisi içinde okuyan; eleştirel düşünmeyi ve yorum gücünü geliştiren eğitimler.",
+        "Fen Bilimleri": "Fizik, kimya, biyoloji ve astronomi. Deney mantığı, gözlem ve modelleme ile doğa olaylarını anlamayı amaçlayan, lise ve üniversite hazırlık düzeyinde fen eğitimleri.",
+        "Yabancı Dil": "İngilizce ve Almanca başta olmak üzere A1'den B2'ye seviyeli dil eğitimleri. Dinleme, konuşma, okuma ve yazma becerilerini günlük hayat ve iş senaryolarıyla birlikte geliştirir.",
+        "Sanat": "Karakalem, desen, renk kuramı ve sanat tarihi. Gözlem yeteneğini ve el becerisini geliştiren, sanat eserlerini dönem ve bağlamıyla okumayı öğreten atölye dersleri.",
+        "Müzik": "Piyano, gitar ve temel müzik teorisi. Nota okumadan ritim ve armoniye, ilk parçadan sahne performansına kadar seviyeli enstrüman eğitimleri.",
+        "Spor": "Beden eğitimi, fonksiyonel antrenman ve sağlıklı yaşam. Doğru teknik, sakatlıktan korunma ve sürdürülebilir bir antrenman alışkanlığı kazandıran programlar.",
+        "Tasarım": "UI/UX, grafik tasarım ve tipografi. Kullanıcı araştırmasından prototiplemeye, görsel hiyerarşiden marka kimliğine kadar dijital ve basılı ürünler için tasarım eğitimleri.",
+        "Genel": "Etkili çalışma teknikleri, zaman yönetimi ve genel kültür. Her alandaki öğrenmeyi destekleyen, branşlar arası beceri eğitimleri.",
+        "Matematik": "Temel matematikten analiz, geometri ve ayrık matematiğe uzanan konular. Kavramı önce sezgiyle, sonra ispat ve bol soru çözümüyle pekiştiren, sınavlara ve mühendisliğe hazırlayan dersler.",
+        "Coğrafya": "Fiziki coğrafya, jeomorfoloji, iklim bilgisi, Türkiye coğrafyası, harita okuma ve Coğrafi Bilgi Sistemleri (CBS). Yeryüzünü şekillendiren süreçleri ve mekânsal düşünmeyi öğreten dersler.",
+        "Veri Bilimi & Yapay Zeka": "Veri analizi, istatistiksel modelleme, makine öğrenmesi ve derin öğrenme. Python ile veriyi temizlemekten model kurup sonuçlarını dürüstçe yorumlamaya kadar uygulamalı veri bilimi eğitimleri.",
+        "Ekonomi & Finans": "Mikro ve makroekonomi, para politikası, muhasebe ve kişisel finans. Piyasaları, finansal tabloları ve ekonomik haberleri bilinçli okumayı öğreten dersler.",
+        "Edebiyat & Felsefe": "Türk ve dünya edebiyatı, felsefenin büyük soruları, mantık ve eleştirel düşünme. Metni dikkatle okumayı, argüman kurmayı ve kendi yorumunu yazmayı öğreten dersler.",
+        "Fotoğrafçılık & Sinema": "Dijital fotoğrafçılık, sinema dili, film analizi ve kısa film yapımı. Işığı, kadrajı ve kurguyu anlayarak görüntüyle hikâye anlatmayı öğreten atölyeler."
       },
       "courses": {
         "İleri Seviye C# ve .NET API": "İleri Seviye C# ve .NET API",
@@ -261,15 +276,81 @@
         "Algoritmalar": "Algoritmalar",
         "Java": "Java",
         "Kimya": "Kimya",
-        "Beden Eğitimi": "Beden Eğitimi"
+        "Beden Eğitimi": "Beden Eğitimi",
+        "React ile Modern Web Geliştirme": "React ile Modern Web Geliştirme",
+        "Astronomiye Giriş": "Astronomiye Giriş",
+        "Fiziki Coğrafya": "Fiziki Coğrafya",
+        "Jeomorfoloji": "Jeomorfoloji",
+        "Türkiye Coğrafyası": "Türkiye Coğrafyası",
+        "Harita Bilgisi ve CBS": "Harita Bilgisi ve CBS",
+        "Cumhuriyet Tarihi": "Cumhuriyet Tarihi",
+        "Almanca A1": "Almanca A1",
+        "UI/UX Tasarımın Temelleri": "UI/UX Tasarımın Temelleri",
+        "Grafik Tasarım ve Tipografi": "Grafik Tasarım ve Tipografi",
+        "Karakalem ve Desen": "Karakalem ve Desen",
+        "Sanat Tarihine Giriş": "Sanat Tarihine Giriş",
+        "Gitar Eğitimi": "Gitar Eğitimi",
+        "Fonksiyonel Antrenman": "Fonksiyonel Antrenman",
+        "Etkili Çalışma Teknikleri": "Etkili Çalışma Teknikleri",
+        "Topluluk Önünde Konuşma": "Topluluk Önünde Konuşma",
+        "Temel Matematik": "Temel Matematik",
+        "Kalkülüs ve Analiz": "Kalkülüs ve Analiz",
+        "Lineer Cebir": "Lineer Cebir",
+        "Olasılık ve İstatistik": "Olasılık ve İstatistik",
+        "Python": "Python",
+        "SQL ve Veritabanı Tasarımı": "SQL ve Veritabanı Tasarımı",
+        "Python ile Veri Analizi": "Python ile Veri Analizi",
+        "Makine Öğrenmesine Giriş": "Makine Öğrenmesine Giriş",
+        "Derin Öğrenme ve Sinir Ağları": "Derin Öğrenme ve Sinir Ağları",
+        "Veri Görselleştirme ve Hikâye Anlatımı": "Veri Görselleştirme ve Hikâye Anlatımı",
+        "Mikroekonomiye Giriş": "Mikroekonomiye Giriş",
+        "Makroekonomi ve Para Politikası": "Makroekonomi ve Para Politikası",
+        "Kişisel Finans ve Yatırım": "Kişisel Finans ve Yatırım",
+        "Muhasebenin Temelleri": "Muhasebenin Temelleri",
+        "Türk Edebiyatına Giriş": "Türk Edebiyatına Giriş",
+        "Felsefeye Giriş": "Felsefeye Giriş",
+        "Mantık ve Eleştirel Düşünme": "Mantık ve Eleştirel Düşünme",
+        "Dijital Fotoğrafçılığın Temelleri": "Dijital Fotoğrafçılığın Temelleri",
+        "Sinema Dili ve Film Analizi": "Sinema Dili ve Film Analizi",
+        "Kısa Film Yapımı": "Kısa Film Yapımı",
+        "Sosyolojiye Giriş": "Sosyolojiye Giriş",
+        "İspanyolca A1": "İspanyolca A1",
+        "Müzik Teorisi ve Kulak Eğitimi": "Müzik Teorisi ve Kulak Eğitimi",
+        "Suluboya Atölyesi": "Suluboya Atölyesi",
+        "Yoga ve Mobilite": "Yoga ve Mobilite"
       },
       "descriptions": {
-        "İleri Seviye C# ve .NET API": "İleri Seviye C# ve .NET API",
-        "Coğrafya": "Coğrafya",
-        "Biyoloji": "Biyoloji",
-        "Matematik Geometri": "Matematik Geometri",
-        "İngilizce A1-A2": "İngilizce A1-A2",
-        "Piyano Eğitimi": "Piyano Eğitimi"
+        "İleri Seviye C# ve .NET API": "C#'ın ileri özellikleri ve ASP.NET Core ile test edilmiş, belgelenmiş REST API geliştirme.",
+        "Java": "Java ile nesne yönelimli programlama: sınıflar, kalıtım, koleksiyonlar ve Streams.",
+        "Veri Yapıları": "Diziler, listeler, ağaçlar, hash tabloları ve graflar; maliyetleriyle birlikte.",
+        "Algoritmalar": "Sıralama, böl ve yönet, dinamik programlama ve graf algoritmalarıyla sistematik problem çözme.",
+        "React ile Modern Web Geliştirme": "React 19 ve TypeScript ile hızlı, erişilebilir arayüzler; bitirme projesiyle.",
+        "Matematik": "Sayılar, denklemler, fonksiyonlar ve logaritma; sınav hazırlığı için sağlam temel.",
+        "Matematik Geometri": "Üçgenlerden çembere, katı cisimlerden analitik geometriye kapsamlı geometri.",
+        "Ayrık Matematik": "Mantık, ispat, kombinatorik ve graf teorisi; bilgisayar biliminin matematiksel temeli.",
+        "Fizik": "Mekanik, enerji, elektrik ve optik; formül ezberi yerine model kurarak.",
+        "Kimya": "Atomdan tepkimelere, asit-bazdan organik kimyaya temel kimya.",
+        "Biyoloji": "Hücreden ekosisteme: kalıtım, insan fizyolojisi ve ekoloji.",
+        "Astronomiye Giriş": "Takımyıldızlar, Güneş Sistemi, yıldızların yaşamı ve gözlem pratiği.",
+        "Fiziki Coğrafya": "Dünya'nın hareketleri, iklim, su döngüsü, toprak ve bitki örtüsü.",
+        "Jeomorfoloji": "İç ve dış kuvvetlerle oluşan yer şekilleri; Türkiye'den arazi örnekleriyle.",
+        "Türkiye Coğrafyası": "Türkiye'nin konumu, yer şekilleri, iklimi, nüfusu ve ekonomisi; bölge bölge.",
+        "Harita Bilgisi ve CBS": "Ölçek, projeksiyon, izohips okuma ve QGIS ile mekânsal analiz.",
+        "Coğrafya": "Fiziki, beşerî ve ekonomik coğrafyanın temel kavramlarına genel bir giriş.",
+        "Tarih": "İlk uygarlıklardan Osmanlı'ya ve yakın çağa, kaynaklarla okunan tarih.",
+        "Cumhuriyet Tarihi": "Millî Mücadele'den çok partili hayata Türkiye Cumhuriyeti'nin kuruluşu ve gelişimi.",
+        "İngilizce A1-A2": "Sıfırdan başlayanlar için iletişim odaklı İngilizce.",
+        "İngilizce": "B1-B2 hedefleyenler için akıcı konuşma, okuma ve yazma.",
+        "Almanca A1": "Telaffuz, artikeller ve günlük kalıplarla Goethe A1'e hazırlık.",
+        "UI/UX Tasarımın Temelleri": "Kullanıcı araştırmasından Figma prototipine uçtan uca ürün tasarımı.",
+        "Grafik Tasarım ve Tipografi": "Kompozisyon, renk ve tipografi; marka kimliği projesiyle.",
+        "Karakalem ve Desen": "Oran, perspektif, ışık-gölge ve figür çizimi.",
+        "Sanat Tarihine Giriş": "Mağara resimlerinden çağdaş sanata, eserleri bağlamıyla okumak.",
+        "Piyano Eğitimi": "Nota okumadan iki elle parça çalmaya, her seviyeye piyano.",
+        "Gitar Eğitimi": "Akorlar, ritim kalıpları, tab okuma ve basit solo.",
+        "Beden Eğitimi": "Isınma, temel motor beceriler, takım sporları ve sağlıklı yaşam.",
+        "Fonksiyonel Antrenman": "Temel hareket kalıpları ve kendi seviyenize göre haftalık program.",
+        "Etkili Çalışma Teknikleri": "Aralıklı tekrar, kendini sınama, zaman yönetimi ve sınav kaygısı."
       }
     },
     "courseModal": {
@@ -325,7 +406,12 @@
       },
       "studentNumber": "Öğrenci No",
       "enrollmentDate": "Kayıt Tarihi",
-      "teachCourse": "Ders Ver"
+      "teachCourse": "Ders Ver",
+      "capacityOnly": "{{capacity}} kişilik kontenjan",
+      "otherCourses": "Eğitmenin diğer kursları",
+      "syllabus": "Müfredat",
+      "lessonCount_one": "{{count}} ders",
+      "lessonCount_other": "{{count}} ders"
     },
     "students": {
       "breadcrumb": "/ öğrenciler",
@@ -508,7 +594,14 @@
       "noTaughtCourses": "Henüz verdiğiniz bir kurs bulunmuyor.",
       "myTeachingRequests": "Ders Verme İsteklerim",
       "noTeachingRequests": "Ders verme isteğiniz bulunmuyor.",
-      "free": "Ücretsiz"
+      "free": "Ücretsiz",
+      "banner": {
+        "map": "Pafta — zirveler bu alandaki kurslar",
+        "sky": "Yörünge — her gezegen bir kurs",
+        "field": "Veri alanı — sütun yüksekliği fiyat",
+        "book": "Katalog defteri",
+        "hint": "Sahnedeki bir kursa tıklayarak açın"
+      }
     },
     "enrollments": {
       "breadcrumb": "/ kayıtlar",
@@ -664,31 +757,70 @@
       "step3Title": "Kendi hızında öğren",
       "step3Desc": "Korumalı video derslerini istediğin zaman izle, kaldığın yerden devam et.",
       "categoriesAria": "Kurs kategorileri",
-      "heroTitle1": "Geleceğini Şekillendirmeye",
-      "heroTitle2": "Bugün Başla",
-      "heroSubtitle": "Yüzlerce nitelikli kurs, alanında uzman eğitmenler ve sana özel öğrenme araçlarıyla potansiyelini keşfet. Sınırları aş, hayallerine ulaş.",
+      "heroTitle1": "Bir konu seç,",
+      "heroTitle2": "ustasından öğren.",
+      "heroSubtitle": "Alanında çalışan eğitmenlerin hazırladığı video dersler. Cüzdanına bakiye yükle, kursu tek adımda al; beğenmezsen iade et.",
       "searchPlaceholder": "Hangi alanda kendini geliştirmek istersin?",
       "searchButton": "Ara",
       "searching": "Aranıyor...",
-      "popularCourses": "En Popüler Kurslar",
-      "popularCoursesDesc": "Öğrencilerimiz tarafından en çok ilgi gören ve yüksek puan alan popüler kurslarımızı keşfedin.",
+      "popularCourses": "En çok seçilenler",
+      "popularCoursesDesc": "Şu an en çok öğrencinin kayıtlı olduğu kurslar.",
       "viewAllCourses": "Tüm Kursları Gör",
-      "searchResults": "Arama Sonuçları",
+      "searchResults": "Arama:",
       "clearSearch": "Aramayı Temizle",
-      "ctaTitle": "Öğrenme Yolculuğuna Hemen Başla",
-      "ctaDesc": "Bugün platformumuza katıl, hayallerindeki kariyere giden yolda ilk adımı at. Ücretsiz kayıt olabilir ve dilediğin kursu seçebilirsin.",
-      "ctaButton": "Hemen Ücretsiz Kayıt Ol",
+      "ctaTitle": "İlk dersin bir kayıt uzaklıkta.",
+      "ctaDesc": "Kayıt ücretsiz. Kursları incelemek için hesap gerekmez; satın almak için cüzdanına bakiye yüklemen yeterli.",
+      "ctaButton": "Ücretsiz kayıt ol",
       "footerTitle": "E-Kurs Platformu",
-      "footerDesc": "E-Kurs Tüm Hakları Saklıdır.",
+      "footerDesc": "E-Kurs. Tüm hakları saklıdır.",
       "instructor": "Eğitmen",
       "review": "İncele",
       "stats": {
-        "students": "Kayıtlı Öğrenci",
-        "courses": "Aktif Kurs",
-        "teachers": "Uzman Eğitmen"
+        "students": "Kayıtlı öğrenci",
+        "courses": "Aktif kurs",
+        "teachers": "Eğitmen"
       },
       "exploreNew": "Yeni kurslar keşfederek öğrenmeye başlayın.",
-      "exploreCourses": "Kursları İncele"
+      "exploreCourses": "Kursları İncele",
+      "noResults": "“{{query}}” için kurs bulunamadı. Daha kısa bir kelime dene.",
+      "searchFailed": "Arama yapılamadı. Bağlantını kontrol edip tekrar dene.",
+      "indexTitle": "Kategoriler",
+      "matchCount": "{{count}} kurs eşleşti",
+      "noMatch": "Eşleşen kurs yok",
+      "catalogCount": "Katalogda {{count}} kurs",
+      "removeCategory": "{{name}} filtresini kaldır",
+      "allCourses": "Tüm kurslar",
+      "showPopular": "En çok seçilenlere dön",
+      "noCourses": "Şu an gösterilecek kurs yok.",
+      "peakAria": "{{name}}, {{count}} kurs — bu kategoriye göre filtrele",
+      "contents": "İçindekiler",
+      "courseCount": "{{count}} kurs",
+      "prevCourse": "Önceki kurs",
+      "nextCourse": "Sonraki kurs",
+      "openCourse": "Kursu incele",
+      "bookCatalog": "Katalog",
+      "fieldLegend": "Her sütun bir kurs, yüksekliği fiyatı ({{min}}–{{max}}). Üzerine gel, tıkla.",
+      "stepsLabel": "adım",
+      "colCourse": "Kurs",
+      "colCategory": "Kategori",
+      "colPrice": "Fiyat",
+      "sheet": "Pafta",
+      "legend": "Lejant",
+      "legendPeak": "Zirve: kategori, yükseklik = kurs sayısı",
+      "legendMatch": "Altın eğri: arama eşleşmesi",
+      "scale": "1:25 000",
+      "route": "Güzergâh",
+      "waypoint": "Durak",
+      "resultsTitle": "Sonuçlar",
+      "categoriesTitle": "Kategoriler",
+      "categoriesDesc": "Her alanın neyi kapsadığını, kaç kurs ve eğitmen barındırdığını görün; bir kategori seçtiğinizde katalog o alana daralır.",
+      "teachersTitle": "Eğitmenlerimiz",
+      "teachersDesc": "Alanında deneyimli öğretmenler ve verdikleri kurslar. Bir kursun adına tıklayarak ayrıntısını açabilirsiniz.",
+      "teacherCourses": "Verdiği kurslar",
+      "teacherOf": "{{branch}} eğitmeni",
+      "teacherCount": "{{count}} eğitmen",
+      "showAllTeachers": "{{count}} eğitmenin tümünü göster",
+      "showFewerTeachers": "Daha az göster"
     },
     "help": {
       "title": "Yardım",
@@ -703,7 +835,7 @@
         "q2": "Öğretmen olmak için başvuru sürecim nedir?",
         "a2": "Öğretmen olarak kayıt olduğunuzda, yetkinliklerinize uygun branşları seçerek admin onayına sunulursunuz.",
         "q3": "Şifremi unuttum, ne yapmalıyım?",
-        "a3": "Giriş ekranındaki 'Şifremi Unuttum' bağlantısına tıklayarak kayıtlı e-posta adresinize sıfırlama bağlantısı gönderebilirsiniz.",
+        "a3": "Şifre sıfırlama henüz otomatik değil. Giriş yapabiliyorsan Ayarlar > Hesap bölümünden şifreni değiştirebilirsin; giriş yapamıyorsan platform yöneticisiyle iletişime geç, hesabını doğrulayıp yeni şifre tanımlasın.",
         "q4": "Sertifika alabiliyor muyum?",
         "a4": "Evet, kursları %100 başarıyla tamamladığınızda profilinize tanımlanmış dijital sertifikanızı alabilirsiniz."
       },
@@ -734,7 +866,8 @@
     "common": {
       "loading": "Yükleniyor...",
       "cancel": "Vazgeç",
-      "confirm": "Onayla"
+      "confirm": "Onayla",
+      "close": "Kapat"
     },
     "wallet": {
       "title": "Cüzdan",
@@ -794,6 +927,73 @@
       "refundBody": "{{price}} cüzdanınıza iade edilecek ve \"{{course}}\" kursuna erişiminiz kapanacak.",
       "refundSuccess": "Cüzdanınıza iade edildi.",
       "refundFailed": "İade yapılamadı."
+    },
+    "publicNav": {
+      "label": "Ana menü",
+      "courses": "Kurslar",
+      "categories": "Kategoriler",
+      "teachers": "Eğitmenler",
+      "about": "Hakkımızda"
+    },
+    "footer": {
+      "tagline": "İşini yapan eğitmenlerden video kurslar. Satın almadan önce müfredatın tamamını okuyun, cüzdanınızdan ödeyin, 7 gün içinde iade alın.",
+      "explore": "Keşfet",
+      "platform": "Platform",
+      "account": "Hesap",
+      "guarantee": "İade güvencesi",
+      "faculty": "Eğitmen kadromuz",
+      "colophon": "Meraklı öğrenciler için"
+    },
+    "about": {
+      "eyebrow": "E-Kurs hakkında",
+      "title": "Öğrenmek, *işini* yapandan.",
+      "mission": "E-Kurs tek bir fikir üzerine kurulu bir kurs platformu: bir konuyu en iyi, onu her gün uygulayan biri öğretir. Eğitmenlerimiz günlük işlerini derslerine taşıyan mühendisler, araştırmacılar, sanatçılar ve öğretmenler.",
+      "mission2": "Her kurs, müfredatı herkese açık kısa video derslerden oluşur; böylece tek kuruş harcamadan neyi öğreneceğinizi tam olarak bilirsiniz.",
+      "disciplines": "Disiplin",
+      "approachTitle": "Nasıl *öğretiyoruz*",
+      "approachDesc": "Platformdaki her kursu dört ilke şekillendirir.",
+      "principles": {
+        "practice": {
+          "title": "Önce uygulayıcılar",
+          "desc": "Eğitmenler yaptıkları işten anlatır: gerçek projeler, gerçek veriler, gerçek saha notları. Her kavram, çözdüğü problemle birlikte gelir."
+        },
+        "syllabus": {
+          "title": "Açık müfredat",
+          "desc": "Her kursun ders listesinin tamamı herkese açık. Kursları karşılaştırın, seviyeyi kontrol edin, kaydolmadan önce karar verin."
+        },
+        "pace": {
+          "title": "Kendi hızınızda",
+          "desc": "Dersler korumalı videolardır; kaydolduktan sonra istediğiniz zaman, istediğiniz kadar izleyebilirsiniz."
+        },
+        "support": {
+          "title": "Arkasında insanlar var",
+          "desc": "Kurs duyuruları sizi güncel tutar; yardım masası ödeme, erişim ve aklınıza takılan her soruyu yanıtlar."
+        }
+      },
+      "guaranteeTitle": "Cüzdan ve iade güvencesi",
+      "guaranteeDesc": "Bir kursa ödeme yapmak onu seçmek kadar kolay olmalı; fikrinizi değiştirmek ise size hiçbir şeye mal olmamalı.",
+      "guarantee": {
+        "topUp": {
+          "title": "Bir kez yükleyin",
+          "desc": "Cüzdanınıza bakiye ekleyin. Bakiyeniz ve tüm işlemleriniz cüzdan sayfasında her zaman görünür."
+        },
+        "buy": {
+          "title": "Tek adımda satın alın",
+          "desc": "Herhangi bir kursu kendi sayfasından satın alın. Kaydınız hemen yapılır, dersler anında açılır."
+        },
+        "refund": {
+          "title": "7 gün içinde iade",
+          "desc": "Size uygun değil mi? Satın aldıktan sonraki 7 gün içinde iade isteyin; ücretin tamamı doğrudan cüzdanınıza döner."
+        }
+      },
+      "guaranteeNote": "Eğitmenler her satıştan pay alır (varsayılan %70); yani satın alımınız size ders veren kişiyi doğrudan destekler.",
+      "disciplinesTitle": "Disiplinler",
+      "disciplinesDesc": "Matematik ve yazılımdan sinema ve felsefeye, her disiplini o alanın uzmanları anlatır.",
+      "facultyTitle": "Eğitmen kadromuz",
+      "facultyDesc": "Kataloğun arkasındaki eğitmenlerden birkaçı. Her profilde eğitmenin geçmişi ve verdiği kurslar yer alır.",
+      "facultyAll": "Tüm eğitmenlerle tanışın",
+      "ctaTitle": "Bir müfredat okuyun. Hazır hissettiğinizde başlayın.",
+      "ctaBrowse": "Kurslara göz atın"
     }
   }
 }

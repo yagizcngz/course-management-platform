@@ -1,6 +1,9 @@
 {
   "translation": {
-    "header": { "language": "Change language", "toggleTheme": "Toggle dark mode" },
+    "header": {
+      "language": "Change language",
+      "toggleTheme": "Toggle dark mode"
+    },
     "searchPlaceholder": "Search in system...",
     "sidebar": {
       "openMenu": "Open menu",
@@ -145,7 +148,8 @@
       "emailSentSuccess": "Verification code sent to your email.",
       "codeSendError": "An error occurred while sending the code!",
       "registerError": "An error occurred during registration!",
-      "serverError": "Cannot connect to server."
+      "serverError": "Cannot connect to server.",
+      "changeEmail": "Change email"
     },
     "dashboard": {
       "alerts": {
@@ -181,7 +185,8 @@
       "newAnnouncement": "New Announcement",
       "announcementTitle": "Title",
       "announcementContent": "Content",
-      "create": "Create"
+      "create": "Create",
+      "byCategory": "By category"
     },
     "profile": {
       "breadcrumb": "/ profile / me",
@@ -233,19 +238,29 @@
         "Spor": "Sports",
         "Tasarım": "Design",
         "Genel": "General",
-        "Matematik": "Mathematics"
+        "Matematik": "Mathematics",
+        "Coğrafya": "Geography",
+        "Veri Bilimi & Yapay Zeka": "Data Science & AI",
+        "Ekonomi & Finans": "Economics & Finance",
+        "Edebiyat & Felsefe": "Literature & Philosophy",
+        "Fotoğrafçılık & Sinema": "Photography & Film"
       },
       "categoryDescriptions": {
-        "Yazılım": "Software and Programming Education",
-        "Sosyal Bilimler": "History, Geography and Social Sciences",
-        "Fen Bilimleri": "Physics, Chemistry, Biology and Science",
-        "Yabancı Dil": "English and Other Languages",
-        "Sanat": "Music, Painting and Visual Arts",
-        "Müzik": "Instrument and Vocal Training",
-        "Spor": "Physical Education and Sports Lessons",
-        "Tasarım": "Graphic Design and UI/UX",
-        "Genel": "General Knowledge and Other Topics",
-        "Matematik": "Basic and Advanced Mathematics"
+        "Yazılım": "Programming languages, web and backend development, data structures and algorithms. Project-based, hands-on software courses for everyone from beginners to professional developers.",
+        "Sosyal Bilimler": "History, the history of the Republic and the social sciences. Courses that read events through their sources and their causes, building critical thinking and interpretation.",
+        "Fen Bilimleri": "Physics, chemistry, biology and astronomy. Science courses at high-school and university-prep level that explain nature through experiment, observation and modelling.",
+        "Yabancı Dil": "Levelled language courses from A1 to B2, mainly English and German. Listening, speaking, reading and writing, practised through everyday and workplace situations.",
+        "Sanat": "Pencil drawing, sketching, colour theory and art history. Studio lessons that train observation and the hand, and teach you to read artworks in their period and context.",
+        "Müzik": "Piano, guitar and basic music theory. Levelled instrument lessons, from reading notes to rhythm and harmony, from your first piece to playing on stage.",
+        "Spor": "Physical education, functional training and healthy living. Programmes that teach good technique, injury prevention and a training habit you can keep.",
+        "Tasarım": "UI/UX, graphic design and typography. Design courses for digital and print, from user research and prototyping to visual hierarchy and brand identity.",
+        "Genel": "Effective study techniques, time management and general knowledge. Cross-subject skills that support learning in every field.",
+        "Matematik": "From basic maths to calculus, geometry and discrete mathematics. Lessons that build intuition first, then reinforce it with proofs and plenty of practice, preparing you for exams and engineering.",
+        "Coğrafya": "Physical geography, geomorphology, climatology, the geography of Türkiye, map reading and Geographic Information Systems (GIS). Lessons on the processes that shape the Earth and on thinking spatially.",
+        "Veri Bilimi & Yapay Zeka": "Data analysis, statistical modelling, machine learning and deep learning. Hands-on courses that take you from cleaning data in Python to building models and reading their results honestly.",
+        "Ekonomi & Finans": "Micro and macroeconomics, monetary policy, accounting and personal finance. Courses that teach you to read markets, financial statements and economic news with confidence.",
+        "Edebiyat & Felsefe": "Turkish and world literature, the big questions of philosophy, logic and critical thinking. Courses on close reading, building an argument and writing your own interpretation.",
+        "Fotoğrafçılık & Sinema": "Digital photography, film language, film analysis and short film making. Workshops on telling stories with images by understanding light, framing and editing."
       },
       "courses": {
         "İleri Seviye C# ve .NET API": "Advanced C# and .NET API",
@@ -263,15 +278,107 @@
         "Algoritmalar": "Algorithms",
         "Java": "Java",
         "Kimya": "Chemistry",
-        "Beden Eğitimi": "Physical Education"
+        "Beden Eğitimi": "Physical Education",
+        "React ile Modern Web Geliştirme": "Modern Web Development with React",
+        "Astronomiye Giriş": "Introduction to Astronomy",
+        "Fiziki Coğrafya": "Physical Geography",
+        "Jeomorfoloji": "Geomorphology",
+        "Türkiye Coğrafyası": "Geography of Türkiye",
+        "Harita Bilgisi ve CBS": "Cartography and GIS",
+        "Cumhuriyet Tarihi": "History of the Republic",
+        "Almanca A1": "German A1",
+        "UI/UX Tasarımın Temelleri": "UI/UX Design Fundamentals",
+        "Grafik Tasarım ve Tipografi": "Graphic Design and Typography",
+        "Karakalem ve Desen": "Pencil Drawing and Sketching",
+        "Sanat Tarihine Giriş": "Introduction to Art History",
+        "Gitar Eğitimi": "Guitar Lessons",
+        "Fonksiyonel Antrenman": "Functional Training",
+        "Etkili Çalışma Teknikleri": "Effective Study Techniques",
+        "Topluluk Önünde Konuşma": "Public Speaking",
+        "Temel Matematik": "Foundations of Mathematics",
+        "Kalkülüs ve Analiz": "Calculus and Analysis",
+        "Lineer Cebir": "Linear Algebra",
+        "Olasılık ve İstatistik": "Probability and Statistics",
+        "Python": "Python",
+        "SQL ve Veritabanı Tasarımı": "SQL and Database Design",
+        "Python ile Veri Analizi": "Data Analysis with Python",
+        "Makine Öğrenmesine Giriş": "Introduction to Machine Learning",
+        "Derin Öğrenme ve Sinir Ağları": "Deep Learning and Neural Networks",
+        "Veri Görselleştirme ve Hikâye Anlatımı": "Data Visualisation and Storytelling",
+        "Mikroekonomiye Giriş": "Introduction to Microeconomics",
+        "Makroekonomi ve Para Politikası": "Macroeconomics and Monetary Policy",
+        "Kişisel Finans ve Yatırım": "Personal Finance and Investing",
+        "Muhasebenin Temelleri": "Accounting Fundamentals",
+        "Türk Edebiyatına Giriş": "Introduction to Turkish Literature",
+        "Felsefeye Giriş": "Introduction to Philosophy",
+        "Mantık ve Eleştirel Düşünme": "Logic and Critical Thinking",
+        "Dijital Fotoğrafçılığın Temelleri": "Digital Photography Fundamentals",
+        "Sinema Dili ve Film Analizi": "Film Language and Analysis",
+        "Kısa Film Yapımı": "Short Film Making",
+        "Sosyolojiye Giriş": "Introduction to Sociology",
+        "İspanyolca A1": "Spanish A1",
+        "Müzik Teorisi ve Kulak Eğitimi": "Music Theory and Ear Training",
+        "Suluboya Atölyesi": "Watercolour Workshop",
+        "Yoga ve Mobilite": "Yoga and Mobility"
       },
       "descriptions": {
-        "İleri Seviye C# ve .NET API": "Learn advanced features of C# and building APIs with .NET.",
-        "Coğrafya": "Explore the physical features of the earth and its atmosphere.",
-        "Biyoloji": "Study of living organisms and their vital processes.",
-        "Matematik Geometri": "Advanced geometry and mathematical concepts.",
-        "İngilizce A1-A2": "Basic English language skills for beginners.",
-        "Piyano Eğitimi": "Piano training for all levels."
+        "İleri Seviye C# ve .NET API": "Advanced C# features and building tested, documented REST APIs with ASP.NET Core.",
+        "Java": "Object-oriented programming in Java: classes, inheritance, collections and Streams.",
+        "Veri Yapıları": "Arrays, lists, trees, hash tables and graphs, with their time and memory costs.",
+        "Algoritmalar": "Systematic problem solving with sorting, divide and conquer, dynamic programming and graph algorithms.",
+        "React ile Modern Web Geliştirme": "Fast, accessible interfaces with React 19 and TypeScript, ending in a capstone project.",
+        "Matematik": "Numbers, equations, functions and logarithms: a solid base for exam preparation.",
+        "Matematik Geometri": "Comprehensive geometry, from triangles and circles to solids and analytic geometry.",
+        "Ayrık Matematik": "Logic, proof, combinatorics and graph theory: the mathematical foundation of computer science.",
+        "Fizik": "Mechanics, energy, electricity and optics, learned by building models rather than memorising formulas.",
+        "Kimya": "Core chemistry, from atoms and reactions to acids, bases and organic chemistry.",
+        "Biyoloji": "From the cell to the ecosystem: genetics, human physiology and ecology.",
+        "Astronomiye Giriş": "Constellations, the Solar System, the lives of stars and observing practice.",
+        "Fiziki Coğrafya": "The Earth's motions, climate, the water cycle, soils and vegetation.",
+        "Jeomorfoloji": "Landforms shaped by internal and external forces, with field examples from Türkiye.",
+        "Türkiye Coğrafyası": "Türkiye's location, landforms, climate, population and economy, region by region.",
+        "Harita Bilgisi ve CBS": "Scale, projections, reading contour lines and spatial analysis with QGIS.",
+        "Coğrafya": "A general introduction to physical, human and economic geography.",
+        "Tarih": "From the first civilisations to the Ottomans and the modern age, read through the sources.",
+        "Cumhuriyet Tarihi": "The founding and growth of the Republic of Türkiye, from the War of Independence to multi-party politics.",
+        "İngilizce A1-A2": "Communication-first English for complete beginners.",
+        "İngilizce": "Fluent speaking, reading and writing for learners aiming at B1-B2.",
+        "Almanca A1": "Pronunciation, articles and everyday phrases, preparing for Goethe A1.",
+        "UI/UX Tasarımın Temelleri": "End-to-end product design, from user research to a Figma prototype.",
+        "Grafik Tasarım ve Tipografi": "Composition, colour and type, with a brand-identity project.",
+        "Karakalem ve Desen": "Proportion, perspective, light and shadow, and figure drawing.",
+        "Sanat Tarihine Giriş": "From cave paintings to contemporary art, reading works in their context.",
+        "Piyano Eğitimi": "Piano for every level, from reading notes to playing with both hands.",
+        "Gitar Eğitimi": "Chords, strumming patterns, reading tabs and simple solos.",
+        "Beden Eğitimi": "Warm-ups, basic motor skills, team sports and healthy living.",
+        "Fonksiyonel Antrenman": "Fundamental movement patterns and a weekly plan for your level.",
+        "Etkili Çalışma Teknikleri": "Spaced repetition, self-testing, time management and exam anxiety.",
+        "Topluluk Önünde Konuşma": "Manage stage fright, structure your ideas and hold an audience, with a recorded talk and feedback in every lesson.",
+        "Temel Matematik": "A solid restart in numbers, fractions, ratios, percentages and first steps in algebra, built on everyday examples.",
+        "Kalkülüs ve Analiz": "Limits, derivatives, integrals and series, built on intuition first and then on systematic technique.",
+        "Lineer Cebir": "Vectors, matrices, linear maps and eigenvalues, each with a geometric picture and real applications.",
+        "Olasılık ve İstatistik": "From counting and distributions to confidence intervals and hypothesis tests, with real data and simulations.",
+        "Python": "Learn to program with Python: variables, control flow, functions, data structures, files and a small automation project.",
+        "SQL ve Veritabanı Tasarımı": "Design relational schemas and query them with SQL: joins, grouping, window functions, indexes and transactions.",
+        "Python ile Veri Analizi": "Clean, reshape and visualise real data with NumPy, pandas and seaborn, ending in an analysis report.",
+        "Makine Öğrenmesine Giriş": "Regression, classification, trees, clustering and model evaluation with scikit-learn, maths and code side by side.",
+        "Derin Öğrenme ve Sinir Ağları": "Build neural networks from scratch, then train CNNs and Transformer models with PyTorch.",
+        "Veri Görselleştirme ve Hikâye Anlatımı": "Turn numbers into honest, persuasive charts and dashboards using perception, colour and narrative.",
+        "Mikroekonomiye Giriş": "Supply and demand, elasticity, firm decisions, market structures and market failures, with current examples.",
+        "Makroekonomi ve Para Politikası": "Growth, inflation, interest rates, central banking and exchange rates, read through current data.",
+        "Kişisel Finans ve Yatırım": "Budgeting, debt, compound interest and the logic of savings and investment products. Financial literacy, not investment advice.",
+        "Muhasebenin Temelleri": "Double-entry bookkeeping, journals, the income statement and balance sheet, and ratio analysis for a small business.",
+        "Türk Edebiyatına Giriş": "From Divan poetry to the Republican novel, the main periods of Turkish literature read through key texts.",
+        "Felsefeye Giriş": "Knowledge, mind, ethics, politics and art: philosophy's big questions through short readings and careful argument.",
+        "Mantık ve Eleştirel Düşünme": "Tell strong arguments from weak ones: propositional logic, induction, fallacies, cognitive biases and source checking.",
+        "Dijital Fotoğrafçılığın Temelleri": "Leave auto mode behind: exposure, focus, light, composition and basic editing, with a shooting assignment each week.",
+        "Sinema Dili ve Film Analizi": "Framing, camera movement, mise-en-scène, editing and sound, analysed scene by scene.",
+        "Kısa Film Yapımı": "Write, shoot, record, edit and grade your own 3 to 5 minute short film.",
+        "Sosyolojiye Giriş": "Culture, inequality, cities and migration, and how sociologists study them.",
+        "İspanyolca A1": "A communicative start in Spanish: pronunciation, ser and estar, regular verbs and everyday conversations.",
+        "Müzik Teorisi ve Kulak Eğitimi": "Notation, rhythm, intervals, scales, chords and harmony, with ear training in every lesson.",
+        "Suluboya Atölyesi": "Control water and pigment: washes, wet-on-wet, colour mixing and preserving the white of the paper.",
+        "Yoga ve Mobilite": "Flows and mobility routines for every level to undo long days at a desk, no equipment needed."
       }
     },
     "courseModal": {
@@ -327,7 +434,12 @@
         "updateFailed": "An error occurred while updating the course."
       },
       "studentNumber": "Student No",
-      "enrollmentDate": "Enrollment Date"
+      "enrollmentDate": "Enrollment Date",
+      "capacityOnly": "{{capacity}} seats",
+      "otherCourses": "Other courses by this teacher",
+      "syllabus": "Syllabus",
+      "lessonCount_one": "{{count}} lesson",
+      "lessonCount_other": "{{count}} lessons"
     },
     "students": {
       "breadcrumb": "/ students",
@@ -510,7 +622,14 @@
       "noTaughtCourses": "You haven't taught any courses yet.",
       "myTeachingRequests": "My Teaching Requests",
       "noTeachingRequests": "You don't have any teaching requests.",
-      "free": "Free"
+      "free": "Free",
+      "banner": {
+        "map": "Survey sheet — the summits are this field's courses",
+        "sky": "Orbits — each planet is a course",
+        "field": "Data field — column height is price",
+        "book": "Catalogue notebook",
+        "hint": "Click a course in the scene to open it"
+      }
     },
     "enrollments": {
       "breadcrumb": "/ enrollments",
@@ -666,33 +785,76 @@
       "step3Title": "Learn at your own pace",
       "step3Desc": "Watch protected video lessons whenever you like and pick up where you left off.",
       "categoriesAria": "Course categories",
-      "heroTitle1": "Start Shaping Your Future",
-      "heroTitle2": "Today",
-      "heroSubtitle": "Discover your potential with hundreds of qualified courses, expert instructors in their fields, and learning tools tailored just for you. Exceed your limits, reach your dreams.",
+      "heroTitle1": "Pick a subject,",
+      "heroTitle2": "learn it from someone who does it.",
+      "heroSubtitle": "Video courses made by instructors who work in their field. Top up your wallet, buy a course in one step, and get a refund if it isn't for you.",
       "searchPlaceholder": "In which field would you like to improve yourself?",
       "searchButton": "Search",
       "searching": "Searching...",
-      "popularCourses": "Most Popular Courses",
-      "popularCoursesDesc": "Discover our most popular courses that are highly rated and preferred by our students.",
+      "popularCourses": "Most chosen",
+      "popularCoursesDesc": "The courses with the most enrolled students right now.",
       "viewAllCourses": "View All Courses",
-      "searchResults": "Search Results",
+      "searchResults": "Search:",
       "clearSearch": "Clear Search",
-      "ctaTitle": "Start Your Learning Journey Now",
-      "ctaDesc": "Join our platform today, take the first step on the path to your dream career. You can sign up for free and choose any course.",
-      "ctaButton": "Register for Free Now",
+      "ctaTitle": "Your first lesson is one sign-up away.",
+      "ctaDesc": "Signing up is free. You can browse courses without an account; to buy one, top up your wallet.",
+      "ctaButton": "Sign up free",
       "footerTitle": "E-Kurs Platform",
-      "footerDesc": "E-Course All Rights Reserved.",
+      "footerDesc": "E-Kurs. All rights reserved.",
       "instructor": "Instructor",
       "review": "Review",
       "stats": {
-        "students": "Registered Students",
-        "courses": "Active Courses",
-        "teachers": "Expert Instructors"
+        "students": "Enrolled students",
+        "courses": "Active courses",
+        "teachers": "Instructors"
       },
       "exploreNew": "Start learning by discovering new courses.",
       "exploreCourses": "Explore Courses",
       "registerNow": "Register Now",
-      "returnHome": "Return Home"
+      "returnHome": "Return Home",
+      "noResults": "No courses found for “{{query}}”. Try a shorter word.",
+      "searchFailed": "Search failed. Check your connection and try again.",
+      "indexTitle": "Categories",
+      "matchCount_one": "{{count}} course matches",
+      "matchCount_other": "{{count}} courses match",
+      "noMatch": "No matching courses",
+      "catalogCount_one": "{{count}} course in the catalogue",
+      "catalogCount_other": "{{count}} courses in the catalogue",
+      "removeCategory": "Remove the {{name}} filter",
+      "allCourses": "All courses",
+      "showPopular": "Back to most popular",
+      "noCourses": "No courses to show right now.",
+      "peakAria": "{{name}}, {{count}} courses — filter by this category",
+      "contents": "Contents",
+      "courseCount_one": "{{count}} course",
+      "courseCount_other": "{{count}} courses",
+      "prevCourse": "Previous course",
+      "nextCourse": "Next course",
+      "openCourse": "View course",
+      "bookCatalog": "Catalogue",
+      "fieldLegend": "Each column is a course; its height is the price ({{min}}–{{max}}). Hover, then click.",
+      "stepsLabel": "steps",
+      "colCourse": "Course",
+      "colCategory": "Category",
+      "colPrice": "Price",
+      "sheet": "Sheet",
+      "legend": "Legend",
+      "legendPeak": "Summit: a category, height = course count",
+      "legendMatch": "Gold contour: search match",
+      "scale": "1:25 000",
+      "route": "Route",
+      "waypoint": "Waypoint",
+      "resultsTitle": "Results",
+      "categoriesTitle": "Categories",
+      "categoriesDesc": "See what each field covers and how many courses and teachers it holds; picking a category narrows the catalogue to it.",
+      "teachersTitle": "Our teachers",
+      "teachersDesc": "Experienced teachers and the courses they give. Click a course name to open its details.",
+      "teacherCourses": "Courses",
+      "teacherOf": "{{branch}} teacher",
+      "teacherCount_one": "{{count}} teacher",
+      "teacherCount_other": "{{count}} teachers",
+      "showAllTeachers": "Show all {{count}} instructors",
+      "showFewerTeachers": "Show fewer"
     },
     "help": {
       "title": "Help",
@@ -707,7 +869,7 @@
         "q2": "What is the application process to become a teacher?",
         "a2": "When you register as a teacher, you select branches that match your competencies and submit them for admin approval.",
         "q3": "I forgot my password, what should I do?",
-        "a3": "Click the 'Forgot Password' link on the login screen to send a reset link to your registered email address.",
+        "a3": "Password reset is not automatic yet. If you can sign in, change your password under Settings > Account; if you can't, contact the platform admin so they can verify your account and set a new password.",
         "q4": "Can I get a certificate?",
         "a4": "Yes, when you complete the courses with 100% success, you can receive your digital certificate added to your profile."
       },
@@ -738,7 +900,8 @@
     "common": {
       "loading": "Loading...",
       "cancel": "Cancel",
-      "confirm": "Confirm"
+      "confirm": "Confirm",
+      "close": "Close"
     },
     "wallet": {
       "title": "Wallet",
@@ -798,6 +961,73 @@
       "refundBody": "{{price}} will be returned to your wallet and you will lose access to \"{{course}}\".",
       "refundSuccess": "Refunded to your wallet.",
       "refundFailed": "Refund failed."
+    },
+    "publicNav": {
+      "label": "Main navigation",
+      "courses": "Courses",
+      "categories": "Categories",
+      "teachers": "Instructors",
+      "about": "About"
+    },
+    "footer": {
+      "tagline": "Video courses from instructors who work in their field. Read the full syllabus before you buy, pay from your wallet, and get a refund within 7 days.",
+      "explore": "Explore",
+      "platform": "Platform",
+      "account": "Account",
+      "guarantee": "Refund guarantee",
+      "faculty": "Our faculty",
+      "colophon": "Made for curious learners"
+    },
+    "about": {
+      "eyebrow": "About E-Kurs",
+      "title": "Learn it from *someone* who does it.",
+      "mission": "E-Kurs is a course platform built around one idea: the best person to teach a subject is someone who practises it. Our instructors are engineers, researchers, artists and teachers who bring their daily work into every lesson.",
+      "mission2": "Every course is a sequence of short video lessons with a public syllabus, so you know exactly what you will learn before you spend anything.",
+      "disciplines": "Disciplines",
+      "approachTitle": "How we *teach*",
+      "approachDesc": "Four principles shape every course on the platform.",
+      "principles": {
+        "practice": {
+          "title": "Practitioners first",
+          "desc": "Instructors teach from what they do: real projects, real data, real field notes. Concepts arrive with the problem they solve."
+        },
+        "syllabus": {
+          "title": "An open syllabus",
+          "desc": "Every course shows its full lesson list to everyone. Compare courses, check the level and decide before you sign up."
+        },
+        "pace": {
+          "title": "Your own pace",
+          "desc": "Lessons are protected videos you can watch whenever you like, as often as you like, once you are enrolled."
+        },
+        "support": {
+          "title": "People behind it",
+          "desc": "Course announcements keep you up to date, and the help desk answers questions about payments, access and anything else."
+        }
+      },
+      "guaranteeTitle": "Wallet & refund guarantee",
+      "guaranteeDesc": "Paying for a course should be as simple as choosing one, and changing your mind should cost nothing.",
+      "guarantee": {
+        "topUp": {
+          "title": "Top up once",
+          "desc": "Add funds to your wallet. Your balance and every transaction are always visible on the wallet page."
+        },
+        "buy": {
+          "title": "Buy in one step",
+          "desc": "Purchase any course from its page. You are enrolled at once and the lessons unlock immediately."
+        },
+        "refund": {
+          "title": "Refund within 7 days",
+          "desc": "Not the right course? Request a refund within 7 days of purchase and the full price goes straight back to your wallet."
+        }
+      },
+      "guaranteeNote": "Instructors receive a share of every sale (70% by default), so your purchase directly supports the people who teach you.",
+      "disciplinesTitle": "Disciplines",
+      "disciplinesDesc": "From mathematics and software to film and philosophy, each discipline is taught by specialists in that field.",
+      "facultyTitle": "Our faculty",
+      "facultyDesc": "A few of the instructors behind the catalogue. Every profile lists their background and the courses they teach.",
+      "facultyAll": "Meet all instructors",
+      "ctaTitle": "Read a syllabus. Start when it feels right.",
+      "ctaBrowse": "Browse courses"
     }
   }
 }
