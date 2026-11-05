@@ -79,8 +79,9 @@ namespace EdTechApi.API.Controllers
         {
             var defaults = new List<SystemSetting>
             {
-                new SystemSetting { SettingKey = "ADMIN_CODE", SettingValue = "88888", Description = "Admin Registration Code" },
-                new SystemSetting { SettingKey = "TEACHER_CODE", SettingValue = "12345", Description = "Teacher Registration Code" },
+                // kayıt kodları (ADMIN_CODE, TEACHER_CODE) bilerek tohumlanmaz: tahmin edilebilir bir kod herkese yönetici/eğitmen
+                // kaydı açar. Yönetici kendi seçtiği değeri Ayarlar sayfasından girer; boşken kodla kayıt kapalıdır.
+                new SystemSetting { SettingKey = "TEACHER_SHARE_PERCENT", SettingValue = "70", Description = "Kurs satışında eğitmen payı (yüzde)" },
                 new SystemSetting { SettingKey = "ENABLE_GUEST_HOME_FEATURED", SettingValue = "true", Description = "Misafir ana sayfasında öne çıkan kursları göster" },
                 new SystemSetting { SettingKey = "ENABLE_GUEST_HOME_POPULAR", SettingValue = "true", Description = "Misafir ana sayfasında en popüler kursları göster" },
                 new SystemSetting { SettingKey = "ENABLE_STUDENT_HOME_RECOMMENDATIONS", SettingValue = "true", Description = "Öğrenci ana sayfasında önerilen kursları göster" },
