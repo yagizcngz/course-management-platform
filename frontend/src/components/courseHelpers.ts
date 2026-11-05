@@ -156,51 +156,11 @@ export const resolveImageSrc = (url: string) =>
 export const getCourseImage = (c: CourseData, index: number) => {
   const explicit = c.imageUrl || c.ImageUrl || c.image || c.Image || c.thumbnail;
   if (explicit) return resolveImageSrc(explicit);
-
-  const titleRaw = (c.title || c.Title || "").toString();
-  const categoryRaw = (c.category || c.Category || "").toString();
-  const titleLower = (titleRaw + " " + categoryRaw).toLowerCase();
-
-  const mappingSeeds: { keywords: string[]; seed: string }[] = [
-    { keywords: ["matematik", "mat"], seed: "mathematics" },
-    { keywords: ["fizik"], seed: "physics" },
-    { keywords: ["kimya"], seed: "chemistry" },
-    { keywords: ["biyoloji", "molekul", "biyo"], seed: "biology" },
-    { keywords: ["react", "frontend", "javascript", "typescript"], seed: "programming" },
-    { keywords: ["c#", "csharp", "dotnet", "backend"], seed: "code" },
-    { keywords: ["coğrafya", "jeomorfoloji", "harita", "cbs"], seed: "geography" },
-    { keywords: ["tarih"], seed: "history" },
-    { keywords: ["sanat", "tasar", "tasarım"], seed: "art" },
-    { keywords: ["ekonomi"], seed: "economics" },
-    { keywords: ["psikoloji"], seed: "psychology" },
-    { keywords: ["spor", "yoga"], seed: "fitness" },
-  ];
-
-  for (const m of mappingSeeds) {
-    for (const kw of m.keywords) {
-      if (titleLower.includes(kw)) {
-        return `https://picsum.photos/seed/${encodeURIComponent(m.seed)}/800/450`;
-      }
-    }
-  }
-
-  const fallbackPool = [
-    "education",
-    "books",
-    "city",
-    "nature",
-    "technology",
-    "abstract",
-    "coffee",
-    "architecture",
-    "ocean",
-    "mountains",
-  ];
-  const titleSeed = titleRaw.trim()
-    ? titleRaw.trim().slice(0, 40)
-    : fallbackPool[index % fallbackPool.length];
-  const seed = encodeURIComponent(titleSeed.replace(/\s+/g, "-").toLowerCase());
-  return `https://picsum.photos/seed/${seed}/800/450`;
+  // the id keeps every course's stock photo distinct and the same on every page
+  const id = c.id ?? c.Id;
+  const title = (c.title || c.Title || "").toString().trim().toLowerCase().replace(/\s+/g, "-");
+  const seed = id != null ? `ekurs-${id}` : title.slice(0, 40) || `ekurs-index-${index}`;
+  return `https://picsum.photos/seed/${encodeURIComponent(seed)}/800/450`;
 };
 
 export const getCourseEnrollments = (course: CourseData, enrollments: EnrollmentDto[]) => {
