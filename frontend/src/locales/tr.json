@@ -285,7 +285,8 @@
         "updateFailed": "Profil güncellenirken bir hata oluştu.",
         "serverError": "Sunucuya ulaşılamıyor.",
         "photoUploadFailed": "Fotoğraf yüklenirken bir hata oluştu."
-      }
+      },
+      "photoAlt": "Profil fotoğrafı"
     },
     "dynamic": {
       "categories": {
@@ -1181,7 +1182,8 @@
       "loading": "Yükleniyor...",
       "cancel": "Vazgeç",
       "confirm": "Onayla",
-      "close": "Kapat"
+      "close": "Kapat",
+      "preview": "Önizleme"
     },
     "wallet": {
       "title": "Cüzdan",
@@ -1417,6 +1419,15 @@
         "title": "Müfredat Mimarı",
         "criteria": "Kurslarında toplam {{count}} ders yayımla."
       }
+    },
+    "errorPage": {
+      "notFoundEyebrow": "Hata · 404",
+      "notFoundTitle": "Sayfa bulunamadı",
+      "notFoundBody": "Aradığınız sayfa mevcut değil veya taşınmış olabilir.",
+      "home": "Ana sayfaya dön",
+      "crashTitle": "Bu sayfa yüklenemedi",
+      "crashBody": "Bir sorun oluştu. Sayfayı yeniden deneyebilir veya ana sayfaya dönebilirsiniz.",
+      "retry": "Tekrar dene"
     }
   }
 }

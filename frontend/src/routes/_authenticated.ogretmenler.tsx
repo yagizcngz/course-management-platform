@@ -666,7 +666,7 @@ function TeachersPage() {
                           ? editProfilePictureUrl
                           : `${API_BASE}${editProfilePictureUrl}`
                       }
-                      alt="Önizleme"
+                      alt={t("common.preview")}
                       className="size-20 rounded-full object-cover border border-border"
                     />
                   ) : (

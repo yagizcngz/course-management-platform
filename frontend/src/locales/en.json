@@ -287,7 +287,8 @@
         "updateFailed": "An error occurred while updating profile.",
         "serverError": "Cannot connect to server.",
         "photoUploadFailed": "An error occurred while uploading photo."
-      }
+      },
+      "photoAlt": "Profile photo"
     },
     "dynamic": {
       "categories": {
@@ -1264,7 +1265,8 @@
       "loading": "Loading...",
       "cancel": "Cancel",
       "confirm": "Confirm",
-      "close": "Close"
+      "close": "Close",
+      "preview": "Preview"
     },
     "wallet": {
       "title": "Wallet",
@@ -1502,6 +1504,15 @@
         "title": "Curriculum Architect",
         "criteria": "Publish {{count}} lessons across your courses."
       }
+    },
+    "errorPage": {
+      "notFoundEyebrow": "Error · 404",
+      "notFoundTitle": "Page not found",
+      "notFoundBody": "The page you are looking for does not exist or has moved.",
+      "home": "Back to home",
+      "crashTitle": "This page could not load",
+      "crashBody": "Something went wrong. You can try again or return to the home page.",
+      "retry": "Try again"
     }
   }
 }

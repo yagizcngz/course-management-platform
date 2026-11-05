@@ -1,3 +1,5 @@
+import { pillButton } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 // src/routes/__root.tsx
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -15,22 +17,18 @@ import i18n from "../i18n";
 import { Toaster } from "sonner";
 
 function NotFoundComponent() {
+  const { t } = useTranslation();
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <div className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
-          / hata / 404
+        <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-gold">
+          {t("errorPage.notFoundEyebrow")}
         </div>
-        <h1 className="mt-4 text-7xl font-bold tracking-tight">404</h1>
-        <h2 className="mt-4 text-xl font-semibold">Sayfa bulunamadı</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Aradığınız sayfa mevcut değil veya taşınmış olabilir.
-        </p>
-        <Link
-          to="/"
-          className="mt-6 inline-flex items-center justify-center rounded bg-foreground px-4 py-2 text-sm font-medium text-background hover:bg-accent transition-colors"
-        >
-          Panele dön
+        <h1 className="mt-4 font-serif text-8xl leading-none">404</h1>
+        <h2 className="mt-4 font-serif text-2xl">{t("errorPage.notFoundTitle")}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">{t("errorPage.notFoundBody")}</p>
+        <Link to="/" className={`${pillButton.primary} mt-6`}>
+          {t("errorPage.home")}
         </Link>
       </div>
     </div>
@@ -40,29 +38,25 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight">Bu sayfa yüklenemedi</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Bir sorun oluştu. Sayfayı yenilemeyi deneyebilir veya panele dönebilirsiniz.
-        </p>
+        <h1 className="font-serif text-4xl leading-tight">{t("errorPage.crashTitle")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{t("errorPage.crashBody")}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="rounded bg-foreground px-4 py-2 text-sm font-medium text-background hover:bg-accent transition-colors"
+            className={pillButton.primary}
           >
-            Tekrar dene
+            {t("errorPage.retry")}
           </button>
-          <a
-            href="/"
-            className="rounded border border-border px-4 py-2 text-sm font-medium hover:bg-foreground/5 transition-colors"
-          >
-            Panele dön
+          <a href="/" className={pillButton.outline}>
+            {t("errorPage.home")}
           </a>
         </div>
       </div>
