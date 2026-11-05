@@ -1,4 +1,4 @@
-import { readError } from "@/lib/auth";
+import { authHeaders, readError } from "@/lib/auth";
 import { initialsOf, formatDate, pillButton } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "../components/PageHeader";
@@ -98,12 +98,8 @@ function StudentsPage() {
   const fetchStudents = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("jwt_token");
       const response = await fetch(`${API_BASE}/api/students`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders(),
       });
 
       if (response.ok) {
@@ -113,9 +109,11 @@ function StudentsPage() {
         // Backend'den gelen gerçek hatayı görebilmek için ekliyoruz
         const errorText = await response.text();
         console.error(`Öğrenciler alınamadı (status ${response.status}):`, errorText);
+        showToast(t("common.loadFailed"), "error");
       }
     } catch (error) {
       console.error("Öğrenciler yüklenirken hata:", error);
+      showToast(t("common.loadFailed"), "error");
     } finally {
       setIsLoading(false);
     }
@@ -125,11 +123,8 @@ function StudentsPage() {
     fetchStudents();
 
     const fetchEnrollments = async () => {
-      const token = localStorage.getItem("jwt_token");
-      const headers = { Authorization: `Bearer ${token}` };
-
       try {
-        const res = await fetch(`${API_BASE}/api/enrollments`, { headers });
+        const res = await fetch(`${API_BASE}/api/enrollments`, { headers: authHeaders() });
         if (res.ok) {
           setDbEnrollments(await res.json());
         }
@@ -139,6 +134,7 @@ function StudentsPage() {
     };
 
     fetchEnrollments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only load; showToast/t change every render
   }, []);
 
   const currentStudentId = selectedProfileStudent?.id ?? selectedProfileStudent?.Id;
@@ -174,10 +170,7 @@ function StudentsPage() {
     if (selectedStudentIds.length === 0) return;
 
     try {
-      const token = localStorage.getItem("jwt_token");
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
+      const headers = authHeaders();
 
       const results = await Promise.all(
         selectedStudentIds.map((id) =>
@@ -223,13 +216,9 @@ function StudentsPage() {
     try {
       // Register endpoint kullanıcıyı + öğrenci profilini otomatik oluşturur
       // (RegistrationCode boş = "User" rolü = otomatik Student kaydı)
-      const token = localStorage.getItem("jwt_token");
       const res = await fetch(`${API_BASE}/api/auth/register`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
           firstName: newFirstName.trim(),
           lastName: newLastName.trim(),
@@ -346,15 +335,9 @@ function StudentsPage() {
 
     setIsSavingProfile(true);
     try {
-      const token = localStorage.getItem("jwt_token");
-      // handleSaveStudentEdit fonksiyonu içindeki fetch isteğini bu şekilde güncelleyin:
-
       const response = await fetch(`${API_BASE}/api/students/${studentId}`, {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
           Id: studentId, // Eksik olan Id eklendi
           FirstName: editFirstName,
@@ -580,10 +563,11 @@ function StudentsPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-card border border-border rounded-2xl shadow-lg w-full max-w-sm p-8 relative flex flex-col items-center animate-in zoom-in-95 duration-200"
+            className="bg-card border border-border rounded-2xl shadow-lg w-full max-w-sm max-h-[90vh] overflow-y-auto p-8 relative flex flex-col items-center animate-in zoom-in-95 duration-200"
           >
             <button
               onClick={() => setSelectedProfileStudent(null)}
+              aria-label={t("common.close")}
               className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="size-5" />
@@ -752,7 +736,7 @@ function StudentsPage() {
                         selectedProfileStudent.profilePictureUrl ||
                         selectedProfileStudent.ProfilePictureUrl
                       }
-                      alt="Profil"
+                      alt={t("profile.photoAlt")}
                       className="size-24 rounded-full object-cover shadow-md border border-border"
                     />
                   ) : (
@@ -831,10 +815,11 @@ function StudentsPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-card border border-border rounded-xl shadow-lg w-full max-w-md p-6 relative animate-in zoom-in-95 duration-200"
+            className="bg-card border border-border rounded-xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto p-6 relative animate-in zoom-in-95 duration-200"
           >
             <button
               onClick={() => setIsModalOpen(false)}
+              aria-label={t("common.close")}
               className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="size-5" />

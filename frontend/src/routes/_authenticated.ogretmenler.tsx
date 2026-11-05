@@ -1,4 +1,4 @@
-import { readError } from "@/lib/auth";
+import { authHeaders, readError } from "@/lib/auth";
 import { initialsOf, formatDate, pillButton } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "../components/PageHeader";
@@ -88,12 +88,8 @@ function TeachersPage() {
   const fetchTeachers = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("jwt_token");
       const response = await fetch(`${API_BASE}/api/teachers`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders(),
       });
 
       if (response.ok) {
@@ -102,9 +98,11 @@ function TeachersPage() {
       } else {
         const errorText = await response.text();
         console.error(`Öğretmenler alınamadı (status ${response.status}):`, errorText);
+        showToast(t("common.loadFailed"), "error");
       }
     } catch (error) {
       console.error("Öğretmenler yüklenirken hata:", error);
+      showToast(t("common.loadFailed"), "error");
     } finally {
       setIsLoading(false);
     }
@@ -114,11 +112,8 @@ function TeachersPage() {
     fetchTeachers();
 
     const fetchCourses = async () => {
-      const token = localStorage.getItem("jwt_token");
-      const headers = { Authorization: `Bearer ${token}` };
-
       try {
-        const res = await fetch(`${API_BASE}/api/courses`, { headers });
+        const res = await fetch(`${API_BASE}/api/courses`, { headers: authHeaders() });
         if (res.ok) {
           setDbCourses(await res.json());
         }
@@ -128,13 +123,18 @@ function TeachersPage() {
     };
 
     const fetchCats = async () => {
-      const token = localStorage.getItem("jwt_token");
-      const cats = await fetchCategories(token || undefined);
-      setCategories(cats);
+      try {
+        const token = localStorage.getItem("jwt_token");
+        const cats = await fetchCategories(token || undefined);
+        setCategories(cats);
+      } catch (error) {
+        console.error("Kategoriler yüklenirken hata:", error);
+      }
     };
 
     fetchCourses();
     fetchCats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only load; showToast/t change every render
   }, []);
 
   const currentTeacherId = selectedProfileTeacher?.id ?? selectedProfileTeacher?.Id;
@@ -170,15 +170,10 @@ function TeachersPage() {
     if (selectedTeacherIds.length === 0) return;
 
     try {
-      const token = localStorage.getItem("jwt_token");
-
       // Backend'de bunun için ayrı bir toplu silme uç noktası var, tek tek istek atmaya gerek yok.
       const response = await fetch(`${API_BASE}/api/teachers/bulk-delete`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders(),
         body: JSON.stringify(selectedTeacherIds),
       });
 
@@ -221,13 +216,9 @@ function TeachersPage() {
     try {
       // Register endpoint kullanıcıyı + öğretmen profilini otomatik oluşturur
       // (RegistrationCode="12345" = "Teacher" rolü = otomatik Teacher kaydı)
-      const token = localStorage.getItem("jwt_token");
       const res = await fetch(`${API_BASE}/api/auth/register`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
           firstName,
           lastName,
@@ -244,13 +235,10 @@ function TeachersPage() {
       }
 
       // Branş girildiyse, oluşturulan öğretmeni bulup PUT ile branş güncelle
+      let branchSaved = true;
       if (newBranch.length > 0) {
         try {
-          const token = localStorage.getItem("jwt_token");
-          const headers = {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          };
+          const headers = authHeaders();
           const listRes = await fetch(`${API_BASE}/api/teachers`, { headers });
           if (listRes.ok) {
             const teachers: TeacherData[] = await listRes.json();
@@ -259,7 +247,7 @@ function TeachersPage() {
             );
             const createdId = created?.id ?? created?.Id;
             if (createdId) {
-              await fetch(`${API_BASE}/api/teachers/${createdId}`, {
+              const putRes = await fetch(`${API_BASE}/api/teachers/${createdId}`, {
                 method: "PUT",
                 headers,
                 body: JSON.stringify({
@@ -271,6 +259,10 @@ function TeachersPage() {
                   Date: created?.date || created?.Date || new Date().toISOString(),
                 }),
               });
+              if (!putRes.ok) {
+                branchSaved = false;
+                showToast(await readError(putRes, t("teachers.errors.registerFailed")), "error");
+              }
             }
           }
         } catch (branchErr) {
@@ -278,7 +270,8 @@ function TeachersPage() {
         }
       }
 
-      showToast(t("teachers.errors.registerSuccess"));
+      // Hesap oluştu; branş kaydedilemediyse yalnızca hata gösterilir, liste yine yenilenir
+      if (branchSaved) showToast(t("teachers.errors.registerSuccess"));
       setNewFirstName("");
       setNewLastName("");
       setNewEmail("");
@@ -314,7 +307,7 @@ function TeachersPage() {
       `${teacher.firstName || teacher.FirstName || ""} ${teacher.lastName || teacher.LastName || ""}`
         .trim()
         .toLowerCase();
-    if (!fullName) return "PASİF";
+    if (!fullName) return t("teachers.inactive");
 
     const isTeaching = dbCourses.some((c) => {
       const instructor = String(c.instructor || c.Instructor || "").toLowerCase();
@@ -398,14 +391,9 @@ function TeachersPage() {
 
     setIsSavingProfile(true);
     try {
-      const token = localStorage.getItem("jwt_token");
-
       const response = await fetch(`${API_BASE}/api/teachers/${teacherId}`, {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
           Id: teacherId,
           FirstName: editFirstName,
@@ -634,10 +622,11 @@ function TeachersPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-card border border-border rounded-2xl shadow-lg w-full max-w-sm p-8 relative flex flex-col items-center animate-in zoom-in-95 duration-200"
+            className="bg-card border border-border rounded-2xl shadow-lg w-full max-w-sm max-h-[90vh] overflow-y-auto p-8 relative flex flex-col items-center animate-in zoom-in-95 duration-200"
           >
             <button
               onClick={() => setSelectedProfileTeacher(null)}
+              aria-label={t("common.close")}
               className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="size-5" />
@@ -830,7 +819,7 @@ function TeachersPage() {
                         selectedProfileTeacher.profilePictureUrl ||
                         selectedProfileTeacher.ProfilePictureUrl
                       }
-                      alt="Profil"
+                      alt={t("profile.photoAlt")}
                       className="size-24 rounded-full object-cover shadow-md border border-border"
                     />
                   ) : (
@@ -901,10 +890,11 @@ function TeachersPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-card border border-border rounded-xl shadow-lg w-full max-w-md p-6 relative animate-in zoom-in-95 duration-200"
+            className="bg-card border border-border rounded-xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto p-6 relative animate-in zoom-in-95 duration-200"
           >
             <button
               onClick={() => setIsModalOpen(false)}
+              aria-label={t("common.close")}
               className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="size-5" />
