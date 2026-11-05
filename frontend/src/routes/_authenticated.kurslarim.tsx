@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { CheckCircle2 } from "lucide-react";
 import { CourseProgressBar } from "@/components/CourseProgressBar";
 import { formatDate } from "@/lib/utils";
+import { authHeaders, readError } from "@/lib/auth";
 
 import { API_BASE } from "@/components/courseHelpers";
 import { BadgeStrip, useBadges } from "@/components/Badges";
@@ -39,21 +40,11 @@ function MyCoursesPage() {
 
       const [enrollRes, coursesRes, teachersRes, categoriesRes, enrollmentsRes] = await Promise.all(
         [
-          fetch(`${API_BASE}/api/enrollments/my-courses`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          fetch(`${API_BASE}/api/courses`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          fetch(`${API_BASE}/api/teachers`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          fetch(`${API_BASE}/api/categories`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          fetch(`${API_BASE}/api/enrollments`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
+          fetch(`${API_BASE}/api/enrollments/my-courses`, { headers: authHeaders() }),
+          fetch(`${API_BASE}/api/courses`, { headers: authHeaders() }),
+          fetch(`${API_BASE}/api/teachers`, { headers: authHeaders() }),
+          fetch(`${API_BASE}/api/categories`, { headers: authHeaders() }),
+          fetch(`${API_BASE}/api/enrollments`, { headers: authHeaders() }),
         ],
       );
 
@@ -93,6 +84,7 @@ function MyCoursesPage() {
       }
     } catch (error) {
       console.error(error);
+      toast.error(t("common.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -246,13 +238,12 @@ function MyCoursesPage() {
           isStudent={true}
           isEnrolled={true}
           onLeave={async () => {
-            const token = localStorage.getItem("jwt_token");
             try {
               const res = await fetch(
                 `${API_BASE}/api/enrollments/leave/${selectedCourse.id || selectedCourse.Id}`,
                 {
                   method: "DELETE",
-                  headers: { Authorization: `Bearer ${token}` },
+                  headers: authHeaders(),
                 },
               );
               if (res.ok) {
@@ -260,7 +251,7 @@ function MyCoursesPage() {
                 setSelectedCourse(null);
                 fetchMyCourses();
               } else {
-                toast.error(t("dashboard.alerts.leaveError", "Bir hata oluştu."));
+                toast.error(await readError(res, t("dashboard.alerts.leaveError")));
               }
             } catch (err) {
               console.error(err);

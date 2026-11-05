@@ -11,8 +11,16 @@ import {
   type TeacherLiteDto,
 } from "../components/courseHelpers";
 import { toast } from "sonner";
+import { formatTry } from "@/lib/utils";
 
-import { isAdminRole, parseJwt, readError } from "@/lib/auth";
+import {
+  authHeaders,
+  getRoleFromToken,
+  isAdminRole,
+  isTeacherRole,
+  parseJwt,
+  readError,
+} from "@/lib/auth";
 import { API_BASE } from "@/components/courseHelpers";
 import { BadgeStrip, useBadges } from "@/components/Badges";
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -95,21 +103,10 @@ function HomePage() {
     const token = localStorage.getItem("jwt_token");
 
     const fetchHomeData = async () => {
-      const headers = { Authorization: `Bearer ${token}` };
+      const headers = authHeaders();
 
-      let role = t("dashboard.studentRole");
-      if (token) {
-        const payload = parseJwt(token);
-        if (payload) {
-          role =
-            payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
-            payload.role ||
-            t("dashboard.studentRole");
-        }
-      }
-
-      const r = role.toLowerCase();
-      const canManage = r === "eğitmen" || r === "admin" || r === "superadmin" || r === "teacher";
+      const r = getRoleFromToken();
+      const canManage = isTeacherRole(r) || isAdminRole(r);
       const isStudent = !canManage;
 
       try {
@@ -122,6 +119,7 @@ function HomePage() {
         ]);
         if (sRes?.ok) setDbStudents(await sRes.json());
         if (cRes.ok) setDbCourses(await cRes.json());
+        else toast.error(t("common.loadFailed"));
         if (eRes.ok) setDbEnrollments(await eRes.json());
         if (tRes.ok) setDbTeachers(await tRes.json());
 
@@ -139,6 +137,7 @@ function HomePage() {
         }
       } catch (err) {
         console.error("Veri çekme hatası:", err);
+        toast.error(t("common.loadFailed"));
       } finally {
         setIsLoading(false);
       }
@@ -153,21 +152,14 @@ function HomePage() {
           payload.name ||
           payload.unique_name ||
           t("dashboard.unknownInstructor");
-        const role =
-          payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
-          payload.role ||
-          t("dashboard.studentRole");
+        const role = getRoleFromToken() || t("dashboard.studentRole");
         setCurrentUser({ name, role });
       }
     }
   }, [t]);
 
-  const isAdmin =
-    currentUser.role.toLowerCase() === "admin" || currentUser.role.toLowerCase() === "superadmin";
-  const canManage =
-    currentUser.role.toLowerCase() === "eğitmen" ||
-    currentUser.role.toLowerCase() === "teacher" ||
-    isAdmin;
+  const isAdmin = isAdminRole(currentUser.role);
+  const canManage = isTeacherRole(currentUser.role) || isAdmin;
 
   const isStudent = !canManage;
 
@@ -181,22 +173,19 @@ function HomePage() {
   const handleJoinCourse = async () => {
     if (!selectedCourse) return;
     const courseId = selectedCourse.id || selectedCourse.Id;
-    const token = localStorage.getItem("jwt_token");
     try {
       const res = await fetch(`${API_BASE}/api/enrollments/join/${courseId}`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: authHeaders(),
       });
       if (res.ok) {
         toast.success(t("dashboard.alerts.joinSuccess"));
         const myRes = await fetch(`${API_BASE}/api/enrollments/my-courses`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: authHeaders(),
         });
         if (myRes.ok) setMyCourses(await myRes.json());
         const enrRes = await fetch(`${API_BASE}/api/enrollments`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: authHeaders(),
         });
         if (enrRes.ok) setDbEnrollments(await enrRes.json());
       } else {
@@ -210,22 +199,19 @@ function HomePage() {
   const handleLeaveCourse = async () => {
     if (!selectedCourse) return;
     const courseId = selectedCourse.id || selectedCourse.Id;
-    const token = localStorage.getItem("jwt_token");
     try {
       const res = await fetch(`${API_BASE}/api/enrollments/leave/${courseId}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: authHeaders(),
       });
       if (res.ok) {
         toast.success(t("dashboard.alerts.leaveSuccess", "Kurstan başarıyla ayrıldınız."));
         const myRes = await fetch(`${API_BASE}/api/enrollments/my-courses`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: authHeaders(),
         });
         if (myRes.ok) setMyCourses(await myRes.json());
         const enrRes = await fetch(`${API_BASE}/api/enrollments`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: authHeaders(),
         });
         if (enrRes.ok) setDbEnrollments(await enrRes.json());
       } else {
@@ -273,7 +259,7 @@ function HomePage() {
       ? t(`dynamic.categories.${originalCategory}`)
       : originalCategory;
 
-    const price = c.price || c.Price || "₺0";
+    const price = c.price || c.Price || "0";
     const instructor = c.instructor || c.Instructor || t("dashboard.unknown");
     const studentsCount = getCourseEnrollments(c, dbEnrollments).length;
 
@@ -300,7 +286,9 @@ function HomePage() {
           <div className="flex justify-between items-start mb-3">
             <span className="text-[10px] font-mono text-accent uppercase">{category}</span>
             {!isEnrolled && (
-              <span className="text-sm font-bold">₺{String(price).replace(/^₺/, "")}</span>
+              <span className="text-sm font-bold">
+                {formatTry(Number(String(price).replace(/^₺/, "")), 0)}
+              </span>
             )}
           </div>
           <h4 className="font-bold mb-4 line-clamp-1">{title}</h4>

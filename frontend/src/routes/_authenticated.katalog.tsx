@@ -1,4 +1,4 @@
-import { pillButton, chip } from "@/lib/utils";
+import { pillButton, chip, formatTry } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "../components/PageHeader";
 import { Plus, X, Trash2, Filter } from "lucide-react";
@@ -18,7 +18,15 @@ import {
   type TeacherLiteDto,
 } from "../components/courseHelpers";
 
-import { parseJwt, isAdminRole, isStudentRole, isTeacherRole, readError } from "@/lib/auth";
+import {
+  authHeaders,
+  getRoleFromToken,
+  parseJwt,
+  isAdminRole,
+  isStudentRole,
+  isTeacherRole,
+  readError,
+} from "@/lib/auth";
 import { API_BASE } from "@/components/courseHelpers";
 import { CourseTaxonomyFields } from "@/components/CourseTaxonomyFields";
 export const Route = createFileRoute("/_authenticated/katalog")({
@@ -81,13 +89,7 @@ function CoursesPage() {
   const fetchCourses = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("jwt_token");
-      const response = await fetch(`${API_BASE}/api/courses`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(`${API_BASE}/api/courses`, { headers: authHeaders() });
 
       if (response.ok) {
         const data = await response.json();
@@ -97,6 +99,7 @@ function CoursesPage() {
       }
     } catch (error) {
       console.error("Kurslar yüklenirken hata:", error);
+      toast.error(t("common.loadFailed"));
     } finally {
       setIsLoading(false);
     }
@@ -105,17 +108,8 @@ function CoursesPage() {
   useEffect(() => {
     fetchCourses();
 
-    const token = localStorage.getItem("jwt_token");
-    if (token) {
-      const payload = parseJwt(token);
-      if (payload) {
-        const role =
-          payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
-          payload.role ||
-          t("courses.student");
-
-        setCurrentUser({ role });
-      }
+    if (localStorage.getItem("jwt_token")) {
+      setCurrentUser({ role: getRoleFromToken() || t("courses.student") });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch only when the language changes
   }, [t]);
@@ -124,14 +118,16 @@ function CoursesPage() {
   // dropdown'ını / eğitmen profilini doldurmak için gerekli listeler.
   useEffect(() => {
     const token = localStorage.getItem("jwt_token");
-    const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+    const headers = authHeaders();
 
     const fetchEnrollments = async () => {
       try {
         const res = await fetch(`${API_BASE}/api/enrollments`, { headers });
         if (res.ok) setDbEnrollments(await res.json());
+        else toast.error(t("common.loadFailed"));
       } catch (error) {
         console.error("Kayıtlar yüklenirken hata:", error);
+        toast.error(t("common.loadFailed"));
       }
     };
 
@@ -153,9 +149,12 @@ function CoursesPage() {
           if (selfTeacher) {
             setMyTeacherId(selfTeacher.id || selfTeacher.Id);
           }
+        } else {
+          toast.error(t("common.loadFailed"));
         }
       } catch (error) {
         console.error("Öğretmen listesi alınamadı:", error);
+        toast.error(t("common.loadFailed"));
       }
     };
 
@@ -168,8 +167,10 @@ function CoursesPage() {
       try {
         const res = await fetch(`${API_BASE}/api/enrollments/my-courses`, { headers });
         if (res.ok) setMyCourses(await res.json());
+        else toast.error(t("common.loadFailed"));
       } catch (error) {
         console.error("Öğrenci kursları yüklenirken hata:", error);
+        toast.error(t("common.loadFailed"));
       }
     };
 
@@ -177,6 +178,7 @@ function CoursesPage() {
     fetchTeachers();
     fetchCats();
     fetchMyCourses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch once on mount
   }, []);
 
   const handleCloseDetailModal = () => {
@@ -233,13 +235,9 @@ function CoursesPage() {
     const instructorName = getTeacherFullName(selectedTeacher || {});
 
     try {
-      const token = localStorage.getItem("jwt_token");
       const response = await fetch(`${API_BASE}/api/courses`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
           Title: newTitle,
           Category: newCategory,
@@ -268,13 +266,9 @@ function CoursesPage() {
   const handleTeachCourseRequest = async (e: React.MouseEvent, courseId: number | string) => {
     e.stopPropagation();
     try {
-      const token = localStorage.getItem("jwt_token");
       const response = await fetch(`${API_BASE}/api/teachingrequests`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders(),
         body: JSON.stringify({ CourseId: courseId }),
       });
 
@@ -290,20 +284,16 @@ function CoursesPage() {
 
   const handleJoinCourse = async (courseId: number | string) => {
     try {
-      const token = localStorage.getItem("jwt_token");
       const response = await fetch(`${API_BASE}/api/enrollments/join/${courseId}`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders(),
       });
 
       if (response.ok) {
         showToast(t("dashboard.alerts.joinSuccess", "Kursa başarıyla katıldınız."), "success");
         // Update myCourses
         const myRes = await fetch(`${API_BASE}/api/enrollments/my-courses`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: authHeaders(),
         });
         if (myRes.ok) setMyCourses(await myRes.json());
       } else {
@@ -346,10 +336,7 @@ function CoursesPage() {
 
     setIsDeleting(true);
     try {
-      const token = localStorage.getItem("jwt_token");
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
+      const headers = authHeaders();
 
       const responses = await Promise.all(
         selectedCourseIds.map((id) =>
@@ -563,7 +550,7 @@ function CoursesPage() {
                           ? t(`dynamic.categories.${category}`)
                           : category}
                       </span>
-                      <span className="text-sm font-bold">₺{price}</span>
+                      <span className="text-sm font-bold">{formatTry(Number(price), 0)}</span>
                     </div>
                     <h4 className="font-bold mb-4 line-clamp-2 flex-1">
                       {i18n.exists(`dynamic.courses.${title}`)
@@ -639,6 +626,7 @@ function CoursesPage() {
           >
             <button
               onClick={handleCloseModal}
+              aria-label={t("common.close")}
               className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="size-5" />

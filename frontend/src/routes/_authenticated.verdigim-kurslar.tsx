@@ -1,5 +1,5 @@
-import { readError } from "@/lib/auth";
-import { formatDate, pillButton } from "@/lib/utils";
+import { authHeaders, readError } from "@/lib/auth";
+import { formatDate, formatTry, pillButton } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { createFileRoute } from "@tanstack/react-router";
@@ -55,21 +55,16 @@ function TaughtCoursesPage() {
         return;
       }
 
-      const profileRes = await fetch(`${API_BASE}/api/profile/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!profileRes.ok) return;
+      const profileRes = await fetch(`${API_BASE}/api/profile/me`, { headers: authHeaders() });
+      if (!profileRes.ok) {
+        toast.error(t("common.loadFailed"));
+        return;
+      }
       const profile = await profileRes.json();
 
-      const cRes = await fetch(`${API_BASE}/api/courses`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const tRes = await fetch(`${API_BASE}/api/teachers`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const eRes = await fetch(`${API_BASE}/api/enrollments`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const cRes = await fetch(`${API_BASE}/api/courses`, { headers: authHeaders() });
+      const tRes = await fetch(`${API_BASE}/api/teachers`, { headers: authHeaders() });
+      const eRes = await fetch(`${API_BASE}/api/enrollments`, { headers: authHeaders() });
 
       if (eRes.ok) {
         setDbEnrollments(await eRes.json());
@@ -112,7 +107,7 @@ function TaughtCoursesPage() {
       }
 
       const rRes = await fetch(`${API_BASE}/api/teachingrequests/my-requests`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: authHeaders(),
       });
       if (rRes.ok) {
         setRequests(await rRes.json());
@@ -122,6 +117,7 @@ function TaughtCoursesPage() {
       setCategories(cats);
     } catch (error) {
       console.error(error);
+      toast.error(t("common.loadFailed"));
     } finally {
       setLoading(false);
     }
@@ -134,16 +130,10 @@ function TaughtCoursesPage() {
   const handleAddCourse = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem("jwt_token");
-
-      const profileRes = await fetch(`${API_BASE}/api/profile/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const profileRes = await fetch(`${API_BASE}/api/profile/me`, { headers: authHeaders() });
       const profile = await profileRes.json();
 
-      const teacherRes = await fetch(`${API_BASE}/api/teachers`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const teacherRes = await fetch(`${API_BASE}/api/teachers`, { headers: authHeaders() });
       const teachers = await teacherRes.json();
 
       const meTeacher = teachers.find(
@@ -156,16 +146,13 @@ function TaughtCoursesPage() {
 
       const response = await fetch(`${API_BASE}/api/courses`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
           Title: newTitle,
           Category: newCategory,
           SubCategory: newSubCategory || null,
           Level: newLevel || null,
-          Instructor: `${profile.firstName} ${profile.lastName}`.trim(),
+          Instructor: `${profile.firstName ?? ""} ${profile.lastName ?? ""}`.trim(),
           TeacherId: meTeacher ? meTeacher.id || meTeacher.Id : 0,
           MaxCapacity: Number(newCapacity) || 0,
           Price: Number(newPrice) || 0,
@@ -195,10 +182,9 @@ function TaughtCoursesPage() {
 
   const handleCancelRequest = async (requestId: number) => {
     try {
-      const token = localStorage.getItem("jwt_token");
       const res = await fetch(`${API_BASE}/api/teachingrequests/${requestId}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: authHeaders(),
       });
       if (res.ok) {
         toast.success(t("requests.cancelSuccess", "İstek geri alındı."));
@@ -225,7 +211,9 @@ function TaughtCoursesPage() {
       <div className="p-4 md:p-8 animate-reveal space-y-12">
         <section>
           <h2 className="text-xl font-bold mb-6">{t("sidebar.taughtCourses")}</h2>
-          {courses.length === 0 ? (
+          {loading ? (
+            <p className="text-muted-foreground">{t("common.loading")}</p>
+          ) : courses.length === 0 ? (
             <div className="text-center py-12 bg-card border rounded-lg shadow-sm">
               <p className="text-muted-foreground">{t("courses.noTaughtCourses")}</p>
             </div>
@@ -263,7 +251,7 @@ function TaughtCoursesPage() {
                         <span className="text-sm font-bold">
                           {price === "0" || price === 0
                             ? t("courses.free", "Ücretsiz")
-                            : `₺${price}`}
+                            : formatTry(Number(price), 0)}
                         </span>
                       </div>
                       <h4 className="font-bold mb-4 line-clamp-2 flex-1">

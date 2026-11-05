@@ -7,7 +7,13 @@ import type { TFunction } from "i18next";
 import { fetchCategories, type CourseData, type TeacherLiteDto } from "../components/courseHelpers";
 import { toast } from "sonner";
 
-import { parseJwt, readError } from "@/lib/auth";
+import {
+  authHeaders,
+  getRoleFromToken,
+  isTeacherRole as isTeacherRoleName,
+  parseJwt,
+  readError,
+} from "@/lib/auth";
 import { API_BASE } from "@/components/courseHelpers";
 import { BadgeShowcase, useBadges } from "@/components/Badges";
 export const Route = createFileRoute("/_authenticated/profil")({
@@ -67,6 +73,7 @@ function ProfilePage() {
   const [enrollments, setEnrollments] = useState<EnrollmentDto[]>([]);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [photoFileName, setPhotoFileName] = useState("");
 
   const [branch, setBranch] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -94,10 +101,7 @@ function ProfilePage() {
           payload.sub;
 
         // YENİ KOD BURADA OLMALI (payload tanımlandıktan sonra)
-        const tokenRole =
-          payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
-          payload.role ||
-          "user";
+        const tokenRole = getRoleFromToken() || "user";
 
         if (tokenName) {
           currentUserName = tokenName;
@@ -117,10 +121,7 @@ function ProfilePage() {
       }
       try {
         const res = await fetch(`${API_BASE}/api/profile/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+          headers: authHeaders(),
         });
         if (res.ok) {
           const data: ProfileDto = await res.json();
@@ -154,9 +155,12 @@ function ProfilePage() {
               }),
             );
           }
+        } else {
+          toast.error(t("common.loadFailed"));
         }
       } catch (err) {
         console.warn("Profil bilgisi alınamadı:", err);
+        toast.error(t("common.loadFailed"));
       } finally {
         setProfileLoaded(true);
       }
@@ -174,15 +178,9 @@ function ProfilePage() {
     const fetchData = async () => {
       try {
         const [enrRes, crsRes, tchRes] = await Promise.all([
-          fetch(`${API_BASE}/api/enrollments/my-courses`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          fetch(`${API_BASE}/api/courses`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          fetch(`${API_BASE}/api/teachers`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
+          fetch(`${API_BASE}/api/enrollments/my-courses`, { headers: authHeaders() }),
+          fetch(`${API_BASE}/api/courses`, { headers: authHeaders() }),
+          fetch(`${API_BASE}/api/teachers`, { headers: authHeaders() }),
         ]);
 
         if (enrRes.ok) {
@@ -242,13 +240,9 @@ function ProfilePage() {
     const lastName = lastParts.join(" ").trim();
 
     try {
-      const token = localStorage.getItem("jwt_token");
       const response = await fetch(`${API_BASE}/api/profile/me`, {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
           FirstName: firstName,
           LastName: lastName,
@@ -276,6 +270,7 @@ function ProfilePage() {
   const handlePhotoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setPhotoFileName(file.name);
 
     const token = localStorage.getItem("jwt_token");
     const formData = new FormData();
@@ -294,10 +289,7 @@ function ProfilePage() {
         // Backend AboutMe/ProfilePictureUrl null gelirse siler; mevcut değerleri de gönderiyoruz.
         const saveRes = await fetch(`${API_BASE}/api/profile/me`, {
           method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+          headers: authHeaders(),
           body: JSON.stringify({
             AboutMe: bio,
             ProfilePictureUrl: fullUrl,
@@ -323,10 +315,7 @@ function ProfilePage() {
     }
   };
 
-  const isTeacherRole =
-    role === t("profile.roles.teacher") ||
-    role.toLowerCase() === "eğitmen" ||
-    role.toLowerCase() === "teacher";
+  const isTeacherRole = role === t("profile.roles.teacher") || isTeacherRoleName(role);
 
   const displayedCourses = useMemo(() => {
     const taughtCourseTitles = isTeacherRole
@@ -369,7 +358,7 @@ function ProfilePage() {
                   />
                 ) : (
                   <div className="w-28 h-28 rounded-full bg-muted grid place-items-center text-3xl font-bold text-foreground border border-border">
-                    {initials || "SU"}
+                    {initials}
                   </div>
                 )}
               </div>
@@ -488,11 +477,7 @@ function ProfilePage() {
                     {t("profile.chooseFile")}
                   </button>
                   <div className="text-sm text-muted-foreground">
-                    {fileInputRef.current &&
-                    fileInputRef.current.files &&
-                    fileInputRef.current.files.length > 0
-                      ? fileInputRef.current.files[0].name
-                      : t("profile.noFileChosen")}
+                    {photoFileName || t("profile.noFileChosen")}
                   </div>
                   <input
                     ref={fileInputRef}
