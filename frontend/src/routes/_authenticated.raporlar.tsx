@@ -390,7 +390,10 @@ function ReportsPage() {
                       const date =
                         displayDate !== "-"
                           ? displayDate
-                          : formatDate(s.createdAt || s.CreatedAt || s.date || s.Date, i18n.language);
+                          : formatDate(
+                              s.createdAt || s.CreatedAt || s.date || s.Date,
+                              i18n.language,
+                            );
 
                       return (
                         <tr

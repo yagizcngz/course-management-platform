@@ -1001,7 +1001,10 @@ export function CourseDetailModal({
                                 <span className="font-semibold text-foreground/70">
                                   {t("courseModal.enrollmentDate", "Kayıt Tarihi")}:
                                 </span>{" "}
-                                {formatDate(enr.enrollmentDate || enr.EnrollmentDate, i18n.language)}
+                                {formatDate(
+                                  enr.enrollmentDate || enr.EnrollmentDate,
+                                  i18n.language,
+                                )}
                               </p>
                             </div>
                           </div>

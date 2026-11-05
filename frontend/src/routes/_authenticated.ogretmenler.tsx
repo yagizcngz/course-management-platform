@@ -572,7 +572,8 @@ function TeachersPage() {
                       : rawBranch
                     : "-";
                   const initialsText = initialsOf(fullName);
-                  const dateRaw = teacher.createdAt || teacher.CreatedAt || teacher.date || teacher.Date;
+                  const dateRaw =
+                    teacher.createdAt || teacher.CreatedAt || teacher.date || teacher.Date;
                   const date = formatDate(dateRaw, i18n.language);
                   const currentId = teacher.id || teacher.Id;
                   const calculatedStatus = getTeacherStatus(teacher);
