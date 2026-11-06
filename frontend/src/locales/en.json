@@ -1346,7 +1346,12 @@
       "courseCompleted": "Congratulations, you completed the course!",
       "completed": "Completed",
       "markComplete": "Mark Complete",
-      "progress": "Progress · {{done}}/{{total}} lessons"
+      "progress": "Progress · {{done}}/{{total}} lessons",
+      "noSkip": "Lessons are watched in order: you can skip ahead only up to the part you have already seen. Once the lesson is complete, every timestamp opens up.",
+      "rateCapped": "Playback speed is capped at {{rate}}x for lesson credit.",
+      "watched": "Watched {{percent}}%",
+      "watchNeed": "Watch {{percent}}% to complete",
+      "watchReady": "Ready to complete"
     },
     "publicNav": {
       "label": "Main navigation",

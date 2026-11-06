@@ -1263,7 +1263,12 @@
       "courseCompleted": "Tebrikler, kursu tamamladınız!",
       "completed": "Tamamlandı",
       "markComplete": "Dersi Tamamla",
-      "progress": "İlerleme · {{done}}/{{total}} ders"
+      "progress": "İlerleme · {{done}}/{{total}} ders",
+      "noSkip": "Dersler sırayla izlenir: yalnızca izlediğiniz kısma kadar ileri sarabilirsiniz. Ders tamamlanınca her ana serbestçe dönebilirsiniz.",
+      "rateCapped": "Dersin sayılması için oynatma hızı en fazla {{rate}}x olabilir.",
+      "watched": "İzlenen %{{percent}}",
+      "watchNeed": "Tamamlamak için %{{percent}} izleyin",
+      "watchReady": "Tamamlanabilir"
     },
     "publicNav": {
       "label": "Ana menü",

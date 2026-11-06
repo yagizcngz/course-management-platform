@@ -21,7 +21,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { API_BASE } from "@/components/courseHelpers";
 import { CourseProgressBar } from "@/components/CourseProgressBar";
-import { authHeaders, getToken, readError } from "@/lib/auth";
+import { authHeaders, getToken, parseJwt, readError } from "@/lib/auth";
+import { TrackedVideo } from "@/components/TrackedVideo";
+import { REQUIRED_SHARE, watchedSeconds, watchedShare, type WatchState } from "@/lib/watchProgress";
 import { formatTry } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/kurs/$id")({
@@ -73,6 +75,9 @@ function CoursePage() {
   const [purchased, setPurchased] = useState(false);
   const [refundable, setRefundable] = useState(false);
   const [refundOpen, setRefundOpen] = useState(false);
+  // genuine viewing of the open lesson's video; reset whenever another lesson opens
+  const [watch, setWatch] = useState<{ state: WatchState; duration: number } | null>(null);
+  useEffect(() => setWatch(null), [activeId]);
 
   // `stale` turns true once the page has moved to another course, so a slow answer for the
   // previous one cannot overwrite it
@@ -135,13 +140,20 @@ function CoursePage() {
     }
   };
 
-  // a lesson counts as done from its button or when its video plays to the end
-  const complete = async (lessonId: number) => {
+  // a lesson counts as done from its button or when its video ends; a video lesson only once
+  // REQUIRED_SHARE of it was really watched (the API checks the same numbers)
+  const complete = async (lessonId: number, viewed?: { state: WatchState; duration: number }) => {
     if (!data?.isEnrolled || data.completedLessonIds.includes(lessonId)) return;
     try {
       const res = await fetch(`${API_BASE}/api/courses/${id}/lessons/${lessonId}/complete`, {
         method: "POST",
         headers: authHeaders(),
+        body: viewed
+          ? JSON.stringify({
+              watchedSeconds: watchedSeconds(viewed.state, viewed.duration),
+              durationSeconds: Math.ceil(viewed.duration),
+            })
+          : undefined,
       });
       if (!res.ok) throw new Error(await readError(res, t("lessons.completeFailed")));
       const p: { progressPercent: number; completed: boolean } = await res.json();
@@ -200,6 +212,10 @@ function CoursePage() {
   const active = lessons.find((l) => l.id === activeId) ?? null;
   const done = new Set(data.completedLessonIds ?? []);
   const needsPurchase = course.price > 0 && !purchased;
+  const viewer = parseJwt(getToken() ?? "")?.sub ?? "";
+  const tracked = isEnrolled && !!active?.videoUrl && hasAccess;
+  const share = watch ? watchedShare(watch.state, watch.duration) : 0;
+  const canComplete = !active?.videoUrl || share >= REQUIRED_SHARE;
   const insufficient = needsPurchase && balance !== null && balance < course.price;
 
   return (
@@ -211,22 +227,19 @@ function CoursePage() {
             {hasAccess && active?.videoUrl ? (
               (() => {
                 const p = toPlayable(active.videoUrl);
-                return p.kind === "embed" ? (
-                  <iframe
+                return (
+                  <TrackedVideo
                     key={p.src}
+                    kind={p.kind}
                     src={p.src}
                     title={active.title}
-                    className="w-full h-full"
-                    allow="accelerometer; encrypted-media; picture-in-picture; fullscreen"
-                    allowFullScreen
-                  />
-                ) : (
-                  <video
-                    key={p.src}
-                    src={p.src}
-                    controls
-                    className="w-full h-full"
-                    onEnded={() => complete(active.id)}
+                    storageKey={tracked ? `watch:${viewer}:${active.id}` : null}
+                    guard={!done.has(active.id)}
+                    onProgress={(state, duration) => setWatch({ state, duration })}
+                    onEnded={(state, duration) => {
+                      if (watchedShare(state, duration) >= REQUIRED_SHARE)
+                        complete(active.id, { state, duration });
+                    }}
                   />
                 );
               })()
@@ -254,8 +267,13 @@ function CoursePage() {
                 <Button
                   size="sm"
                   variant={done.has(active.id) ? "secondary" : "default"}
-                  disabled={done.has(active.id)}
-                  onClick={() => complete(active.id)}
+                  disabled={done.has(active.id) || !canComplete}
+                  title={
+                    canComplete
+                      ? undefined
+                      : t("lessons.watchNeed", { percent: REQUIRED_SHARE * 100 })
+                  }
+                  onClick={() => complete(active.id, active.videoUrl && watch ? watch : undefined)}
                   className="shrink-0 rounded-full"
                 >
                   <CheckCircle2 className="size-4" />
@@ -263,6 +281,7 @@ function CoursePage() {
                 </Button>
               )}
             </div>
+            {tracked && active && !done.has(active.id) && <WatchMeter share={share} />}
             <p className="text-sm text-muted-foreground mt-2 whitespace-pre-line break-words [overflow-wrap:anywhere]">
               {active && hasAccess ? active.description || "" : course.description}
             </p>
@@ -565,5 +584,41 @@ function LessonEditor({
         </form>
       </CardContent>
     </Card>
+  );
+}
+
+/** Live share of the video really watched, with the completion mark drawn on the track. */
+function WatchMeter({ share }: { share: number }) {
+  const { t } = useTranslation();
+  const pct = Math.round(share * 100);
+  const need = REQUIRED_SHARE * 100;
+  const ready = share >= REQUIRED_SHARE;
+  return (
+    <div className="mt-3 rounded-xl border border-border bg-card px-4 py-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+        <span>{t("lessons.watched", { percent: pct })}</span>
+        <span className={ready ? "text-gold" : undefined}>
+          {ready ? t("lessons.watchReady") : t("lessons.watchNeed", { percent: need })}
+        </span>
+      </div>
+      <div
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={pct}
+        aria-label={t("lessons.watched", { percent: pct })}
+        className="relative mt-2 h-1.5 rounded-full bg-muted"
+      >
+        <div
+          className="h-full rounded-full bg-gold transition-[width] duration-500"
+          style={{ width: `${pct}%` }}
+        />
+        <span
+          aria-hidden="true"
+          className="absolute -top-1 h-3.5 w-px bg-foreground/60"
+          style={{ left: `${need}%` }}
+        />
+      </div>
+    </div>
   );
 }
