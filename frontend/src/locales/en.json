@@ -1607,6 +1607,7 @@
       "decline": "Decline",
       "removeFriend": "Remove friend",
       "removeConfirm": "Remove {{name}} from your friends?",
+      "removeConfirmBody": "You will no longer be able to message each other. You can send a new request later.",
       "clearSearch": "Clear search",
       "newFriendRequests_one": "You have a new friend request",
       "newFriendRequests_other": "You have {{count}} new friend requests",

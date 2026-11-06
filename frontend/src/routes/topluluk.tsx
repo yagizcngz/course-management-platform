@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ArrowLeft, Heart, Lock, MessageSquare, Plus, Trash2 } from "lucide-react";
 import { TOPICS, fullName, roleLabel } from "@/lib/community";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { PageIntro, PublicPage } from "@/components/PublicPage";
 import { API_BASE } from "@/components/courseHelpers";
 import {
@@ -474,11 +475,11 @@ function ThreadView({
   };
 
   const remove = async (post: Post) => {
-    if (!window.confirm(t("community.deleteConfirm"))) return;
     const res = await fetch(`${API_BASE}/api/forum/posts/${post.id}`, {
       method: "DELETE",
       headers: authHeaders(),
-    });
+    }).catch(() => null);
+    if (!res) return toast.error(t("community.postFailed"));
     if (!res.ok) return toast.error(await readError(res, t("community.postFailed")));
     const { threadDeleted } = await res.json();
     onChanged();
@@ -549,13 +550,18 @@ function ThreadView({
                   <span className="sr-only">{t("community.like")}</span>
                 </button>
                 {(mine || viewer?.admin) && (
-                  <button
-                    type="button"
-                    onClick={() => remove(p)}
-                    className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs text-muted-foreground hover:text-destructive"
+                  <ConfirmDialog
+                    title={t("community.deleteConfirm")}
+                    confirmLabel={t("community.delete")}
+                    onConfirm={() => remove(p)}
                   >
-                    <Trash2 className="size-3.5" aria-hidden="true" /> {t("community.delete")}
-                  </button>
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-xs text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 className="size-3.5" aria-hidden="true" /> {t("community.delete")}
+                    </button>
+                  </ConfirmDialog>
                 )}
               </div>
             </li>

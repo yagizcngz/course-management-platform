@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Check, Clock, Lock, MessageSquare, UserPlus, UserMinus } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { API_BASE, resolveImageSrc } from "@/components/courseHelpers";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { CourseProgressBar } from "@/components/CourseProgressBar";
 import { FeaturedBadgeRow, useBadgeBuilder } from "@/components/Badges";
 import { authHeaders, getToken, readError } from "@/lib/auth";
@@ -218,13 +219,16 @@ export function ProfileModal({
                     >
                       <MessageSquare className="size-4" /> {t("community.message")}
                     </button>
-                    <button
-                      disabled={busy}
-                      onClick={() => friendAction("DELETE", `${friend.friendshipId}`)}
-                      className={pillButton.outline}
+                    <ConfirmDialog
+                      title={t("community.removeConfirm", { name })}
+                      description={t("community.removeConfirmBody")}
+                      confirmLabel={t("community.removeFriend")}
+                      onConfirm={() => friendAction("DELETE", `${friend.friendshipId}`)}
                     >
-                      <UserMinus className="size-4" /> {t("community.removeFriend")}
-                    </button>
+                      <button disabled={busy} className={pillButton.outline}>
+                        <UserMinus className="size-4" /> {t("community.removeFriend")}
+                      </button>
+                    </ConfirmDialog>
                   </>
                 )}
               </div>

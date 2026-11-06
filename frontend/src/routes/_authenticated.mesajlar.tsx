@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Check, MessageSquare, Search, Send, UserMinus, UserPlus, Users, X } from "lucide-react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { PageHeader } from "@/components/PageHeader";
 import { API_BASE } from "@/components/courseHelpers";
 import {
@@ -440,17 +441,20 @@ function FriendsPanel({
               >
                 <MessageSquare className="size-3.5" />
               </button>
-              <button
-                aria-label={t("community.removeFriend")}
-                title={t("community.removeFriend")}
-                className={iconBtn}
-                onClick={() =>
-                  window.confirm(t("community.removeConfirm", { name: fullName(f.user) })) &&
-                  onAct(`${f.id}`, "DELETE")
-                }
+              <ConfirmDialog
+                title={t("community.removeConfirm", { name: fullName(f.user) })}
+                description={t("community.removeConfirmBody")}
+                confirmLabel={t("community.removeFriend")}
+                onConfirm={() => onAct(`${f.id}`, "DELETE")}
               >
-                <UserMinus className="size-3.5" />
-              </button>
+                <button
+                  aria-label={t("community.removeFriend")}
+                  title={t("community.removeFriend")}
+                  className={cn(iconBtn, "hover:border-destructive/60 hover:text-destructive")}
+                >
+                  <UserMinus className="size-3.5" />
+                </button>
+              </ConfirmDialog>
             </>,
           ),
         )}
