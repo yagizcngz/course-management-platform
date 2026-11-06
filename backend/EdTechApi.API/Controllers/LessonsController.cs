@@ -116,11 +116,18 @@ namespace EdTechApi.API.Controllers
         }
 
         // Kayıtlı öğrenci dersi bitirdi (düğmeyle veya video sonunda); ilerleme döner
+        public const double WatchedShare = 0.85;
+
         [HttpPost("{id}/complete")]
-        public async Task<IActionResult> Complete(int courseId, int id)
+        public async Task<IActionResult> Complete(int courseId, int id, [FromBody] CompleteLessonRequest? request)
         {
             var studentId = await EnrolledStudentIdAsync(courseId);
             if (studentId == null) return StatusCode(403, "Bu kursa kayıtlı değilsiniz.");
+            // Videolu ders yalnızca sürenin en az %85'i gerçekten izlenince biter. Süreleri istemci ölçer (video sunucuda
+            // çözümlenmez); bu denetim atlanmış oynatıcıyı ve elle yapılan çağrıyı durdurur, kararlı bir saldırganı değil.
+            var hasVideo = await _context.Lessons.Where(l => l.Id == id && l.CourseId == courseId).Select(l => l.VideoUrl != null && l.VideoUrl != "").FirstOrDefaultAsync();
+            if (hasVideo && (request == null || request.DurationSeconds <= 0 || request.WatchedSeconds < request.DurationSeconds * WatchedShare))
+                return BadRequest("Dersi tamamlamak için videonun en az %85'ini izleyin.");
             try
             {
                 var p = await _enrollments.CompleteLessonAsync(studentId.Value, courseId, id);
@@ -182,5 +189,11 @@ namespace EdTechApi.API.Controllers
                 .Where(e => e.CourseId == courseId && e.Student.User != null && e.Student.User.Username == username)
                 .Select(e => (int?)e.StudentId).FirstOrDefaultAsync();
         }
+    }
+
+    public class CompleteLessonRequest
+    {
+        public double WatchedSeconds { get; set; }
+        public double DurationSeconds { get; set; }
     }
 }
