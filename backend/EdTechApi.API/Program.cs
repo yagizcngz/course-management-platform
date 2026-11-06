@@ -86,6 +86,10 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy("auth", http => System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
         http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1) }));
+    // Topluluk yazma uçları (forum, beğeni, arkadaşlık, mesaj): kullanıcı başına dakikada 30 istek, spam'i keser
+    options.AddPolicy("community", http => System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
+        EdTechApi.API.Helpers.ClaimsPrincipalExtensions.GetUsername(http.User) ?? http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions { PermitLimit = 30, Window = TimeSpan.FromMinutes(1) }));
 });
 
 var app = builder.Build();

@@ -4,6 +4,7 @@ using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace EdTechApi.API.Controllers
@@ -86,6 +87,8 @@ namespace EdTechApi.API.Controllers
             messages.Reverse();
             return Ok(messages);
         }
+
+        [EnableRateLimiting("community")]
 
         [HttpPost("{userId:int}")]
         public async Task<IActionResult> Send(int userId, [FromBody] NewPostRequest request)

@@ -5,6 +5,7 @@ using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using static EdTechApi.API.Helpers.CommunityHelpers;
 
@@ -81,6 +82,7 @@ namespace EdTechApi.API.Controllers
         }
 
         [Authorize]
+        [EnableRateLimiting("community")]
         [HttpPost("topics/{slug}/threads")]
         public async Task<IActionResult> CreateThread(string slug, [FromBody] NewThreadRequest request)
         {
@@ -100,6 +102,7 @@ namespace EdTechApi.API.Controllers
         }
 
         [Authorize]
+        [EnableRateLimiting("community")]
         [HttpPost("threads/{id:int}/posts")]
         public async Task<IActionResult> Reply(int id, [FromBody] NewPostRequest request)
         {
@@ -119,6 +122,7 @@ namespace EdTechApi.API.Controllers
 
         // beğeni aç/kapa
         [Authorize]
+        [EnableRateLimiting("community")]
         [HttpPost("posts/{id:int}/like")]
         public async Task<IActionResult> Like(int id)
         {
@@ -141,6 +145,7 @@ namespace EdTechApi.API.Controllers
 
         // Yazar veya yönetici siler; başlığın ilk mesajı silinirse başlık da gider
         [Authorize]
+        [EnableRateLimiting("community")]
         [HttpDelete("posts/{id:int}")]
         public async Task<IActionResult> DeletePost(int id)
         {

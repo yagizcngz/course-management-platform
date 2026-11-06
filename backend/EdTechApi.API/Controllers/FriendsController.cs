@@ -4,6 +4,7 @@ using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace EdTechApi.API.Controllers
@@ -71,6 +72,7 @@ namespace EdTechApi.API.Controllers
         }
 
         // Karşı taraf zaten istek göndermişse bu çağrı onu kabul eder
+        [EnableRateLimiting("community")]
         [HttpPost("requests/{userId:int}")]
         public async Task<IActionResult> Send(int userId)
         {
@@ -104,6 +106,8 @@ namespace EdTechApi.API.Controllers
             return Ok(new { status = "outgoing", friendshipId = f.Id });
         }
 
+        [EnableRateLimiting("community")]
+
         [HttpPost("{id:int}/accept")]
         public async Task<IActionResult> Accept(int id)
         {
@@ -116,6 +120,7 @@ namespace EdTechApi.API.Controllers
         }
 
         // Reddet, isteği geri çek veya arkadaşlıktan çıkar
+        [EnableRateLimiting("community")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Remove(int id)
         {
