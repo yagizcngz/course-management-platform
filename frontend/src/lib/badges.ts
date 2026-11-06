@@ -77,10 +77,11 @@ const FIELDS: Rule[] = [
   ["polymath", "polymath", "rare", 3],
   ["renaissance", "polymath", "legendary", 5],
 ];
-const SPECIALIST = 3;
-const MASTER = 5;
-/** Fields that get their own specialist and master badges, most completed first. */
-const SPECIALIST_FIELDS = 3;
+// one pair for the student's strongest field, so every student has the same catalogue
+const FIELD_RANKS: Rule[] = [
+  ["specialist", "specialist", "rare", 3],
+  ["master", "specialist", "epic", 5],
+];
 
 const COURSES: Rule[] = [
   ["firstChapter", "author", "common", 1],
@@ -130,7 +131,10 @@ export function buildBadges(stats: AchievementStats, t: TFunction, label: (cat: 
     earnedAt?: (target: number) => string | undefined,
   ) => rules.forEach((r) => add(r, current, criteria(r[0], r[3]), earnedAt));
 
-  const l = stats.learning;
+  // One catalogue per role: an instructor earns teaching badges only, so every account of a role
+  // has the same total and courses a teacher studies (often in their own field) never mix in.
+  const te = stats.teaching;
+  const l = te ? null : stats.learning;
   if (l) {
     const done = l.courses.filter((c) => c.percent >= 100 && c.completedAt);
     const dates = done.map((c) => c.completedAt!);
@@ -160,33 +164,30 @@ export function buildBadges(stats: AchievementStats, t: TFunction, label: (cat: 
       (n) => nth([...firstPerField.values()], n),
     );
 
-    // specialist and master per field the student studies; a generic pair until they enrol
-    const fields = [...new Set(l.courses.map((c) => c.category).filter(Boolean))]
-      .map((cat) => ({ cat, done: done.filter((c) => c.category === cat) }))
-      .sort((a, b) => b.done.length - a.done.length || a.cat.localeCompare(b.cat))
-      .slice(0, SPECIALIST_FIELDS);
-    if (fields.length === 0) fields.push({ cat: "", done: [] });
-    for (const { cat, done: inField } of fields) {
-      const field = cat ? label(cat) : t("badges.anyField");
-      const key = cat || "any";
-      const fieldDates = inField.map((c) => c.completedAt!);
-      for (const [id, rarity, target] of [
-        [`specialist-${key}`, "rare", SPECIALIST],
-        [`master-${key}`, "epic", MASTER],
-      ] as const)
-        add(
-          [id, "specialist", rarity, target],
-          inField.length,
-          t("badges.specialist.criteria", { count: target, field }),
-          (n) => nth(fieldDates, n),
-          t(id.startsWith("master") ? "badges.master.title" : "badges.specialist.title", {
-            field,
-          }),
-        );
+    // specialist and master: the most courses finished in a single field, titled after it
+    const perField = new Map<string, string[]>();
+    for (const c of done)
+      perField.set(c.category, [...(perField.get(c.category) ?? []), c.completedAt!]);
+    const best = [...perField].sort(
+      (a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]),
+    )[0];
+    for (const rule of FIELD_RANKS) {
+      const [id, , , target] = rule;
+      // the earliest date any field reached the target
+      const at = [...perField.values()]
+        .map((d) => nth(d, target))
+        .filter(Boolean)
+        .sort()[0];
+      add(
+        rule,
+        best?.[1].length ?? 0,
+        t("badges.specialist.criteria", { count: target, field: t("badges.anyField") }),
+        () => at,
+        best?.[0] ? t(`badges.${id}.title`, { field: label(best[0]) }) : t(`badges.${id}.anyTitle`),
+      );
     }
   }
 
-  const te = stats.teaching;
   if (te) {
     const joined = new Date(te.joinedAt).getTime();
     const days = Math.max(0, Math.floor((Date.now() - joined) / DAY));
@@ -217,11 +218,10 @@ export const sortBadges = (badges: Badge[]) =>
 /** Most badges a profile showcases; the API enforces the same limit. */
 export const MAX_FEATURED = 5;
 
-/** The badges a profile shows off: the pinned earned ones in pin order, else the first earned ones. */
+/** The badges a profile shows off: only the pinned ones still earned, in pin order. */
 export function featuredBadges(badges: Badge[], pinned: string[] | null | undefined): Badge[] {
-  const earned = badges.filter((b) => b.earned);
-  const picked = (pinned ?? [])
-    .map((id) => earned.find((b) => b.id === id))
-    .filter((b): b is Badge => !!b);
-  return (picked.length ? picked : earned).slice(0, MAX_FEATURED);
+  return (pinned ?? [])
+    .map((id) => badges.find((b) => b.id === id && b.earned))
+    .filter((b): b is Badge => !!b)
+    .slice(0, MAX_FEATURED);
 }

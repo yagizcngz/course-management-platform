@@ -277,9 +277,16 @@ function RecordSections({ profile }: { profile: PublicProfile }) {
         </p>
       ) : (
         <>
-          {shown.length > 0 && (
+          {badges && (
             <Section title={t("community.featuredBadges")}>
-              <FeaturedBadgeRow badges={shown} total={earned} />
+              {shown.length > 0 ? (
+                <FeaturedBadgeRow badges={shown} total={earned} />
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  {t("community.noFeaturedBadges")}{" "}
+                  {t("badges.earnedCount", { earned, total: badges.length })}
+                </p>
+              )}
             </Section>
           )}
           {ongoing.length > 0 && (

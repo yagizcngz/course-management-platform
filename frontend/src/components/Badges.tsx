@@ -10,6 +10,7 @@ import {
   RARITIES,
   badgeState,
   buildBadges,
+  featuredBadges,
   rarityRank,
   type AchievementStats,
   type Badge,
@@ -152,7 +153,7 @@ const SECTIONS = ["earned", "progress", "locked"] as const;
 /**
  * The full "Badges & Achievements" view: every badge from the start, split into unlocked, in
  * progress and not started, with a rarity filter. With `pinned` and `onTogglePin`, earned badges
- * get a pin that features them on the public profile.
+ * get a pin, and the pinned ones (the only badges the profile card shows) are previewed on top.
  */
 export function BadgeShowcase({
   badges,
@@ -168,7 +169,9 @@ export function BadgeShowcase({
   const earned = badges.filter((b) => b.earned).length;
   const shown = rarity ? badges.filter((b) => b.rarity === rarity) : badges;
   const present = RARITIES.filter((r) => badges.some((b) => b.rarity === r));
-  const pinFull = (pinned?.length ?? 0) >= MAX_FEATURED;
+  // pins on badges no longer earned (or renamed) neither show nor take a slot
+  const featured = pinned ? featuredBadges(badges, pinned) : [];
+  const pinFull = featured.length >= MAX_FEATURED;
   return (
     <section aria-labelledby="badges-title" className="min-w-0">
       <div className="mb-5 flex items-baseline justify-between gap-4 border-b border-border pb-2">
@@ -180,9 +183,21 @@ export function BadgeShowcase({
         </span>
       </div>
       {pinned && (
-        <p className="-mt-2 mb-4 text-sm text-muted-foreground">
-          {t("badges.pinHint", { count: pinned.length, max: MAX_FEATURED })}
-        </p>
+        <div className="mb-6 rounded-xl border border-border bg-card p-4">
+          <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.16em] text-gold">
+            {t("badges.featuredTitle")}
+          </p>
+          {featured.length > 0 ? (
+            <FeaturedBadgeRow badges={featured} total={featured.length} />
+          ) : (
+            <p className="rounded-lg border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
+              {t(earned ? "badges.featuredEmpty" : "badges.featuredLocked")}
+            </p>
+          )}
+          <p className="mt-3 text-xs text-muted-foreground">
+            {t("badges.pinHint", { count: featured.length, max: MAX_FEATURED })}
+          </p>
+        </div>
       )}
       <div
         role="group"

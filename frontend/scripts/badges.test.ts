@@ -1,7 +1,12 @@
 // node --test scripts/ (Node 24 runs TypeScript directly)
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { badgeState, buildBadges, type AchievementStats } from "../src/lib/badges.ts";
+import {
+  badgeState,
+  buildBadges,
+  featuredBadges,
+  type AchievementStats,
+} from "../src/lib/badges.ts";
 
 // echoes the key so assertions need no locale files
 const t = ((key: string) => key) as never;
@@ -20,8 +25,8 @@ test("a new student sees every learner badge, locked, with a generic specialist 
   );
   assert.equal(badges.length, 14);
   assert.ok(badges.every((b) => badgeState(b) === "locked"));
-  assert.ok(badges.some((b) => b.id === "specialist-any"));
-  assert.ok(badges.some((b) => b.id === "master-any"));
+  assert.equal(badges.find((b) => b.id === "specialist")?.title, "badges.specialist.anyTitle");
+  assert.ok(badges.some((b) => b.id === "master"));
 });
 
 test("ladders unlock by target and date the earning course", () => {
@@ -39,14 +44,60 @@ test("ladders unlock by target and date the earning course", () => {
   };
   const byId = new Map(buildBadges(stats, t, String).map((b) => [b.id, b]));
   assert.equal(byId.get("graduate")?.earnedAt, "2026-01-01");
-  assert.equal(byId.get("specialist-web")?.earnedAt, "2026-03-01");
-  assert.equal(badgeState(byId.get("master-web")!), "progress");
-  assert.equal(byId.get("master-web")?.current, 3);
-  assert.equal(badgeState(byId.get("master-data")!), "locked");
+  assert.equal(byId.get("specialist")?.earnedAt, "2026-03-01");
+  assert.equal(badgeState(byId.get("master")!), "progress");
+  assert.equal(byId.get("master")?.current, 3);
   assert.equal(byId.get("explorer")?.earned, true);
   assert.equal(byId.get("scholar")?.earned, true);
   assert.equal(byId.get("devoted")?.current, 20);
-  assert.equal(byId.has("specialist-any"), false);
+  assert.equal(byId.size, 14);
+});
+
+test("every student has the same total, however many fields they study", () => {
+  const fields = ["a", "b", "c", "d", "e"].map((f, i) => course(i, f, "2026-01-0" + (i + 1)));
+  const one = buildBadges(
+    { learning: { completedLessons: 3, courses: fields.slice(0, 1) }, teaching: null },
+    t,
+    String,
+  );
+  const five = buildBadges(
+    { learning: { completedLessons: 9, courses: fields }, teaching: null },
+    t,
+    String,
+  );
+  assert.equal(one.length, five.length);
+});
+
+test("a teacher who also studies gets the teaching catalogue only", () => {
+  const joinedAt = new Date().toISOString();
+  const badges = buildBadges(
+    {
+      learning: { completedLessons: 40, courses: [course(1, "web", "2026-01-01")] },
+      teaching: { joinedAt, courses: 1, students: 0, lessons: 3 },
+    },
+    t,
+    String,
+  );
+  assert.equal(badges.length, 12);
+  assert.ok(!badges.some((b) => b.id === "graduate" || b.id === "firstLesson"));
+});
+
+test("a profile features pinned earned badges only, never a fallback", () => {
+  const badges = buildBadges(
+    {
+      learning: { completedLessons: 20, courses: [course(1, "web", "2026-01-01")] },
+      teaching: null,
+    },
+    t,
+    String,
+  );
+  assert.deepEqual(featuredBadges(badges, []), []);
+  assert.deepEqual(featuredBadges(badges, null), []);
+  // a pin on a locked or unknown badge shows nothing
+  assert.deepEqual(
+    featuredBadges(badges, ["sage", "gone", "graduate"]).map((b) => b.id),
+    ["graduate"],
+  );
 });
 
 test("teacher ladders cap progress at the target and sort earned rarest first", () => {

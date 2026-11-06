@@ -1494,7 +1494,8 @@
       "noCompleted": "No completed courses yet. A course appears here once you finish all of its lessons.",
       "completedBadge": "Completed",
       "lessonsDone": "{{done}}/{{total}} lessons",
-      "completedOn": "Completed on {{date}}"
+      "completedOn": "Completed on {{date}}",
+      "notStarted": "Not started"
     },
     "badges": {
       "title": "Badges & Achievements",
@@ -1509,10 +1510,12 @@
       },
       "specialist": {
         "title": "{{field}} Specialist",
-        "criteria": "Complete {{count}} courses in {{field}}."
+        "criteria": "Complete {{count}} courses in {{field}}.",
+        "anyTitle": "Field Specialist"
       },
       "master": {
-        "title": "{{field}} Master"
+        "title": "{{field}} Master",
+        "anyTitle": "Field Master"
       },
       "polymath": {
         "title": "Polymath",
@@ -1534,7 +1537,7 @@
         "title": "Curriculum Architect",
         "criteria": "Publish {{count}} lessons across your courses."
       },
-      "pinHint": "Pin up to {{max}} earned badges to feature them on your public profile ({{count}}/{{max}} pinned). With none pinned, your first earned badges are shown.",
+      "pinHint": "Pin up to {{max}} earned badges to feature them on your profile ({{count}}/{{max}} pinned). Only pinned badges are shown there.",
       "pin": "Feature on profile",
       "unpin": "Remove from profile",
       "pinFull": "You can feature at most {{max}} badges",
@@ -1623,7 +1626,10 @@
       },
       "pillar": {
         "title": "Pillar of the Academy"
-      }
+      },
+      "featuredTitle": "Featured on your profile",
+      "featuredEmpty": "Nothing featured yet. Pin an earned badge below to show it on your profile.",
+      "featuredLocked": "Badges you earn can be pinned here to feature them on your profile."
     },
     "errorPage": {
       "notFoundEyebrow": "Error · 404",
@@ -1737,7 +1743,8 @@
       "sendFailed": "The message could not be sent.",
       "seen": "seen",
       "writeMessage": "Write a message…",
-      "friendsOnly": "You can message this person once you are friends."
+      "friendsOnly": "You can message this person once you are friends.",
+      "noFeaturedBadges": "No badges featured yet."
     }
   }
 }

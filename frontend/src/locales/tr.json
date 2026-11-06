@@ -1413,7 +1413,8 @@
       "noCompleted": "Henüz tamamlanan kurs yok. Bir kursun tüm derslerini bitirdiğinizde burada görünür.",
       "completedBadge": "Tamamlandı",
       "lessonsDone": "{{done}}/{{total}} ders",
-      "completedOn": "{{date}} tarihinde tamamlandı"
+      "completedOn": "{{date}} tarihinde tamamlandı",
+      "notStarted": "Başlanmadı"
     },
     "badges": {
       "title": "Rozetler ve Başarımlar",
@@ -1428,10 +1429,12 @@
       },
       "specialist": {
         "title": "{{field}} Uzmanı",
-        "criteria": "{{field}} alanında {{count}} kurs tamamla."
+        "criteria": "{{field}} alanında {{count}} kurs tamamla.",
+        "anyTitle": "Alan Uzmanı"
       },
       "master": {
-        "title": "{{field}} Ustası"
+        "title": "{{field}} Ustası",
+        "anyTitle": "Alan Ustası"
       },
       "polymath": {
         "title": "Çok Yönlü Bilgin",
@@ -1453,7 +1456,7 @@
         "title": "Müfredat Mimarı",
         "criteria": "Kurslarında toplam {{count}} ders yayımla."
       },
-      "pinHint": "Kazandığınız en fazla {{max}} rozeti sabitleyerek herkese açık profilinizde öne çıkarın ({{count}}/{{max}} sabitli). Hiçbiri sabitlenmezse ilk kazandığınız rozetler gösterilir.",
+      "pinHint": "Kazandığınız en fazla {{max}} rozeti sabitleyerek profilinizde öne çıkarın ({{count}}/{{max}} sabitli). Profilde yalnızca sabitlenen rozetler görünür.",
       "pin": "Profilde öne çıkar",
       "unpin": "Profilden kaldır",
       "pinFull": "En fazla {{max}} rozet öne çıkarabilirsiniz",
@@ -1538,7 +1541,10 @@
       },
       "pillar": {
         "title": "Akademinin Direği"
-      }
+      },
+      "featuredTitle": "Profilinizde öne çıkanlar",
+      "featuredEmpty": "Henüz öne çıkan rozet yok. Profilinizde göstermek için aşağıdan kazandığınız bir rozeti sabitleyin.",
+      "featuredLocked": "Kazandığınız rozetleri buraya sabitleyerek profilinizde öne çıkarabilirsiniz."
     },
     "errorPage": {
       "notFoundEyebrow": "Hata · 404",
@@ -1644,7 +1650,8 @@
       "sendFailed": "Mesaj gönderilemedi.",
       "seen": "görüldü",
       "writeMessage": "Bir mesaj yazın…",
-      "friendsOnly": "Arkadaş olduğunuzda bu kişiye mesaj gönderebilirsiniz."
+      "friendsOnly": "Arkadaş olduğunuzda bu kişiye mesaj gönderebilirsiniz.",
+      "noFeaturedBadges": "Henüz öne çıkan rozet yok."
     }
   }
 }

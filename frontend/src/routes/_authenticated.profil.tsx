@@ -71,7 +71,7 @@ function ProfilePage() {
   const [photoUrl, setPhotoUrl] = useState("");
   const [bio, setBio] = useState("");
   const [isPublic, setIsPublic] = useState(true);
-  // pinned badge ids; empty means the first earned ones are shown
+  // pinned badge ids; only these are featured on the profile card
   const [pinned, setPinned] = useState<string[]>([]);
   const [enrollments, setEnrollments] = useState<EnrollmentDto[]>([]);
   const [profileLoaded, setProfileLoaded] = useState(false);
@@ -346,7 +346,10 @@ function ProfilePage() {
   // pins are saved at once; a failed save puts the previous set back
   const togglePin = async (id: string) => {
     const before = pinned;
-    const next = before.includes(id) ? before.filter((b) => b !== id) : [...before, id];
+    // stale pins (a badge no longer earned or since renamed) are dropped so they never hold a slot
+    const next = (before.includes(id) ? before.filter((b) => b !== id) : [...before, id]).filter(
+      (b) => badges?.some((x) => x.id === b && x.earned),
+    );
     setPinned(next);
     try {
       const res = await fetch(`${API_BASE}/api/profile/badges`, {
