@@ -41,6 +41,9 @@ function RegisterPage() {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  // drive the panel: books glow on success and shake on every failed attempt
+  const [registered, setRegistered] = useState(false);
+  const [failures, setFailures] = useState(0);
   const [codeSentAt, setCodeSentAt] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
 
@@ -94,12 +97,14 @@ function RegisterPage() {
       if (response.ok) {
         const data = await response.json().catch(() => null);
         if (data?.teacherApplication === "Pending") toast.success(t("register.applicationSent"));
-        navigate({ to: "/login" });
+        setRegistered(true);
+        setTimeout(() => navigate({ to: "/login" }), 900);
       } else {
         // the email code stays valid after a failed attempt, so the user only fixes the field
         const raw = await readError(response, t("register.registerError"));
         const keepsCode = response.status === 400 && raw !== t("backendErrors.invalidCode");
         setError(raw + (keepsCode ? ` ${t("register.codeStillValid")}` : ""));
+        setFailures((n) => n + 1);
       }
     } catch (err) {
       setError(t("register.serverError"));
@@ -170,8 +175,8 @@ function RegisterPage() {
         <FolioScene
           progress={done / steps.length}
           arrangement={asTeacher ? "shelf" : "stack"}
-          lit={false}
-          shake={0}
+          lit={registered}
+          shake={failures}
         />
       }
     >

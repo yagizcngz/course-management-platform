@@ -6,7 +6,8 @@ import { motion } from "motion/react";
 
 import { API_BASE } from "@/components/courseHelpers";
 import { AuthShell, authButtonClass, authInputClass, authLabelClass } from "@/components/AuthShell";
-import { FolioScene } from "@/components/effects/three/FolioScene";
+import { CelestialScene } from "@/components/effects/three/CelestialScene";
+import { getRoleFromToken, isTeacherRole } from "@/lib/auth";
 import { SplitHeadline } from "@/components/motion";
 
 export const Route = createFileRoute("/login")({
@@ -93,6 +94,8 @@ function LoginPage() {
   const [isShaking, setIsShaking] = useState(false);
   const [isHappy, setIsHappy] = useState(false);
   const [failures, setFailures] = useState(0);
+  // revealed by the token on success: an instructor's orrery opens its armillary rings
+  const [teacher, setTeacher] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,12 +113,14 @@ function LoginPage() {
         localStorage.setItem("jwt_token", data.token);
         localStorage.setItem("username", username);
 
+        setTeacher(isTeacherRole(getRoleFromToken(data.token)));
         setIsHappy(true);
         playSuccess();
 
+        // long enough for the sun to flare before the dashboard opens
         setTimeout(() => {
           navigate({ to: "/dashboard" });
-        }, 800);
+        }, 1200);
       } else {
         triggerError(t("login.invalidCredentials"));
       }
@@ -133,6 +138,8 @@ function LoginPage() {
   };
 
   const filled = Number(!!username.trim()) + Number(!!password);
+  // every typed character brightens the sky a little: a short name and password light it fully
+  const typed = Math.min(6, username.trim().length) + Math.min(8, password.length);
 
   return (
     <AuthShell
@@ -140,7 +147,13 @@ function LoginPage() {
       eyebrow={t("login.panelEyebrow")}
       steps={{ done: filled, total: 2 }}
       panel={
-        <FolioScene progress={filled / 2} arrangement="stack" lit={isHappy} shake={failures} />
+        <CelestialScene
+          done={typed}
+          total={14}
+          mode={teacher ? "teacher" : "student"}
+          lit={isHappy}
+          shake={failures}
+        />
       }
     >
       <motion.div
