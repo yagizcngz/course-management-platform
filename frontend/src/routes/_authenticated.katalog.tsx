@@ -13,6 +13,8 @@ import {
   getTeacherFullName,
   getTeachersInBranch,
   fetchCategories,
+  courseStatus,
+  findEnrollment,
   type CourseData,
   type EnrollmentDto,
   type TeacherLiteDto,
@@ -29,6 +31,7 @@ import {
 } from "@/lib/auth";
 import { API_BASE } from "@/components/courseHelpers";
 import { CourseTaxonomyFields } from "@/components/CourseTaxonomyFields";
+import { CourseStatusPill } from "@/components/CourseProgressBar";
 export const Route = createFileRoute("/_authenticated/katalog")({
   component: CoursesPage,
   validateSearch: (search: Record<string, unknown>) => ({
@@ -367,6 +370,7 @@ function CoursesPage() {
 
   // Katalogda toplu düzenleme yöneticiye ait; öğretmenler kendi kurslarını "Verdiğim Kurslar"dan yönetir
   const canManage = isAdminRole(currentUser.role);
+  const isStudent = isStudentRole(currentUser.role);
 
   const searchLower = searchTerm.toLowerCase();
   const filteredCourses = dbCourses.filter((c) => {
@@ -523,24 +527,11 @@ function CoursesPage() {
                   <div className="w-full aspect-video relative overflow-hidden bg-muted">
                     <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
                     {(() => {
-                      const isStudent =
-                        isStudentRole(currentUser.role) ||
-                        currentUser.role === t("courses.student");
-                      if (isStudent) {
-                        const isEnrolled = myCourses.some((enc) => {
-                          const cId =
-                            enc.courseId ?? enc.CourseId ?? enc.course?.id ?? enc.Course?.Id;
-                          return String(cId) === String(currentId);
-                        });
-                        if (isEnrolled) {
-                          return (
-                            <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-[10px] px-2 py-1 rounded-sm font-bold uppercase z-10">
-                              {t("dashboard.inProgress", "Devam Ediyor")}
-                            </div>
-                          );
-                        }
-                      }
-                      return null;
+                      // same rule as My Courses: the enrollment's progress decides the label
+                      const enrollment = isStudent && findEnrollment(myCourses, currentId);
+                      return enrollment ? (
+                        <CourseStatusPill status={courseStatus(enrollment.progressPercent)} />
+                      ) : null;
                     })()}
                   </div>
                   <div className="p-5 flex-1 flex flex-col">
@@ -606,11 +597,8 @@ function CoursesPage() {
           teachers={dbTeachers}
           categories={categories}
           onSaved={handleCourseSaved}
-          isStudent={isStudentRole(currentUser.role) || currentUser.role === t("courses.student")}
-          isEnrolled={myCourses.some(
-            (e) =>
-              String(e.courseId || e.CourseId) === String(selectedCourse.id || selectedCourse.Id),
-          )}
+          isStudent={isStudent}
+          isEnrolled={!!findEnrollment(myCourses, selectedCourse.id ?? selectedCourse.Id)}
           onJoin={() => handleJoinCourse(selectedCourse.id || selectedCourse.Id || "")}
         />
       )}

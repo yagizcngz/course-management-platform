@@ -7,9 +7,13 @@ import {
   getCourseImage,
   getCourseEnrollments,
   fetchCategories,
+  courseStatus,
+  findEnrollment,
   type CourseData,
+  type EnrollmentDto,
   type TeacherLiteDto,
 } from "../components/courseHelpers";
+import { CourseStatusPill } from "@/components/CourseProgressBar";
 import { toast } from "sonner";
 import { formatTry } from "@/lib/utils";
 
@@ -84,7 +88,7 @@ function HomePage() {
   const [dbEnrollments, setDbEnrollments] = useState<EnrollmentData[]>([]);
 
   // Student Dashboard States
-  const [myCourses, setMyCourses] = useState<EnrollmentData[]>([]);
+  const [myCourses, setMyCourses] = useState<EnrollmentDto[]>([]);
   const [recommendedCourses, setRecommendedCourses] = useState<CourseData[]>([]);
 
   const [categories, setCategories] = useState<string[]>([]);
@@ -243,12 +247,9 @@ function HomePage() {
     })
     .filter((group) => group.courses.length > 0);
 
-  const renderCourseCard = (
-    c: CourseData,
-    index: number,
-    isEnrolled: boolean = false,
-    status: string = "",
-  ) => {
+  const renderCourseCard = (c: CourseData, index: number) => {
+    const enrollment = isStudent ? findEnrollment(myCourses, c.id ?? c.Id) : undefined;
+    const isEnrolled = !!enrollment;
     const originalTitle = c.title || c.Title || t("dashboard.unnamedCourse");
     const originalCategory = c.category || c.Category || t("dashboard.general");
 
@@ -272,15 +273,7 @@ function HomePage() {
       >
         <div className="w-full aspect-video relative overflow-hidden bg-muted">
           <img src={getCourseImage(c, index)} alt={title} className="w-full h-full object-cover" />
-          {isEnrolled && status && (
-            <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-[10px] px-2 py-1 rounded-sm font-bold uppercase z-10">
-              {i18n.exists(`dynamic.status.${status}`)
-                ? t(`dynamic.status.${status}`)
-                : status === "Devam Ediyor"
-                  ? t("dashboard.inProgress", "Devam Ediyor")
-                  : status}
-            </div>
-          )}
+          {enrollment && <CourseStatusPill status={courseStatus(enrollment.progressPercent)} />}
         </div>
         <div className="p-5">
           <div className="flex justify-between items-start mb-3">
@@ -406,9 +399,7 @@ function HomePage() {
           categories={categories}
           onSaved={handleCourseSaved}
           isStudent={isStudent}
-          isEnrolled={myCourses.some(
-            (e) => (e.courseId || e.CourseId) === (selectedCourse.id || selectedCourse.Id),
-          )}
+          isEnrolled={!!findEnrollment(myCourses, selectedCourse.id ?? selectedCourse.Id)}
           onJoin={handleJoinCourse}
           onLeave={handleLeaveCourse}
         />

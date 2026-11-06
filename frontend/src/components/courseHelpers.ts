@@ -182,3 +182,17 @@ export const getCourseEnrollments = (course: CourseData, enrollments: Enrollment
     return enrTitle === title;
   });
 };
+
+/** Where a student stands in a course; every view derives it from the enrollment's percent. */
+export type CourseStatus = "completed" | "inProgress" | "notStarted";
+export const courseStatus = (percent: number | undefined): CourseStatus =>
+  (percent ?? 0) >= 100 ? "completed" : (percent ?? 0) > 0 ? "inProgress" : "notStarted";
+
+/** The student's enrollment in a course, whatever id casing the API sent. */
+export const findEnrollment = (list: EnrollmentDto[], courseId: unknown) =>
+  courseId == null || courseId === ""
+    ? undefined
+    : list.find(
+        (e) =>
+          String(e.courseId ?? e.CourseId ?? e.course?.id ?? e.Course?.Id) === String(courseId),
+      );

@@ -10,12 +10,11 @@ import {
   type TeacherLiteDto,
 } from "@/components/courseHelpers";
 import { toast } from "sonner";
-import { CheckCircle2 } from "lucide-react";
-import { CourseProgressBar } from "@/components/CourseProgressBar";
+import { CourseProgressBar, CourseStatusPill } from "@/components/CourseProgressBar";
 import { formatDate } from "@/lib/utils";
 import { authHeaders, readError } from "@/lib/auth";
 
-import { API_BASE } from "@/components/courseHelpers";
+import { API_BASE, courseStatus } from "@/components/courseHelpers";
 import { BadgeStrip, useBadges } from "@/components/Badges";
 export const Route = createFileRoute("/_authenticated/kurslarim")({
   component: MyCoursesPage,
@@ -99,9 +98,8 @@ function MyCoursesPage() {
     fetchMyCourses();
   };
 
-  const progressOf = (e: EnrollmentDto) => e.progressPercent ?? 0;
-  const ongoing = courses.filter((e) => progressOf(e) < 100);
-  const completed = courses.filter((e) => progressOf(e) >= 100);
+  const completed = courses.filter((e) => courseStatus(e.progressPercent) === "completed");
+  const ongoing = courses.filter((e) => courseStatus(e.progressPercent) !== "completed");
 
   const renderCard = (enrollment: EnrollmentDto, index: number) => {
     const c = (enrollment.course || enrollment.Course || enrollment) as CourseData;
@@ -113,8 +111,8 @@ function MyCoursesPage() {
         : categoryRaw
       : t("courses.general");
     const instructor = c.instructor || c.Instructor || t("courses.unknown");
-    const percent = progressOf(enrollment);
-    const done = percent >= 100;
+    const percent = enrollment.progressPercent ?? 0;
+    const status = courseStatus(percent);
 
     return (
       <button
@@ -126,12 +124,7 @@ function MyCoursesPage() {
       >
         <div className="w-full aspect-video relative overflow-hidden bg-muted">
           <img src={getCourseImage(c, index)} alt="" className="w-full h-full object-cover" />
-          <span
-            className={`absolute top-2 right-2 inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.14em] backdrop-blur-sm ${done ? "bg-gold text-night" : "bg-black/70 text-white"}`}
-          >
-            {done && <CheckCircle2 aria-hidden="true" className="size-3" />}
-            {done ? t("myCourses.completedBadge") : t("dashboard.inProgress")}
-          </span>
+          <CourseStatusPill status={status} />
         </div>
         <div className="p-4 flex-1 flex flex-col gap-1 min-w-0">
           <div className="font-mono text-[10px] uppercase tracking-[0.16em] text-gold truncate">
@@ -151,7 +144,7 @@ function MyCoursesPage() {
             })}
             className="mt-auto pt-3"
           />
-          {done && enrollment.completedAt && (
+          {status === "completed" && enrollment.completedAt && (
             <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
               {t("myCourses.completedOn", {
                 date: formatDate(enrollment.completedAt, i18n.language),
