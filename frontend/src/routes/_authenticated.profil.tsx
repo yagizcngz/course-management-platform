@@ -49,6 +49,7 @@ interface ProfileDto {
   lastName?: string;
   LastName?: string;
   isProfilePublic?: boolean;
+  featuredBadges?: string[];
   IsProfilePublic?: boolean;
   branch?: string;
   Branch?: string;
@@ -70,6 +71,8 @@ function ProfilePage() {
   const [photoUrl, setPhotoUrl] = useState("");
   const [bio, setBio] = useState("");
   const [isPublic, setIsPublic] = useState(true);
+  // pinned badge ids; empty means the first earned ones are shown
+  const [pinned, setPinned] = useState<string[]>([]);
   const [enrollments, setEnrollments] = useState<EnrollmentDto[]>([]);
   const [profileLoaded, setProfileLoaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -128,6 +131,7 @@ function ProfilePage() {
           setPhotoUrl(data.profilePictureUrl || data.ProfilePictureUrl || "");
           setBio(data.aboutMe || data.AboutMe || "");
           setIsPublic(data.isProfilePublic ?? data.IsProfilePublic ?? true);
+          setPinned(data.featuredBadges ?? []);
 
           if (data.branch || data.Branch) {
             setBranch(
@@ -339,6 +343,23 @@ function ProfilePage() {
     .join("")
     .toUpperCase();
 
+  // pins are saved at once; a failed save puts the previous set back
+  const togglePin = async (id: string) => {
+    const before = pinned;
+    const next = before.includes(id) ? before.filter((b) => b !== id) : [...before, id];
+    setPinned(next);
+    try {
+      const res = await fetch(`${API_BASE}/api/profile/badges`, {
+        method: "PUT",
+        headers: authHeaders(),
+        body: JSON.stringify({ badgeIds: next }),
+      });
+      if (!res.ok) throw new Error(await readError(res, t("badges.pinFailed")));
+    } catch (e) {
+      setPinned(before);
+      toast.error((e as Error).message);
+    }
+  };
   return (
     <>
       <PageHeader crumb={t("profile.breadcrumb")} />
@@ -577,7 +598,7 @@ function ProfilePage() {
           </div>
         </div>
 
-        {badges && <BadgeShowcase badges={badges} />}
+        {badges && <BadgeShowcase badges={badges} pinned={pinned} onTogglePin={togglePin} />}
       </div>
     </>
   );

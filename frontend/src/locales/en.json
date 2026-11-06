@@ -1533,6 +1533,7 @@
       "pin": "Feature on profile",
       "unpin": "Remove from profile",
       "pinFull": "You can feature at most {{max}} badges",
+      "pinFailed": "Could not save your featured badges.",
       "moreEarned_one": "+{{count}} more earned badge",
       "moreEarned_other": "+{{count}} more earned badges"
     },

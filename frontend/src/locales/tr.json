@@ -1448,6 +1448,7 @@
       "pin": "Profilde öne çıkar",
       "unpin": "Profilden kaldır",
       "pinFull": "En fazla {{max}} rozet öne çıkarabilirsiniz",
+      "pinFailed": "Öne çıkan rozetler kaydedilemedi.",
       "moreEarned": "+{{count}} kazanılmış rozet daha"
     },
     "errorPage": {
