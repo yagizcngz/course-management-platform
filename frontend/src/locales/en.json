@@ -172,7 +172,7 @@
       }
     },
     "register": {
-      "panelTitle": "Every course adds a *volume* to your shelf.",
+      "panelTitle": "Every course lights a new *star* in your sky.",
       "heading": "Create your *account*",
       "title": "Create New Account",
       "firstName": "First Name",
@@ -217,7 +217,8 @@
       "codeExpiresIn": "Code valid for {{time}}",
       "codeExpired": "The code has expired.",
       "resendCode": "Send a new code",
-      "stepVerify": "Verification code"
+      "stepVerify": "Verification code",
+      "creating": "Creating your account…"
     },
     "dashboard": {
       "alerts": {

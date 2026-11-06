@@ -5,8 +5,8 @@ import { useTranslation } from "react-i18next";
 import { API_BASE, fetchCategories } from "@/components/courseHelpers";
 import { readError } from "@/lib/auth";
 import { AuthShell, authButtonClass, authInputClass, authLabelClass } from "@/components/AuthShell";
-import { FolioScene } from "@/components/effects/three/FolioScene";
-import { GraduationCap, Presentation } from "lucide-react";
+import { CelestialScene } from "@/components/effects/three/CelestialScene";
+import { AlertCircle, ArrowRight, GraduationCap, Loader2, Presentation } from "lucide-react";
 import { motion } from "motion/react";
 import { SplitHeadline } from "@/components/motion";
 import { toast } from "sonner";
@@ -41,8 +41,9 @@ function RegisterPage() {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
-  // drive the panel: books glow on success and shake on every failed attempt
+  // drive the panel: the sun flares on success and the sky flickers on every failed attempt
   const [registered, setRegistered] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [failures, setFailures] = useState(0);
   const [codeSentAt, setCodeSentAt] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -58,7 +59,9 @@ function RegisterPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting || registered) return;
     setError("");
+    setSubmitting(true);
 
     try {
       if (!EMAIL_RE.test(email.trim())) {
@@ -106,8 +109,11 @@ function RegisterPage() {
         setError(raw + (keepsCode ? ` ${t("register.codeStillValid")}` : ""));
         setFailures((n) => n + 1);
       }
-    } catch (err) {
+    } catch {
       setError(t("register.serverError"));
+      setFailures((n) => n + 1);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -136,7 +142,7 @@ function RegisterPage() {
       } else {
         setError(await readError(response, t("register.codeSendError")));
       }
-    } catch (err) {
+    } catch {
       setError(t("register.serverError"));
     } finally {
       setIsSending(false);
@@ -172,14 +178,19 @@ function RegisterPage() {
       eyebrow={t(asTeacher ? "register.panelEyebrowTeacher" : "register.panelEyebrow")}
       steps={{ done, total: steps.length, next }}
       panel={
-        <FolioScene
-          progress={done / steps.length}
-          arrangement={asTeacher ? "shelf" : "stack"}
+        <CelestialScene
+          done={done}
+          total={steps.length}
+          mode={asTeacher ? "teacher" : "student"}
           lit={registered}
           shake={failures}
         />
       }
     >
+      <p className="mb-4 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-gold">
+        <span aria-hidden="true" className="h-px w-6 bg-gold" />
+        {t(asTeacher ? "register.panelEyebrowTeacher" : "register.panelEyebrow")}
+      </p>
       <h1 className="font-serif text-5xl leading-none">
         <SplitHeadline text={t("register.heading")} />
       </h1>
@@ -187,8 +198,9 @@ function RegisterPage() {
       {error && (
         <div
           role="alert"
-          className="mt-6 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-center text-sm font-medium text-destructive"
+          className="mt-6 flex items-start gap-2.5 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
         >
+          <AlertCircle aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
           {error}
         </div>
       )}
@@ -435,10 +447,24 @@ function RegisterPage() {
 
         <button
           type="submit"
-          disabled={!isEmailSent || codeLeft === 0}
-          className={`${authButtonClass} mt-2`}
+          disabled={!isEmailSent || codeLeft === 0 || submitting || registered}
+          aria-busy={submitting}
+          className={`${authButtonClass} group mt-2 inline-flex items-center justify-center gap-2`}
         >
-          {t("register.createAccountButton")}
+          {submitting ? (
+            <>
+              <Loader2 aria-hidden="true" className="size-4 animate-spin" />
+              {t("register.creating")}
+            </>
+          ) : (
+            <>
+              {t("register.createAccountButton")}
+              <ArrowRight
+                aria-hidden="true"
+                className="size-4 transition-transform group-hover:translate-x-0.5"
+              />
+            </>
+          )}
         </button>
       </form>
 

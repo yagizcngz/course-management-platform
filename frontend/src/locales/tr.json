@@ -172,7 +172,7 @@
       }
     },
     "register": {
-      "panelTitle": "Her kurs rafına yeni bir *cilt* ekler.",
+      "panelTitle": "Her kurs gökyüzünde yeni bir *yıldız* yakar.",
       "heading": "Hesabını *oluştur*",
       "title": "Yeni Hesap Aç",
       "firstName": "Ad",
@@ -217,7 +217,8 @@
       "codeExpiresIn": "Kod {{time}} daha geçerli",
       "codeExpired": "Kodun süresi doldu.",
       "resendCode": "Yeni kod gönder",
-      "stepVerify": "Doğrulama kodu"
+      "stepVerify": "Doğrulama kodu",
+      "creating": "Hesabınız oluşturuluyor…"
     },
     "dashboard": {
       "alerts": {
