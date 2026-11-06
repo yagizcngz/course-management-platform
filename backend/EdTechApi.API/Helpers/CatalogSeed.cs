@@ -201,6 +201,64 @@ namespace EdTechApi.API.Helpers
             db.SaveChanges();
         }
 
+        /// <summary>
+        /// Demo veritabanında boş kalan profil alanlarını doldurur: her öğretmen, öğrenci ve giriş hesabına avatar
+        /// ve kısa biyografi, öğretmenlere branş. Yalnızca boş alanlara yazar; kullanıcının girdiği değer ezilmez.
+        /// </summary>
+        public static void BackfillProfiles(AppDbContext db)
+        {
+            var teachers = db.Teachers.IgnoreQueryFilters().Include(t => t.Courses).ToList();
+            foreach (var t in teachers.Where(t => string.IsNullOrWhiteSpace(t.Branch)))
+            {
+                var fromCourses = t.Courses.Select(c => c.Category).Where(c => !string.IsNullOrWhiteSpace(c)).Distinct().ToList();
+                t.Branch = fromCourses.Count > 0 ? string.Join(", ", fromCourses) : "Genel";
+            }
+            db.SaveChanges();
+            FillMissingTeacherBios(db);
+            foreach (var t in teachers.Where(t => string.IsNullOrWhiteSpace(t.ProfilePictureUrl)))
+                t.ProfilePictureUrl = Avatar(t.Email, $"{t.FirstName}.{t.LastName}");
+
+            var students = db.Students.IgnoreQueryFilters().ToList();
+            var studentAreas = db.Enrollments
+                .Select(e => new { e.StudentId, e.Course.Category }).ToList()
+                .GroupBy(x => x.StudentId)
+                .ToDictionary(g => g.Key, g => g.GroupBy(x => x.Category).OrderByDescending(c => c.Count()).Select(c => c.Key).Take(2).ToList());
+            foreach (var s in students)
+            {
+                if (string.IsNullOrWhiteSpace(s.ProfilePictureUrl)) s.ProfilePictureUrl = Avatar(s.Email, $"{s.FirstName}.{s.LastName}");
+                if (!string.IsNullOrWhiteSpace(s.AboutMe)) continue;
+                var name = $"{s.FirstName} {s.LastName}".Trim();
+                s.AboutMe = studentAreas.TryGetValue(s.Id, out var areas) && areas.Count > 0
+                    ? $"{name}, E-Kurs'ta {string.Join(" ve ", areas)} alanlarındaki kurslara devam eden bir öğrenci. Haftalık çalışma planıyla ilerliyor, ders notlarını düzenli tutuyor ve takıldığı yerleri eğitmenlerine soruyor."
+                    : $"{name}, E-Kurs'ta ilgi alanlarına uygun kursları keşfeden bir öğrenci. Kendine bir öğrenme planı çıkarıyor ve ilk kursunu seçmek için katalogdaki ders içeriklerini inceliyor.";
+            }
+            db.SaveChanges();
+
+            // giriş hesabı, bağlı öğretmen/öğrenci profilinin görselini ve biyografisini paylaşır
+            foreach (var u in db.Users.ToList())
+            {
+                var teacher = teachers.FirstOrDefault(t => t.UserId == u.Id);
+                var student = students.FirstOrDefault(s => s.UserId == u.Id);
+                if (string.IsNullOrWhiteSpace(u.ProfilePictureUrl))
+                    u.ProfilePictureUrl = teacher?.ProfilePictureUrl ?? student?.ProfilePictureUrl ?? Avatar(u.Email, u.Username);
+                if (string.IsNullOrWhiteSpace(u.AboutMe))
+                    u.AboutMe = teacher?.AboutMe ?? student?.AboutMe ?? AccountBio(u);
+                if (teacher != null && string.IsNullOrWhiteSpace(teacher.ProfilePictureUrl)) teacher.ProfilePictureUrl = u.ProfilePictureUrl;
+                if (student != null && string.IsNullOrWhiteSpace(student.ProfilePictureUrl)) student.ProfilePictureUrl = u.ProfilePictureUrl;
+            }
+            db.SaveChanges();
+        }
+
+        // profili (öğretmen/öğrenci kaydı) olmayan hesaplar: yöneticiler ve henüz bağlanmamış hesaplar
+        private static string AccountBio(User u)
+        {
+            var name = $"{u.FirstName} {u.LastName}".Trim();
+            if (name.Length == 0) name = u.Username;
+            return u.Role is "Admin" or "SuperAdmin" or "superadmin"
+                ? $"{name}, E-Kurs platform yöneticisi. Kurs kataloğunu ve kategorileri düzenliyor, eğitmen başvurularını değerlendiriyor, duyuruları yayımlıyor ve destek taleplerini yanıtlıyor."
+                : $"{name}, E-Kurs kullanıcısı. Platformdaki kursları ve eğitmenleri inceleyerek kendine uygun bir öğrenme yolu seçiyor.";
+        }
+
         private static string[] Branches(Teacher t) => Split(t.Branch);
 
         private static string[] Split(string? branch) =>
@@ -209,8 +267,11 @@ namespace EdTechApi.API.Helpers
         private static string FullName(Teacher t) => $"{t.FirstName} {t.LastName}".Trim();
 
         // shortcut: dış avatar servisi (DiceBear); çevrimdışı/üretim için yerel /uploads görselleriyle değiştirilebilir
-        private static string Avatar(string email) =>
-            $"https://api.dicebear.com/9.x/notionists/svg?seed={Uri.EscapeDataString(email.Split('@')[0])}&backgroundColor=ece4d2";
+        private static string Avatar(string email, string? fallback = null)
+        {
+            var seed = email.Contains('@') ? email.Split('@')[0] : fallback ?? email;
+            return $"https://api.dicebear.com/9.x/notionists/svg?seed={Uri.EscapeDataString(seed)}&backgroundColor=ece4d2";
+        }
 
         private const string Domain = "@edtech.example";
 

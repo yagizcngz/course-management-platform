@@ -78,5 +78,36 @@ namespace EdTechApi.Tests
             Assert.Contains("Matematik", math.Teacher!.Branch!);
             Assert.True(_db.Lessons.Count(l => l.CourseId == math.Id) >= 4);
         }
+
+        [Fact]
+        public void Backfill_fills_every_empty_profile_and_keeps_edits()
+        {
+            CatalogSeed.SeedCategories(_db);
+            CatalogSeed.SeedCatalog(_db);
+            var admin = new User { Username = "Admin", Role = "Admin", FirstName = "Admin" };
+            var teacherUser = new User { Username = "t1", Role = "Teacher", FirstName = "Yeni", LastName = "Hoca", Email = "yeni@test", AboutMe = "Kendi yazdığım biyografi." };
+            _db.Users.AddRange(admin, teacherUser);
+            _db.SaveChanges();
+            _db.Teachers.Add(new Teacher { FirstName = "Yeni", LastName = "Hoca", Email = "yeni@test", TeacherNumber = "t1", UserId = teacherUser.Id });
+            _db.Students.Add(new Student { FirstName = "Boş", LastName = "Öğrenci", Email = "bos@test", StudentNumber = "s1" });
+            _db.SaveChanges();
+
+            CatalogSeed.BackfillProfiles(_db);
+            CatalogSeed.BackfillProfiles(_db);
+
+            Assert.All(_db.Teachers.ToList(), t =>
+            {
+                Assert.False(string.IsNullOrWhiteSpace(t.ProfilePictureUrl));
+                Assert.False(string.IsNullOrWhiteSpace(t.AboutMe));
+                Assert.False(string.IsNullOrWhiteSpace(t.Branch));
+            });
+            Assert.All(_db.Students.ToList(), s =>
+                Assert.False(string.IsNullOrWhiteSpace(s.ProfilePictureUrl) || string.IsNullOrWhiteSpace(s.AboutMe)));
+            Assert.All(_db.Users.ToList(), u =>
+                Assert.False(string.IsNullOrWhiteSpace(u.ProfilePictureUrl) || string.IsNullOrWhiteSpace(u.AboutMe)));
+            Assert.Equal("Kendi yazdığım biyografi.", _db.Users.Single(u => u.Username == "t1").AboutMe);
+            Assert.Equal(_db.Teachers.Single(t => t.UserId == teacherUser.Id).ProfilePictureUrl,
+                _db.Users.Single(u => u.Username == "t1").ProfilePictureUrl);
+        }
     }
 }

@@ -19,11 +19,18 @@ namespace EdTechApi.API.Helpers
             }
 
             CatalogSeed.SeedCategories(db);
-            if (isDevelopment && config["Seed:DemoUsers"] == "true") CatalogSeed.SeedCatalog(db);
+            var demo = isDevelopment && config["Seed:DemoUsers"] == "true";
+            if (!demo) return;
+            CatalogSeed.SeedCatalog(db);
 
             var demoPass = config["Seed:DemoPassword"];
-            if (!isDevelopment || config["Seed:DemoUsers"] != "true" || string.IsNullOrWhiteSpace(demoPass)) return;
+            if (!string.IsNullOrWhiteSpace(demoPass)) SeedDemoAccounts(db, demoPass);
+            // demo hesaplar dahil, avatarı veya biyografisi boş kalan her profil doldurulur
+            CatalogSeed.BackfillProfiles(db);
+        }
 
+        private static void SeedDemoAccounts(AppDbContext db, string demoPass)
+        {
             // silinmiş (soft-delete) demo öğretmen/öğrenci profilleri geri yüklenir; demo hesaplar her zaman kullanılabilir kalır
             foreach (var t in db.Teachers.IgnoreQueryFilters().Where(t => t.IsDeleted && t.User != null && t.User.Username == "demo_teacher"))
             { t.IsDeleted = false; t.DeletedAt = null; }
