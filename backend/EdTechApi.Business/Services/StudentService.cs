@@ -57,7 +57,7 @@ namespace EdTechApi.Business.Services
                     if (user != null)
                     {
                         student.UserId = null;
-                        AccountRetirement.Retire(user);
+                        await AccountRetirement.RetireAsync(_context, user);
                     }
                 }
 

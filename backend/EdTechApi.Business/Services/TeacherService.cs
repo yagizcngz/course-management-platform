@@ -69,7 +69,7 @@ namespace EdTechApi.Business.Services
                         // aynı hesaba bağlı kalmış bir öğrenci profili (ör. eğitmenliğe geçmiş öğrenci) silmeyi engellemesin
                         foreach (var s in await _context.Students.IgnoreQueryFilters().Where(s => s.UserId == user.Id).ToListAsync())
                             s.UserId = null;
-                        AccountRetirement.Retire(user);
+                        await AccountRetirement.RetireAsync(_context, user);
                     }
                 }
 

@@ -33,8 +33,8 @@ builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 builder.Services.AddScoped<ITeacherService, TeacherService>();
 builder.Services.AddScoped<IAnnouncementService, AnnouncementService>();
 builder.Services.AddScoped<IWalletService, WalletService>();
-// Arka plan görevini sisteme dahil ediyoruz
-// builder.Services.AddHostedService<EdTechApi.Business.BackgroundJobs.SoftDeleteCleanupService>();
+// Saklama süresi dolan silinmiş kayıtları günde bir temizler
+builder.Services.AddHostedService<SoftDeleteCleanupService>();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<StudentValidator>();
 
@@ -65,6 +65,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
         };
+        // Süresi dolmamış token'ı olsa da kapatılmış (veya kullanıcı adı değişmiş) hesabın istekleri reddedilir
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async ctx =>
+            {
+                var username = EdTechApi.API.Helpers.ClaimsPrincipalExtensions.GetUsername(ctx.Principal!);
+                var db = ctx.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
+                if (username == null || !await db.Users.AnyAsync(u => u.Username == username && u.Role != AccountRetirement.DeletedRole))
+                    ctx.Fail("Hesap kapatılmış.");
+            }
+        };
     });
 builder.Services.AddOpenApi();
 
@@ -86,8 +97,10 @@ using (var scope = app.Services.CreateScope())
 {
     try
     {
-        EdTechApi.API.Helpers.DataSeeder.Run(
-            scope.ServiceProvider.GetRequiredService<AppDbContext>(), builder.Configuration, app.Environment.IsDevelopment());
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        // geliştirmede klonlayan herkes için şema kendiliğinden güncellenir; canlıda migration bilinçli uygulanır
+        if (app.Environment.IsDevelopment()) db.Database.Migrate();
+        EdTechApi.API.Helpers.DataSeeder.Run(db, builder.Configuration, app.Environment.IsDevelopment());
     }
     catch (Exception ex)
     {
