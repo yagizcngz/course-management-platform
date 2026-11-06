@@ -31,6 +31,7 @@ namespace EdTechApi.API.Helpers
             }
             // demo hesaplar dahil, avatarı veya biyografisi boş kalan her profil doldurulur
             CatalogSeed.BackfillProfiles(db);
+            CommunitySeed.Run(db);
         }
 
         private static void SeedDemoAccounts(AppDbContext db, string demoPass)

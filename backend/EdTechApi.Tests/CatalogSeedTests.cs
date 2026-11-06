@@ -165,6 +165,13 @@ namespace EdTechApi.Tests
             var user = _db.Users.Single(u => u.Username == "demo_student");
             Assert.Equal(_db.WalletTransactions.Where(t => t.UserId == user.Id).ToList().Sum(t => t.Amount), user.Balance);
             Assert.True(_db.Courses.Count(c => c.Teacher!.User!.Username == "demo_teacher") >= 1);
+
+            // community: seeded once despite two runs, the demo student has friends, a pending request and unread messages
+            Assert.Equal(_db.ForumThreads.Select(t => t.Title).Distinct().Count(), _db.ForumThreads.Count());
+            Assert.True(_db.ForumThreads.Count() >= 6);
+            Assert.Contains(_db.Friendships, f => f.Status == "Accepted" && (f.RequesterId == user.Id || f.AddresseeId == user.Id));
+            Assert.Contains(_db.Friendships, f => f.Status == "Pending" && f.AddresseeId == user.Id);
+            Assert.Contains(_db.DirectMessages, m => m.RecipientId == user.Id && m.ReadAt == null);
         }
 
         [Fact]
