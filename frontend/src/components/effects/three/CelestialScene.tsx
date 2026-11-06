@@ -1,14 +1,15 @@
 import { useEffect, useRef } from "react";
 import type * as THREE_NS from "three";
 import { useThreeScene } from "./useThreeScene";
+import { sealGraph } from "./sealEmblems";
 
 export interface CelestialProps {
-  /** Filled sign-up steps; each one lights the next star of the active constellation. */
+  /** Filled sign-up steps; each one draws the next stretch of the active role's seal. */
   done: number;
   total: number;
   /**
-   * "student": a cool, low view across one calm orbital plane under the Sprout constellation.
-   * "teacher": the camera rises, the light warms, orbits fan out and quicken under the Lantern.
+   * "student": a cool, low view across one calm orbital plane under the mortarboard seal.
+   * "teacher": the camera rises, the light warms, orbits fan out and quicken under the lectern.
    */
   mode: "student" | "teacher";
   /** Account created: the sun flares, a shock ring rolls out and the figure shines. */
@@ -25,35 +26,12 @@ const ORBIT_TINT: Record<Mode, RGB> = { student: [0.45, 0.72, 0.95], teacher: [0
 const STAR_TINT: Record<Mode, RGB> = { student: [0.78, 0.88, 1.0], teacher: [1.0, 0.86, 0.62] };
 const EMBER: RGB = [0.95, 0.36, 0.26];
 
-// Two original figures, drawn as one path each; the instructor's has more stars, like its form.
-const FIGURES: Record<Mode, { at: [number, number]; stars: [number, number][] }> = {
-  student: {
-    at: [-3.4, 4.4],
-    stars: [
-      [-2.2, -0.6],
-      [-1.4, 0.1],
-      [-0.5, -0.2],
-      [0.2, 0.7],
-      [1.0, 0.2],
-      [1.7, 1.0],
-      [2.3, 0.4],
-    ],
-  },
-  teacher: {
-    at: [3.1, 4.6],
-    stars: [
-      [-2.3, -0.4],
-      [-1.6, 0.5],
-      [-0.7, 0.1],
-      [-0.1, 1.0],
-      [0.7, 0.4],
-      [1.5, 1.1],
-      [2.3, 0.5],
-      [1.9, -0.4],
-      [0.9, -0.2],
-    ],
-  },
-};
+// The constellations are the role seals stamped on sign-in (sealEmblems), so filling the form
+// traces the seal the new account will carry: the emblem first, then the ring that closes it.
+const FIGURE_AT: Record<Mode, [number, number]> = { student: [-3.4, 4.3], teacher: [3.2, 4.4] };
+const FIGURE_SCALE = 0.0145; // camera-space units per seal canvas pixel: the ring is ~2.9 across
+const RING_STARS = 12;
+const DRAW_SPEED = 4; // edges per second; a step's edges are drawn one after another
 const MODES: Mode[] = ["student", "teacher"];
 
 // semi-major axis, eccentricity, radius, surface, axial tilt; speed follows Kepler (a^-1.5)
@@ -96,8 +74,8 @@ const eccentric = (m: number, e: number) => {
 /**
  * The sign-up centrepiece: a living solar system under two constellations. Planets keep true
  * elliptical orbits at Kepler speeds, each trailing a fading arc; an asteroid belt turns between
- * the rocky and the giant worlds. Each completed step lights the next star of the role's
- * constellation; switching role eases the camera, colour temperature, orbital fan and speed to
+ * the rocky and the giant worlds. Each completed step draws the next stretch of the role's seal
+ * as a constellation; switching role eases the camera, colour temperature, orbital fan and speed to
  * the other state. A failed attempt flickers the sky ember-red; success flares the sun.
  */
 export function CelestialScene(props: CelestialProps) {
@@ -543,23 +521,28 @@ export function CelestialScene(props: CelestialProps) {
 
     // --- constellations in camera space -------------------------------------------------------
     const figures = MODES.map((mode) => {
-      const { at, stars } = FIGURES[mode];
-      const n = stars.length;
-      const pts = stars.map(([x, y]) => new THREE.Vector3(at[0] + x * 1.05, at[1] + y * 1.05, -22));
+      const [ax, ay] = FIGURE_AT[mode];
+      const { nodes, edges } = sealGraph(mode, RING_STARS);
+      const n = nodes.length;
+      const pts = nodes.map(
+        ([x, y]) =>
+          new THREE.Vector3(ax + (x - 128) * FIGURE_SCALE, ay - (y - 128) * FIGURE_SCALE, -22),
+      );
       const sPos = new Float32Array(n * 3);
       pts.forEach((pt, i) => sPos.set([pt.x, pt.y, pt.z], i * 3));
       const sGeo = new THREE.BufferGeometry();
       sGeo.setAttribute("position", new THREE.BufferAttribute(sPos, 3));
       sGeo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(n * 3), 3));
       const starMat = new THREE.PointsMaterial({
-        size: 0.9,
+        size: 0.7,
         map: dot,
         vertexColors: true,
         ...additive,
       });
+      const e = edges.length;
       const lGeo = new THREE.BufferGeometry();
-      lGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array((n - 1) * 6), 3));
-      lGeo.setAttribute("color", new THREE.BufferAttribute(new Float32Array((n - 1) * 6), 3));
+      lGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(e * 6), 3));
+      lGeo.setAttribute("color", new THREE.BufferAttribute(new Float32Array(e * 6), 3));
       const group = new THREE.Group();
       group.add(
         new THREE.Points(sGeo, starMat),
@@ -573,11 +556,13 @@ export function CelestialScene(props: CelestialProps) {
         mode,
         n,
         pts,
+        edges,
         sGeo,
         lGeo,
         group,
         light: new Float32Array(n),
-        draw: new Float32Array(n - 1),
+        reached: new Uint8Array(n),
+        draw: new Float32Array(e),
       };
     });
 
@@ -601,8 +586,9 @@ export function CelestialScene(props: CelestialProps) {
         aspect = w / h;
         camera.aspect = aspect;
         camera.updateProjectionMatrix();
-        // narrow panels squeeze the two figures towards the centre so neither is cut off
-        for (const f of figures) f.group.scale.set(Math.min(1, aspect / 0.95), 1, 1);
+        // narrow panels shrink the two seals towards the centre so neither is cut off; uniformly,
+        // so the rings stay round
+        for (const f of figures) f.group.scale.setScalar(Math.min(1, aspect / 0.95));
         const dpr = Math.min(window.devicePixelRatio, 2);
         skyMat.uniforms.uScale.value = dpr;
         beltMat.uniforms.uScale.value = dpr;
@@ -693,15 +679,29 @@ export function CelestialScene(props: CelestialProps) {
           (m.material as THREE_NS.SpriteMaterial).opacity = 0.08 + want * 0.32 + flare * 0.1;
         }
 
-        // constellations: the active one lights a star per step and draws its path;
-        // the other dims to a faint ghost
+        // constellations: the active seal draws its share of edges, one after another, and lights
+        // the stars they reach; going back (a cleared field) unwinds them from the end. The other
+        // seal dims to a faint ghost.
         for (const f of figures) {
           const active = f.mode === mode;
           const weight = f.mode === "teacher" ? ease : 1 - ease;
-          const on = active ? Math.min(f.n, Math.round((done / Math.max(1, total)) * f.n)) : 0;
+          const e = f.edges.length;
+          const on = active ? Math.min(e, Math.round((done / Math.max(1, total)) * e)) : 0;
+          const step = reduce ? 1 : delta * DRAW_SPEED;
+          f.reached.fill(0);
+          for (let i = 0; i < e; i++) {
+            const want = (active && i < on) || (active && flare > 0.5) ? 1 : 0;
+            // grow only after the previous edge is complete, shrink only after the next is gone
+            const free = want ? i === 0 || f.draw[i - 1] >= 1 : i === e - 1 || f.draw[i + 1] <= 0;
+            if (free)
+              f.draw[i] = want ? Math.min(1, f.draw[i] + step) : Math.max(0, f.draw[i] - step);
+            const [a, b] = f.edges[i];
+            if (f.draw[i] > 0) f.reached[a] = 1;
+            if (f.draw[i] >= 1) f.reached[b] = 1;
+          }
           const sCol = f.sGeo.attributes.color as THREE_NS.BufferAttribute;
           for (let i = 0; i < f.n; i++) {
-            const want = active ? (i < on ? 1 : 0.22) : 0.1;
+            const want = active ? (f.reached[i] ? 1 : 0.22) : 0.1;
             f.light[i] += (Math.max(want, active ? flare : 0) - f.light[i]) * k;
             const tw = reduce ? 1 : 0.82 + 0.18 * Math.sin(time * 2.1 + i * 1.9);
             const bgt = f.light[i] * tw * (1 + flare * 0.5) * (0.35 + 0.65 * weight);
@@ -711,20 +711,19 @@ export function CelestialScene(props: CelestialProps) {
           sCol.needsUpdate = true;
           const lPos = f.lGeo.attributes.position as THREE_NS.BufferAttribute;
           const lCol = f.lGeo.attributes.color as THREE_NS.BufferAttribute;
-          for (let i = 0; i < f.n - 1; i++) {
-            const want = active && (i + 1 < on || flare > 0.5) ? 1 : 0;
-            f.draw[i] += (want - f.draw[i]) * (reduce ? 1 : 1 - Math.exp(-delta * 2.6));
-            // each line grows from its star towards the next
-            tmp.copy(f.pts[i]).lerp(f.pts[i + 1], f.draw[i]);
-            lPos.setXYZ(i * 2, f.pts[i].x, f.pts[i].y, f.pts[i].z);
+          for (let i = 0; i < e; i++) {
+            const [a, b] = f.edges[i];
+            // each line grows from its first star towards the second
+            tmp.copy(f.pts[a]).lerp(f.pts[b], f.draw[i]);
+            lPos.setXYZ(i * 2, f.pts[a].x, f.pts[a].y, f.pts[a].z);
             lPos.setXYZ(i * 2 + 1, tmp.x, tmp.y, tmp.z);
-            const a = 0.7 * Math.min(1, f.draw[i] * 3) * (0.4 + 0.6 * weight);
-            lCol.setXYZ(i * 2, orbitTint[0] * a, orbitTint[1] * a, orbitTint[2] * a);
+            const al = 0.7 * Math.min(1, f.draw[i] * 3) * (0.4 + 0.6 * weight);
+            lCol.setXYZ(i * 2, orbitTint[0] * al, orbitTint[1] * al, orbitTint[2] * al);
             lCol.setXYZ(
               i * 2 + 1,
-              orbitTint[0] * a * 0.5,
-              orbitTint[1] * a * 0.5,
-              orbitTint[2] * a * 0.5,
+              orbitTint[0] * al * 0.5,
+              orbitTint[1] * al * 0.5,
+              orbitTint[2] * al * 0.5,
             );
           }
           lPos.needsUpdate = true;

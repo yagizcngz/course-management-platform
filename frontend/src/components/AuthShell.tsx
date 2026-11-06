@@ -37,7 +37,9 @@ export function AuthShell({
         </div>
       </div>
       <div
-        className="relative m-3 hidden overflow-hidden rounded-3xl bg-[hsl(222_14%_16%)] text-[hsl(40_30%_93%)] lg:block"
+        // pinned to the viewport: a long form (the instructor fields) scrolls past it instead of
+        // stretching the scene
+        className="relative m-3 hidden overflow-hidden rounded-3xl bg-[hsl(222_14%_16%)] text-[hsl(40_30%_93%)] lg:sticky lg:top-3 lg:block lg:h-[calc(100dvh-1.5rem)]"
         style={panelVars}
       >
         {panel}
