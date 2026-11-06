@@ -26,6 +26,7 @@ namespace EdTechApi.DataAccess.Context
         public DbSet<SupportRequest> SupportRequests { get; set; }
         public DbSet<WalletTransaction> WalletTransactions { get; set; }
         public DbSet<Lesson> Lessons { get; set; }
+        public DbSet<TeacherApplication> TeacherApplications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

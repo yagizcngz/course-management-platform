@@ -33,6 +33,8 @@ namespace EdTechApi.API.Controllers
         }
 
         private const int MaxOtpAttempts = 5;
+        private const int MinTeacherBio = 40;
+        private const int MaxTeacherBio = 2000;
         private const int MaxLoginFailures = 5;
         private static readonly TimeSpan LoginLockout = TimeSpan.FromMinutes(5);
 
@@ -84,7 +86,8 @@ namespace EdTechApi.API.Controllers
                     if (fails >= MaxOtpAttempts) _memoryCache.Remove(request.Email);
                     return BadRequest("Geçersiz veya süresi dolmuş doğrulama kodu.");
                 }
-                _memoryCache.Remove(request.Email); // kod tek kullanımlık
+                // kod burada silinmez: 5 dakikalık süresi boyunca geçerli kalır, böylece alınmış kullanıcı adı gibi
+                // bir doğrulama hatasında kullanıcı yeni kod istemeden tekrar dener; kayıt tamamlanınca silinir
             }
 
             if (!new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(request.Email))
@@ -98,6 +101,19 @@ namespace EdTechApi.API.Controllers
             var emailExists = await _context.Users.AnyAsync(u => u.Email == request.Email);
             if (emailExists)
                 return BadRequest("Bu e-posta adresi zaten kullanımda.");
+
+            // Eğitmen başvurusu: branş mevcut bir kategori olmalı, biyografi kısa bir özgeçmiş kadar uzun olmalı
+            var branch = request.Branch?.Trim();
+            var aboutMe = request.AboutMe?.Trim();
+            if (request.ApplyAsTeacher)
+            {
+                if (string.IsNullOrEmpty(branch) || !await _context.Categories.AnyAsync(c => c.Name == branch))
+                    return BadRequest("Lütfen listeden bir branş seçin.");
+                if (string.IsNullOrEmpty(aboutMe) || aboutMe.Length < MinTeacherBio)
+                    return BadRequest($"Eğitmen başvurusu için en az {MinTeacherBio} karakterlik bir özgeçmiş yazın.");
+                if (aboutMe.Length > MaxTeacherBio)
+                    return BadRequest($"Özgeçmiş en fazla {MaxTeacherBio} karakter olabilir.");
+            }
 
             // Rol ataması: Gelen RegistrationCode'a göre karar veriyoruz
             string assignedRole = "User"; // Varsayılan Öğrenci
@@ -126,7 +142,9 @@ namespace EdTechApi.API.Controllers
                     }
                     else
                     {
-                        return BadRequest("Geçersiz Kayıt Kodu.");
+                        return BadRequest(request.ApplyAsTeacher
+                            ? "Davet kodu geçersiz. Kodu kontrol edin ya da alanı boş bırakıp başvurunuzu yönetici onayına gönderin."
+                            : "Geçersiz Kayıt Kodu.");
                     }
                 }
             }
@@ -142,7 +160,8 @@ namespace EdTechApi.API.Controllers
                     Role = assignedRole,
                     FirstName = request.FirstName,
                     LastName = request.LastName,
-                    Email = request.Email
+                    Email = request.Email,
+                    AboutMe = request.ApplyAsTeacher ? aboutMe : null
                 };
 
                 await _context.Users.AddAsync(newUser);
@@ -166,6 +185,16 @@ namespace EdTechApi.API.Controllers
                     string yearPrefix = DateTime.Now.ToString("yy");
                     newStudent.StudentNumber = yearPrefix + newStudent.Id.ToString().PadLeft(7, '0');
                     await _context.SaveChangesAsync();
+
+                    // davet kodu olmayan eğitmen adayı öğrenci olarak başlar, başvurusu yönetici onayını bekler
+                    if (request.ApplyAsTeacher)
+                    {
+                        _context.TeacherApplications.Add(new TeacherApplication
+                        {
+                            UserId = newUser.Id, Branch = branch!, AboutMe = aboutMe!
+                        });
+                        await _context.SaveChangesAsync();
+                    }
                 }
                 // 3. Eğer rolü 'Teacher' ise anında bir Öğretmen (Teacher) profili oluştur
                 else if (assignedRole == "Teacher")
@@ -176,7 +205,10 @@ namespace EdTechApi.API.Controllers
                          LastName = request.LastName,
                          Email = request.Email,
                          CreatedAt = DateTime.Now,
-                         UserId = newUser.Id
+                         UserId = newUser.Id,
+                         // yalnızca yukarıda doğrulanan başvuru alanları kullanılır
+                         Branch = request.ApplyAsTeacher ? branch : null,
+                         AboutMe = request.ApplyAsTeacher ? aboutMe : null
                      };
                      await _context.Teachers.AddAsync(newTeacher);
                      await _context.SaveChangesAsync();
@@ -188,10 +220,19 @@ namespace EdTechApi.API.Controllers
 
                 await transaction.CommitAsync();
 
-                // Kayıt başarılı olduysa kodu önbellekten siliyoruz
+                // Kayıt başarılı olduysa kodu önbellekten siliyoruz (tek kullanımlık)
                 _memoryCache.Remove(request.Email);
+                _memoryCache.Remove($"otp-fail:{request.Email}");
 
-                return Ok(new { message = $"Kullanıcı başarıyla oluşturuldu. Atanan Rol: {assignedRole}" });
+                var pendingApplication = request.ApplyAsTeacher && assignedRole == "User";
+                return Ok(new
+                {
+                    message = pendingApplication
+                        ? "Hesabınız oluşturuldu. Eğitmen başvurunuz yönetici onayına gönderildi; onaylanana kadar öğrenci olarak giriş yapabilirsiniz."
+                        : $"Kullanıcı başarıyla oluşturuldu. Atanan Rol: {assignedRole}",
+                    role = assignedRole,
+                    teacherApplication = pendingApplication ? "Pending" : null
+                });
             }
             catch (Exception)
             {
@@ -313,6 +354,11 @@ namespace EdTechApi.API.Controllers
         public string Email { get; set; } = string.Empty;
         public string? RegistrationCode { get; set; } 
         public string VerificationCode { get; set; } = string.Empty; // YENİ
+
+        // Eğitmen başvurusu: davet kodu varsa anında öğretmen, yoksa yönetici onayına giden başvuru
+        public bool ApplyAsTeacher { get; set; }
+        public string? Branch { get; set; }
+        public string? AboutMe { get; set; }
     }
 
     public class SendVerificationEmailRequest

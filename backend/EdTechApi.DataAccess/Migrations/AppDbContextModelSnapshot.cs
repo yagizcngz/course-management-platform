@@ -381,6 +381,42 @@ namespace EdTechApi.DataAccess.Migrations
                     b.ToTable("Teachers");
                 });
 
+            modelBuilder.Entity("EdTechApi.Core.Entities.TeacherApplication", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AboutMe")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Branch")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("TeacherApplications");
+                });
+
             modelBuilder.Entity("EdTechApi.Core.Entities.TeachingRequest", b =>
                 {
                     b.Property<int>("Id")
@@ -571,6 +607,17 @@ namespace EdTechApi.DataAccess.Migrations
                     b.HasOne("EdTechApi.Core.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EdTechApi.Core.Entities.TeacherApplication", b =>
+                {
+                    b.HasOne("EdTechApi.Core.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
