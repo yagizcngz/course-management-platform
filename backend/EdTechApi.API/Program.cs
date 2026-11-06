@@ -108,6 +108,9 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
+// `dotnet run -- --seed-only`: şemayı ve tohum verisini yazıp çıkar (database/seed-demo.sql bu yolla üretilir)
+if (args.Contains("--seed-only")) return;
+
 app.UseCors("AllowWebClient");
 
 // Configure the HTTP request pipeline.

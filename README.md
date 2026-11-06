@@ -34,6 +34,13 @@ A modern, role-based educational management and online course platform built wit
 * **My Courses Dashboard:** Active course cards with instructor contacts and quick access.
 * **Support Ticket Tracking:** Dual-tab status tracker (Pending / Resolved) to view submitted inquiries and admin responses.
 * **Personal Profile Management:** Editable bio, personal details, and avatar image uploads.
+* **Genuine Lesson Completion:** Video lessons count only the seconds actually watched (skipping ahead is blocked until the lesson is done, playback above 2x does not count); 85% must be watched before a lesson completes, checked by the API too.
+* **Badges:** Earned badges with up to five pinned to the public profile.
+
+#### 4. 💬 Community (everyone)
+* **Topic Forum (`/topluluk`):** Six channels (software, maths, science, design, career, general). Guests read threads and open member profiles; members post, reply and like.
+* **Messages & Friends (`/mesajlar`):** Friend requests, one-to-one messages with unread counts, and quick links to the channels.
+* **Public Profile Cards:** Avatar, bio, role, featured badges, ongoing and completed courses (hidden when the profile is private; admins always see them in the student and teacher panels).
 
 ---
 
@@ -109,6 +116,24 @@ course-management-platform/
 
 ---
 
+### Demo data
+
+In `Development` with `Seed:DemoUsers=true`, `dotnet run` applies the migrations and seeds the demo catalog, accounts (`demo_admin`, `demo_teacher`, `demo_student`; password = `Seed:DemoPassword`), forum threads, friendships and messages. `dotnet run -- --seed-only` does the same and exits.
+
+Without .NET, [`database/seed-demo.sql`](database/seed-demo.sql) builds the same schema and data in SQL Server. It is safe to run more than once, and its demo accounts use the password `Demo-2026!` (local use only):
+
+```bash
+sqlcmd -S localhost\SQLEXPRESS -E -C -Q "CREATE DATABASE EdTechDB"
+```
+
+```bash
+sqlcmd -S localhost\SQLEXPRESS -E -C -d EdTechDB -i database/seed-demo.sql
+```
+
+`database/export-seed.ps1` regenerates the file from a freshly seeded throwaway database (steps in the script header).
+
+---
+
 ### 1. Backend Setup
 
 1. **Navigate to the API directory:**
@@ -170,16 +195,28 @@ course-management-platform/
 
 ## 🔐 Authentication & Roles
 
-User roles are assigned during registration:
-* **Student (`User`):** Standard registration with default student privileges.
-* **Teacher (`Teacher`):** Registered using an approved teacher registration code; linked with subject branches.
-* **Administrator (`Admin` / `SuperAdmin`):** Full access to user management, course approvals, and ticket centers.
+* **Student (`User`):** Public sign-up (`POST /api/auth/register`, e-mail code required) always creates a student. Choosing "instructor" adds a branch and bio and sends an application to the admins; the account stays a student until it is approved.
+* **Teacher (`Teacher`):** Created by an admin (`POST /api/auth/admin-create`) or by approving an application.
+* **Administrator (`Admin`):** The first one comes from `Seed:AdminUsername` / `Seed:AdminPassword` when no admin exists; after that only a signed-in admin can create another (Settings → System → Administrators). There are no registration codes.
+
+A token whose account was closed (or whose username changed) is rejected on every request. Closing an account removes its lesson progress, pending applications, friendships and likes at once; wallet history stays for the reports. `SoftDeleteCleanupService` permanently removes soft-deleted students, teachers and courses, and closed accounts without wallet history, after 30 days.
 
 ---
 
 ## 🌐 Localization (i18n)
 
-The application supports real-time language toggling between **English (EN)** and **Turkish (TR)** without page reloads. All labels, table headers, forms, dynamic course categories, and backend validation errors are mapped through centralized dictionary stores in `frontend/src/locales/`.
+The application supports real-time language toggling between **English (EN)** and **Turkish (TR)** without page reloads. All labels, table headers, forms, dynamic course categories, and backend validation errors are mapped through centralized dictionary stores in `frontend/src/locales/` (API messages through `src/lib/errorTranslator.ts`).
+
+```bash
+npm run i18n:check
+```
+
+fails when a key is missing in one language, an English value is still Turkish, a `t("key")` in the code has no entry, or an API error message has no translation rule. `npm run i18n:sync` first fills missing keys from `scripts/i18n-dictionary.json`.
+
+## ✅ Tests
+
+* Backend: `dotnet test backend/EdTechApi.Tests` (xUnit, in-memory SQLite: wallet, sign-up, roles, account closing and cleanup, forum, friends, messages, badges, video completion).
+* Frontend: `npm test` in `frontend` (Node's test runner: watch-progress rules and the book scene's no-collision layout), plus `npm run build`, `npm run lint` and `npm run i18n:check`.
 
 ---
 
