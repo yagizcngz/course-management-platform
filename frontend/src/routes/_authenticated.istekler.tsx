@@ -251,14 +251,19 @@ function RequestsPage() {
 
       <div className="p-4 md:p-8 animate-reveal max-w-5xl mx-auto w-full">
         <Tabs defaultValue="teaching" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
+          <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="teaching">
               {t("requests.teachingRequests", "Ders Verme İstekleri")}
             </TabsTrigger>
+            <TabsTrigger value="applications">{t("requests.applications")}</TabsTrigger>
             <TabsTrigger value="support">
               {t("requests.supportRequests", "Yardım Talepleri")}
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="applications">
+            <InstructorApplications />
+          </TabsContent>
 
           <TabsContent value="teaching">
             {loading ? (
@@ -509,5 +514,104 @@ function RequestsPage() {
         </Tabs>
       </div>
     </>
+  );
+}
+
+interface InstructorApplication {
+  id: number;
+  username: string;
+  fullName: string;
+  email: string;
+  branch: string;
+  aboutMe: string;
+  status: "Pending" | "Approved" | "Rejected";
+  createdAt: string;
+}
+
+/** Instructor applications sent from the sign-up form without an invite code. */
+function InstructorApplications() {
+  const { t, i18n } = useTranslation();
+  const [items, setItems] = useState<InstructorApplication[] | null>(null);
+
+  const load = async () => {
+    const res = await fetch(`${API_BASE}/api/TeacherApplications`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("jwt_token")}` },
+    }).catch(() => null);
+    setItems(res?.ok ? await res.json() : []);
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const decide = async (id: number, action: "approve" | "reject") => {
+    const res = await fetch(`${API_BASE}/api/TeacherApplications/${id}/${action}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${localStorage.getItem("jwt_token")}` },
+    }).catch(() => null);
+    if (res?.ok) {
+      toast.success(
+        t(action === "approve" ? "requests.applicationApproved" : "requests.applicationRejected"),
+      );
+      load();
+    } else toast.error(t("requests.serverError"));
+  };
+
+  if (items === null)
+    return <div className="p-8 text-center text-muted-foreground">{t("requests.loading")}</div>;
+  if (items.length === 0)
+    return (
+      <div className="p-8 text-center text-muted-foreground">{t("requests.noApplications")}</div>
+    );
+
+  return (
+    <div className="grid gap-4">
+      {items.map((a) => (
+        <Card key={a.id}>
+          <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <div className="text-lg font-semibold">{a.fullName}</div>
+              <div className="text-sm text-muted-foreground">
+                @{a.username} · {a.email}
+              </div>
+              <div className="mt-2 text-sm">
+                {t("register.branch")}:{" "}
+                <span className="font-medium">
+                  {i18n.exists(`dynamic.categories.${a.branch}`)
+                    ? t(`dynamic.categories.${a.branch}`)
+                    : a.branch}
+                </span>
+              </div>
+              <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+                {a.aboutMe}
+              </p>
+              <div className="mt-2 text-xs text-muted-foreground">
+                {t("requests.dateLabel")} {new Date(a.createdAt).toLocaleDateString()}
+              </div>
+            </div>
+            <div className="flex shrink-0 items-center gap-3">
+              {a.status === "Pending" ? (
+                <>
+                  <Button
+                    size="sm"
+                    className="bg-success hover:bg-success/90"
+                    onClick={() => decide(a.id, "approve")}
+                  >
+                    <Check className="mr-1 h-4 w-4" /> {t("requests.approve")}
+                  </Button>
+                  <Button size="sm" variant="destructive" onClick={() => decide(a.id, "reject")}>
+                    <X className="mr-1 h-4 w-4" /> {t("requests.reject")}
+                  </Button>
+                </>
+              ) : (
+                <Badge variant={a.status === "Approved" ? "default" : "destructive"}>
+                  {a.status === "Approved" ? t("requests.accepted") : t("requests.rejected")}
+                </Badge>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 }

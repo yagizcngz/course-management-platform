@@ -149,7 +149,24 @@
       "codeSendError": "An error occurred while sending the code!",
       "registerError": "An error occurred during registration!",
       "serverError": "Cannot connect to server.",
-      "changeEmail": "Change email"
+      "changeEmail": "Change email",
+      "roleLabel": "I want to join as",
+      "roleStudent": "Learner",
+      "roleTeacher": "Instructor",
+      "applyIntro": "Tell us what you teach. Without an invite code your account opens as a learner and your instructor application goes to an admin for review; you can sign in right away.",
+      "branch": "Branch / discipline",
+      "branchPlaceholder": "Choose a discipline",
+      "branchRequired": "Choose the discipline you will teach.",
+      "bio": "Short biography and credentials",
+      "bioPlaceholder": "Education, teaching experience, what you teach and how…",
+      "bioHint": "At least {{count}} characters ({{length}} so far).",
+      "bioTooShort": "Write at least {{count}} characters about your background so an admin can review your application.",
+      "haveInviteCode": "I have an invite code",
+      "inviteCode": "Invite code",
+      "inviteHint": "A valid code from an admin activates your instructor account at once. Leave it empty to send an application instead.",
+      "applicationSent": "Account created. Your instructor application is waiting for admin approval; meanwhile you can sign in as a learner.",
+      "teacherReady": "Instructor account created. You can sign in now.",
+      "codeStillValid": "Your email code is still valid for its 5 minutes: fix the field and submit again."
     },
     "dashboard": {
       "alerts": {
@@ -762,14 +779,23 @@
       "cancelEdit": "Cancel",
       "editRequests": "Edit Requests",
       "deleteSelected": "Delete Selected ({{count}})",
-      "deleted": "Selected items deleted."
+      "deleted": "Selected items deleted.",
+      "applications": "Instructor Applications",
+      "noApplications": "No instructor applications yet.",
+      "applicationApproved": "Application approved. The user becomes an instructor at their next sign-in.",
+      "applicationRejected": "Application rejected."
     },
     "backendErrors": {
       "emailInUse": "This email address is already in use.",
       "usernameInUse": "This username is already taken.",
       "studentAlreadyEnrolled": "Student is already enrolled in this course.",
       "studentNumberInUse": "This student number is already registered in the system.",
-      "fieldsRequired": "Please fill in the required fields."
+      "fieldsRequired": "Please fill in the required fields.",
+      "invalidCode": "The verification code is wrong or has expired. Request a new code.",
+      "branchRequired": "Choose a discipline from the list.",
+      "bioTooShort": "Write at least 40 characters about your background for the instructor application.",
+      "invalidInvite": "This invite code is not valid. Check it, or leave the field empty to send your application for admin approval.",
+      "invalidRegistrationCode": "This registration code is not valid."
     },
     "validation": {
       "required": "Please fill out this field."

@@ -149,7 +149,24 @@
       "codeSendError": "Kod gönderilirken bir hata oluştu!",
       "registerError": "Kayıt olurken bir hata oluştu!",
       "serverError": "Sunucuya ulaşılamıyor.",
-      "changeEmail": "E-postayı değiştir"
+      "changeEmail": "E-postayı değiştir",
+      "roleLabel": "Hangi rolle katılıyorsunuz?",
+      "roleStudent": "Öğrenci",
+      "roleTeacher": "Eğitmen",
+      "applyIntro": "Ne öğrettiğinizi anlatın. Davet kodu yoksa hesabınız öğrenci olarak açılır ve eğitmen başvurunuz yönetici onayına gider; hemen giriş yapabilirsiniz.",
+      "branch": "Branş / alan",
+      "branchPlaceholder": "Bir alan seçin",
+      "branchRequired": "Ders vereceğiniz alanı seçin.",
+      "bio": "Kısa özgeçmiş ve yeterlilikler",
+      "bioPlaceholder": "Eğitiminiz, öğretmenlik deneyiminiz, neyi nasıl öğrettiğiniz…",
+      "bioHint": "En az {{count}} karakter (şu an {{length}}).",
+      "bioTooShort": "Başvurunuzun değerlendirilebilmesi için geçmişinizi en az {{count}} karakterle anlatın.",
+      "haveInviteCode": "Davet kodum var",
+      "inviteCode": "Davet kodu",
+      "inviteHint": "Yöneticiden aldığınız geçerli kod eğitmen hesabınızı hemen açar. Boş bırakırsanız başvurunuz onaya gönderilir.",
+      "applicationSent": "Hesabınız oluşturuldu. Eğitmen başvurunuz yönetici onayını bekliyor; bu sürede öğrenci olarak giriş yapabilirsiniz.",
+      "teacherReady": "Eğitmen hesabınız oluşturuldu. Şimdi giriş yapabilirsiniz.",
+      "codeStillValid": "E-posta kodunuz 5 dakikalık süresi boyunca geçerli: alanı düzeltip tekrar gönderin."
     },
     "dashboard": {
       "alerts": {
@@ -734,14 +751,23 @@
       "cancelEdit": "İptal",
       "editRequests": "İstekleri Düzenle",
       "deleteSelected": "Seçilenleri Sil ({{count}})",
-      "deleted": "Seçili öğeler silindi."
+      "deleted": "Seçili öğeler silindi.",
+      "applications": "Eğitmen Başvuruları",
+      "noApplications": "Henüz eğitmen başvurusu yok.",
+      "applicationApproved": "Başvuru onaylandı. Kullanıcı bir sonraki girişinde eğitmen olur.",
+      "applicationRejected": "Başvuru reddedildi."
     },
     "backendErrors": {
       "emailInUse": "Bu e-posta adresi zaten kullanımda.",
       "usernameInUse": "Bu kullanıcı adı zaten alınmış.",
       "studentAlreadyEnrolled": "Öğrenci bu kursa zaten kayıtlı.",
       "studentNumberInUse": "Bu öğrenci numarası sistemde zaten kayıtlı.",
-      "fieldsRequired": "Lütfen gerekli alanları doldurunuz."
+      "fieldsRequired": "Lütfen gerekli alanları doldurunuz.",
+      "invalidCode": "Doğrulama kodu hatalı ya da süresi dolmuş. Yeni kod isteyin.",
+      "branchRequired": "Listeden bir alan seçin.",
+      "bioTooShort": "Eğitmen başvurusu için geçmişinizi en az 40 karakterle anlatın.",
+      "invalidInvite": "Davet kodu geçersiz. Kodu kontrol edin ya da alanı boş bırakıp başvurunuzu yönetici onayına gönderin.",
+      "invalidRegistrationCode": "Kayıt kodu geçersiz."
     },
     "validation": {
       "required": "Lütfen bu alanı doldurun."

@@ -17,6 +17,21 @@ export const translateBackendError = (errText: string, t: TFunction): string => 
   if (lower.includes("bu öğrenci numarası sistemde zaten kayıtlı")) {
     return t("backendErrors.studentNumberInUse", "This student number is already registered.");
   }
+  if (lower.includes("doğrulama kodu")) {
+    return t("backendErrors.invalidCode", "The verification code is wrong or has expired.");
+  }
+  if (lower.includes("listeden bir branş")) {
+    return t("backendErrors.branchRequired", "Choose a discipline from the list.");
+  }
+  if (lower.includes("karakterlik bir özgeçmiş")) {
+    return t("backendErrors.bioTooShort", "Write a longer biography.");
+  }
+  if (lower.includes("davet kodu geçersiz")) {
+    return t("backendErrors.invalidInvite", "This invite code is not valid.");
+  }
+  if (lower.includes("geçersiz kayıt kodu")) {
+    return t("backendErrors.invalidRegistrationCode", "This registration code is not valid.");
+  }
   if (lower.includes("gerekli") || lower.includes("zorunlu")) {
     return t("backendErrors.fieldsRequired", "Please fill in all required fields.");
   }
