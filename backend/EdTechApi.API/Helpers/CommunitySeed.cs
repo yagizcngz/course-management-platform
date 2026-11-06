@@ -110,17 +110,22 @@ namespace EdTechApi.API.Helpers
             }
         }
 
-        // Deneme için: demo öğrencinin bitirmediği kurslarda ilk bitmemiş derse kısa bir örnek video (Google'ın herkese
-        // açık örnek klipleri). Öğretmenin eklediği videoya dokunulmaz.
+        // Deneme için: demo öğrencinin bitirmediği kurslarda ilk bitmemiş derse kısa bir örnek video (MDN'nin CC0
+        // örnek klipleri, birkaç saniyelik). Öğretmenin eklediği videoya dokunulmaz.
         private static readonly string[] SampleVideos =
         {
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4",
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+            "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+            "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/friday.mp4"
         };
+
+        // Google'ın örnek kova adresi artık 403 döndürüyor; önceki tohumlamadan kalan dersler yeni kliplere taşınır.
+        private const string DeadSamplePrefix = "https://commondatastorage.googleapis.com/gtv-videos-bucket/";
 
         private static void SeedSampleVideos(AppDbContext db)
         {
+            var dead = db.Lessons.Where(l => l.VideoUrl != null && l.VideoUrl.StartsWith(DeadSamplePrefix)).OrderBy(l => l.Id).ToList();
+            for (var i = 0; i < dead.Count; i++) dead[i].VideoUrl = SampleVideos[i % SampleVideos.Length];
+
             var studentId = db.Students.Where(s => s.User != null && s.User.Username == "demo_student").Select(s => (int?)s.Id).FirstOrDefault();
             if (studentId == null) return;
             var courseIds = db.Enrollments.Where(e => e.StudentId == studentId).Select(e => e.CourseId).ToList();

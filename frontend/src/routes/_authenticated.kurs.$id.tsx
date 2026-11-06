@@ -26,6 +26,10 @@ import { TrackedVideo } from "@/components/TrackedVideo";
 import { REQUIRED_SHARE, watchedSeconds, watchedShare, type WatchState } from "@/lib/watchProgress";
 import { formatTry } from "@/lib/utils";
 
+// development and testing: "Mark complete" works at once, whatever the video did (the API honours
+// devOverride only in its Development environment)
+const DEV_COMPLETE = import.meta.env.DEV;
+
 export const Route = createFileRoute("/_authenticated/kurs/$id")({
   component: CoursePage,
 });
@@ -88,10 +92,11 @@ function CoursePage() {
       const json: CourseLessons = await res.json();
       if (stale()) return;
       setData(json);
-      // keep the open lesson only if it belongs to this course
-      setActiveId((cur) =>
-        json.lessons.some((l) => l.id === cur) ? cur : (json.lessons[0]?.id ?? null),
-      );
+      // keep the open lesson only if it belongs to this course; otherwise resume at the first
+      // unfinished one
+      const resume =
+        json.lessons.find((l) => !json.completedLessonIds?.includes(l.id)) ?? json.lessons[0];
+      setActiveId((cur) => (json.lessons.some((l) => l.id === cur) ? cur : (resume?.id ?? null)));
       setError(null);
     } catch (e) {
       if (stale()) return;
@@ -142,18 +147,28 @@ function CoursePage() {
 
   // a lesson counts as done from its button or when its video ends; a video lesson only once
   // REQUIRED_SHARE of it was really watched (the API checks the same numbers)
-  const complete = async (lessonId: number, viewed?: { state: WatchState; duration: number }) => {
+  const complete = async (
+    lessonId: number,
+    viewed?: { state: WatchState; duration: number },
+    devOverride = false,
+  ) => {
     if (!data?.isEnrolled || data.completedLessonIds.includes(lessonId)) return;
+    // a video that never loaded has no duration; NaN would not even parse on the API
+    const measured = viewed && Number.isFinite(viewed.duration) && viewed.duration > 0;
     try {
       const res = await fetch(`${API_BASE}/api/courses/${id}/lessons/${lessonId}/complete`, {
         method: "POST",
         headers: authHeaders(),
-        body: viewed
-          ? JSON.stringify({
-              watchedSeconds: watchedSeconds(viewed.state, viewed.duration),
-              durationSeconds: Math.ceil(viewed.duration),
-            })
-          : undefined,
+        body:
+          measured || devOverride
+            ? JSON.stringify({
+                ...(measured && {
+                  watchedSeconds: watchedSeconds(viewed.state, viewed.duration),
+                  durationSeconds: Math.ceil(viewed.duration),
+                }),
+                ...(devOverride && { devOverride: true }),
+              })
+            : undefined,
       });
       if (!res.ok) throw new Error(await readError(res, t("lessons.completeFailed")));
       const p: { progressPercent: number; completed: boolean } = await res.json();
@@ -215,7 +230,7 @@ function CoursePage() {
   const viewer = parseJwt(getToken() ?? "")?.sub ?? "";
   const tracked = isEnrolled && !!active?.videoUrl && hasAccess;
   const share = watch ? watchedShare(watch.state, watch.duration) : 0;
-  const canComplete = !active?.videoUrl || share >= REQUIRED_SHARE;
+  const canComplete = DEV_COMPLETE || !active?.videoUrl || share >= REQUIRED_SHARE;
   const insufficient = needsPurchase && balance !== null && balance < course.price;
 
   return (
@@ -273,7 +288,9 @@ function CoursePage() {
                       ? undefined
                       : t("lessons.watchNeed", { percent: REQUIRED_SHARE * 100 })
                   }
-                  onClick={() => complete(active.id, active.videoUrl && watch ? watch : undefined)}
+                  onClick={() =>
+                    complete(active.id, active.videoUrl && watch ? watch : undefined, DEV_COMPLETE)
+                  }
                   className="shrink-0 rounded-full"
                 >
                   <CheckCircle2 className="size-4" />

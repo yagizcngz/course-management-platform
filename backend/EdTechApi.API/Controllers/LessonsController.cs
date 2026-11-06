@@ -126,7 +126,9 @@ namespace EdTechApi.API.Controllers
             // Videolu ders yalnızca sürenin en az %85'i gerçekten izlenince biter. Süreleri istemci ölçer (video sunucuda
             // çözümlenmez); bu denetim atlanmış oynatıcıyı ve elle yapılan çağrıyı durdurur, kararlı bir saldırganı değil.
             var hasVideo = await _context.Lessons.Where(l => l.Id == id && l.CourseId == courseId).Select(l => l.VideoUrl != null && l.VideoUrl != "").FirstOrDefaultAsync();
-            if (hasVideo && (request == null || request.DurationSeconds <= 0 || request.WatchedSeconds < request.DurationSeconds * WatchedShare))
+            // Geliştirme ortamında "Tamamlandı" düğmesi (DevOverride) video koşulunu atlar; deneme için, üretimde yok sayılır.
+            var devOverride = request?.DevOverride == true && _env.IsDevelopment();
+            if (hasVideo && !devOverride && (request == null || request.DurationSeconds <= 0 || request.WatchedSeconds < request.DurationSeconds * WatchedShare))
                 return BadRequest("Dersi tamamlamak için videonun en az %85'ini izleyin.");
             try
             {
@@ -195,5 +197,7 @@ namespace EdTechApi.API.Controllers
     {
         public double WatchedSeconds { get; set; }
         public double DurationSeconds { get; set; }
+        /// <summary>Yalnızca Development ortamında geçerli: izleme süresi aranmadan ders tamamlanır.</summary>
+        public bool DevOverride { get; set; }
     }
 }

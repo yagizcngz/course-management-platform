@@ -1280,7 +1280,8 @@
       "rateCapped": "Dersin sayılması için oynatma hızı en fazla {{rate}}x olabilir.",
       "watched": "İzlenen %{{percent}}",
       "watchNeed": "Tamamlamak için %{{percent}} izleyin",
-      "watchReady": "Tamamlanabilir"
+      "watchReady": "Tamamlanabilir",
+      "videoFailed": "Bu video yüklenemedi. Adresi bozuk ya da sunucusuna ulaşılamıyor olabilir."
     },
     "publicNav": {
       "label": "Ana menü",

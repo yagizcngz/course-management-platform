@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
@@ -66,11 +66,30 @@ export function TrackedVideo(props: TrackedVideoProps) {
   return props.kind === "embed" ? <TrackedYouTube {...props} /> : <TrackedFile {...props} />;
 }
 
+/** Holds a player; a source that fails gets a message over it instead of a silent black frame. */
+function Frame({ failed, children }: { failed: boolean; children: ReactNode }) {
+  const { t } = useTranslation();
+  return (
+    <div className="relative h-full w-full">
+      {children}
+      {failed && (
+        <p
+          role="alert"
+          className="absolute inset-0 flex items-center justify-center bg-night/90 px-6 text-center text-sm text-white/80"
+        >
+          {t("lessons.videoFailed")}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function TrackedFile(props: TrackedVideoProps) {
   const tracker = useTracker(props);
   const last = useRef(0);
+  const [failed, setFailed] = useState(false);
 
-  return (
+  const video = (
     <video
       src={props.src}
       controls
@@ -101,8 +120,10 @@ function TrackedFile(props: TrackedVideoProps) {
         last.current = v.currentTime;
       }}
       onEnded={(e) => tracker.ended(e.currentTarget.duration)}
+      onError={() => setFailed(true)}
     />
   );
+  return <Frame failed={failed}>{video}</Frame>;
 }
 
 // --- YouTube: the IFrame API is loaded once, on demand -----------------------------------------
@@ -122,7 +143,11 @@ interface YTNamespace {
     opts: {
       videoId: string;
       playerVars?: Record<string, number>;
-      events?: { onReady?: () => void; onStateChange?: (e: { data: number }) => void };
+      events?: {
+        onReady?: () => void;
+        onStateChange?: (e: { data: number }) => void;
+        onError?: () => void;
+      };
     },
   ) => YTPlayer;
 }
@@ -155,6 +180,7 @@ function TrackedYouTube(props: TrackedVideoProps) {
   const tracker = useTracker(props);
   const trackerRef = useRef(tracker);
   trackerRef.current = tracker;
+  const [failed, setFailed] = useState(false);
   const videoId = props.src.match(/embed\/([\w-]{11})/)?.[1] ?? "";
 
   useEffect(() => {
@@ -195,6 +221,7 @@ function TrackedYouTube(props: TrackedVideoProps) {
           onStateChange: (e) => {
             if (e.data === ENDED) trackerRef.current.ended(player!.getDuration());
           },
+          onError: () => setFailed(true),
         },
       });
     });
@@ -205,11 +232,12 @@ function TrackedYouTube(props: TrackedVideoProps) {
     };
   }, [videoId]);
 
-  return (
+  const frame = (
     <div
       ref={host}
       title={props.title}
       className="h-full w-full [&>iframe]:h-full [&>iframe]:w-full"
     />
   );
+  return <Frame failed={failed}>{frame}</Frame>;
 }

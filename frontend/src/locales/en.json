@@ -1359,7 +1359,8 @@
       "rateCapped": "Playback speed is capped at {{rate}}x for lesson credit.",
       "watched": "Watched {{percent}}%",
       "watchNeed": "Watch {{percent}}% to complete",
-      "watchReady": "Ready to complete"
+      "watchReady": "Ready to complete",
+      "videoFailed": "This video could not be loaded. Its address may be broken or the host unreachable."
     },
     "publicNav": {
       "label": "Main navigation",

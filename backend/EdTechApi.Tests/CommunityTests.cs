@@ -11,7 +11,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 
 namespace EdTechApi.Tests
 {
@@ -202,6 +205,34 @@ namespace EdTechApi.Tests
             Assert.IsType<BadRequestObjectResult>(await lessons.Complete(course.Id, video.Id, new CompleteLessonRequest { WatchedSeconds = 50, DurationSeconds = 100 }));
             Assert.IsType<OkObjectResult>(await lessons.Complete(course.Id, video.Id, new CompleteLessonRequest { WatchedSeconds = 86, DurationSeconds = 100 }));
             Assert.IsType<OkObjectResult>(await lessons.Complete(course.Id, text.Id, null));
+        }
+
+        [Fact]
+        public async Task The_dev_override_completes_a_video_lesson_only_in_development()
+        {
+            var course = new Course { Title = "C", Category = "Genel", MaxCapacity = 5 };
+            _db.Courses.Add(course);
+            _db.SaveChanges();
+            _db.Enrollments.Add(new Enrollment { StudentId = _aliStudent.Id, CourseId = course.Id });
+            var video = new Lesson { CourseId = course.Id, Title = "Video", VideoUrl = "https://example.test/v.mp4", Order = 1 };
+            _db.Lessons.Add(video);
+            _db.SaveChanges();
+
+            var forced = new CompleteLessonRequest { DevOverride = true };
+            LessonsController In(string environment) =>
+                new(_db, new ConfigurationBuilder().Build(), new TestEnv(environment), new EnrollmentService(_db)) { ControllerContext = As("ali") };
+            Assert.IsType<BadRequestObjectResult>(await In(Environments.Production).Complete(course.Id, video.Id, forced));
+            Assert.IsType<OkObjectResult>(await In(Environments.Development).Complete(course.Id, video.Id, forced));
+        }
+
+        private sealed class TestEnv(string name) : IWebHostEnvironment
+        {
+            public string EnvironmentName { get; set; } = name;
+            public string ApplicationName { get; set; } = "test";
+            public string WebRootPath { get; set; } = "";
+            public IFileProvider WebRootFileProvider { get; set; } = new NullFileProvider();
+            public string ContentRootPath { get; set; } = "";
+            public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
         }
     }
 }
