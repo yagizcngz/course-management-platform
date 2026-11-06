@@ -1,5 +1,7 @@
 using EdTechApi.API.Helpers;
 using EdTechApi.Business.Interfaces;
+using EdTechApi.Business.Services;
+using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -36,38 +38,123 @@ namespace EdTechApi.API.Controllers
             var userId = await _context.Users.Where(u => u.Username == username).Select(u => (int?)u.Id).FirstOrDefaultAsync();
             if (userId == null) return NotFound();
 
-            object? learning = null;
             var studentId = await _context.Students.Where(s => s.UserId == userId).Select(s => (int?)s.Id).FirstOrDefaultAsync();
-            if (studentId != null)
+            var teacher = await _context.Teachers.AsNoTracking().FirstOrDefaultAsync(t => t.UserId == userId);
+            return Ok(new { learning = await LearningAsync(studentId), teaching = await TeachingAsync(teacher) });
+        }
+
+        // Herkese açık profil kartı (forum, mesajlar, eğitmenler) ve yönetici görünümü. kind: user | student | teacher.
+        // Gizli profilde öğrenme ilerlemesi ve rozetler yalnızca yöneticiye ve sahibine görünür; öğretim bilgisi zaten herkese açık.
+        [AllowAnonymous]
+        [HttpGet("public/{kind}/{id:int}")]
+        public async Task<IActionResult> GetPublicProfile(string kind, int id)
+        {
+            int? userId = null, studentId = null;
+            Teacher? teacher = null;
+            switch (kind)
             {
-                var courses = await _context.Enrollments.AsNoTracking().Where(e => e.StudentId == studentId)
-                    .Select(e => new { e.CourseId, e.Course.Category }).ToListAsync();
-                var progress = await _enrollmentService.GetProgressAsync(studentId.Value, courses.Select(c => c.CourseId).ToList());
-                learning = new
-                {
-                    completedLessons = await _context.LessonCompletions.CountAsync(c => c.StudentId == studentId),
-                    courses = courses.Select(c => new
-                    {
-                        c.CourseId, c.Category, progress[c.CourseId].Percent,
-                        CompletedAt = progress[c.CourseId].IsComplete ? progress[c.CourseId].LastCompletedAt : null
-                    })
-                };
+                case "user":
+                    userId = id;
+                    break;
+                case "student":
+                    var s = await _context.Students.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+                    if (s == null) return NotFound();
+                    (studentId, userId) = (s.Id, s.UserId);
+                    break;
+                case "teacher":
+                    teacher = await _context.Teachers.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id);
+                    if (teacher == null) return NotFound();
+                    userId = teacher.UserId;
+                    break;
+                default:
+                    return NotFound();
             }
 
-            object? teaching = null;
-            var teacher = await _context.Teachers.AsNoTracking().FirstOrDefaultAsync(t => t.UserId == userId);
-            if (teacher != null)
+            var user = userId == null ? null : await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+            if (user?.Role == AccountRetirement.DeletedRole || (kind == "user" && user == null))
+                return NotFound();
+            if (user != null)
             {
-                var courseIds = await _context.Courses.Where(c => c.TeacherId == teacher.Id).Select(c => c.Id).ToListAsync();
-                teaching = new
-                {
-                    JoinedAt = teacher.CreatedAt,
-                    Courses = courseIds.Count,
-                    Students = await _context.Enrollments.Where(e => courseIds.Contains(e.CourseId)).Select(e => e.StudentId).Distinct().CountAsync(),
-                    Lessons = await _context.Lessons.CountAsync(l => courseIds.Contains(l.CourseId))
-                };
+                studentId ??= await _context.Students.Where(x => x.UserId == user.Id).Select(x => (int?)x.Id).FirstOrDefaultAsync();
+                teacher ??= await _context.Teachers.AsNoTracking().FirstOrDefaultAsync(x => x.UserId == user.Id);
             }
-            return Ok(new { learning, teaching });
+            // hesabı olmayan (yöneticinin eklediği) öğrenci herkese açık değildir; eğitmen zaten /egitmenler'de görünür
+            if (user == null && teacher == null && !User.IsAdmin()) return NotFound();
+
+            var full = User.IsAdmin() || (user != null && (user.IsProfilePublic || user.Username == User.GetUsername()));
+            var studentRow = studentId == null ? null : await _context.Students.AsNoTracking().FirstOrDefaultAsync(x => x.Id == studentId);
+            var taught = teacher == null ? null : await _context.Courses.AsNoTracking().Where(c => c.TeacherId == teacher.Id)
+                .Select(c => new { c.Id, c.Title, c.Category, c.ImageUrl }).ToListAsync();
+
+            return Ok(new
+            {
+                userId = user?.Id,
+                username = user?.Username,
+                firstName = user?.FirstName ?? teacher?.FirstName ?? studentRow?.FirstName,
+                lastName = user?.LastName ?? teacher?.LastName ?? studentRow?.LastName,
+                role = user?.Role ?? (teacher != null ? "Teacher" : "User"),
+                aboutMe = user?.AboutMe ?? teacher?.AboutMe ?? studentRow?.AboutMe,
+                profilePictureUrl = user?.ProfilePictureUrl ?? teacher?.ProfilePictureUrl ?? studentRow?.ProfilePictureUrl,
+                branch = teacher?.Branch,
+                joinedAt = teacher?.CreatedAt ?? studentRow?.CreatedAt,
+                isPrivate = !full,
+                featuredBadges = full ? SplitBadges(user?.FeaturedBadges) : null,
+                learning = full ? await LearningAsync(studentId) : null,
+                teaching = await TeachingAsync(teacher),
+                taughtCourses = taught
+            });
+        }
+
+        public const int MaxFeaturedBadges = 5;
+
+        // Profilde öne çıkarılacak rozetler (en fazla 5). Rozet kuralları arayüzde olduğu için yalnızca biçim denetlenir.
+        [HttpPut("badges")]
+        public async Task<IActionResult> UpdateFeaturedBadges([FromBody] FeaturedBadgesRequest request)
+        {
+            var username = GetCurrentUsername();
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            if (user == null) return NotFound();
+            var ids = (request.BadgeIds ?? new()).Select(b => b?.Trim() ?? "").Where(b => b.Length > 0).Distinct().ToList();
+            if (ids.Count > MaxFeaturedBadges)
+                return BadRequest($"En fazla {MaxFeaturedBadges} rozet öne çıkarılabilir.");
+            if (ids.Any(b => b.Length > 64 || b.Contains(',')))
+                return BadRequest("Geçersiz rozet.");
+            user.FeaturedBadges = ids.Count == 0 ? null : string.Join(",", ids);
+            await _context.SaveChangesAsync();
+            return Ok(new { featuredBadges = ids });
+        }
+
+        private static List<string> SplitBadges(string? value) =>
+            string.IsNullOrEmpty(value) ? new() : value.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+
+        private async Task<object?> LearningAsync(int? studentId)
+        {
+            if (studentId == null) return null;
+            var courses = await _context.Enrollments.AsNoTracking().Where(e => e.StudentId == studentId)
+                .Select(e => new { e.CourseId, e.Course.Category, e.Course.Title, e.Course.ImageUrl }).ToListAsync();
+            var progress = await _enrollmentService.GetProgressAsync(studentId.Value, courses.Select(c => c.CourseId).ToList());
+            return new
+            {
+                completedLessons = await _context.LessonCompletions.CountAsync(c => c.StudentId == studentId),
+                courses = courses.Select(c => new
+                {
+                    c.CourseId, c.Category, c.Title, c.ImageUrl, progress[c.CourseId].Percent,
+                    CompletedAt = progress[c.CourseId].IsComplete ? progress[c.CourseId].LastCompletedAt : null
+                })
+            };
+        }
+
+        private async Task<object?> TeachingAsync(Teacher? teacher)
+        {
+            if (teacher == null) return null;
+            var courseIds = await _context.Courses.Where(c => c.TeacherId == teacher.Id).Select(c => c.Id).ToListAsync();
+            return new
+            {
+                JoinedAt = teacher.CreatedAt,
+                Courses = courseIds.Count,
+                Students = await _context.Enrollments.Where(e => courseIds.Contains(e.CourseId)).Select(e => e.StudentId).Distinct().CountAsync(),
+                Lessons = await _context.Lessons.CountAsync(l => courseIds.Contains(l.CourseId))
+            };
         }
 
         // Self-service account deletion; reuses the admin soft-delete so reports stay correct.
@@ -131,7 +218,9 @@ namespace EdTechApi.API.Controllers
                 lastName = user.LastName,
                 isProfilePublic = user.IsProfilePublic,
                 receiveEmailNotifications = user.ReceiveEmailNotifications,
-                branch = branch
+                branch = branch,
+                id = user.Id,
+                featuredBadges = SplitBadges(user.FeaturedBadges)
             };
 
             return Ok(response);
@@ -299,6 +388,11 @@ namespace EdTechApi.API.Controllers
         public bool? IsProfilePublic { get; set; }
         public bool? ReceiveEmailNotifications { get; set; }
         public string? Branch { get; set; }
+    }
+
+    public class FeaturedBadgesRequest
+    {
+        public List<string?>? BadgeIds { get; set; }
     }
 
     public class ChangePasswordRequest
