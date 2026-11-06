@@ -297,16 +297,27 @@ function FriendsPanel({
   const { t } = useTranslation();
   const [q, setQ] = useState("");
   const [results, setResults] = useState<UserCard[]>([]);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (q.trim().length < 2) return setResults([]);
+    let stale = false; // an older, slower response must not overwrite a newer query's results
     const id = window.setTimeout(() => {
       api<UserCard[]>(`friends/search?q=${encodeURIComponent(q.trim())}`, t("community.loadFailed"))
-        .then(setResults)
-        .catch(() => setResults([]));
+        .then((r) => !stale && setResults(r))
+        .catch(() => !stale && setResults([]));
     }, 250);
-    return () => window.clearTimeout(id);
+    return () => {
+      stale = true;
+      window.clearTimeout(id);
+    };
   }, [q, t]);
+
+  const clearSearch = () => {
+    setQ("");
+    setResults([]);
+    searchRef.current?.focus();
+  };
 
   if (!friends) return <p className="p-4 text-sm text-muted-foreground">{t("common.loading")}</p>;
   const known = new Set(
@@ -344,11 +355,25 @@ function FriendsPanel({
             aria-hidden="true"
           />
           <input
+            ref={searchRef}
+            type="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => e.key === "Escape" && q && (e.preventDefault(), clearSearch())}
             placeholder={t("community.findPeople")}
-            className="h-9 w-full rounded-full border border-border bg-background pl-9 pr-3 text-sm outline-none focus:border-gold focus:ring-4 focus:ring-gold/15"
+            className="h-9 w-full rounded-full border border-border bg-background pl-9 pr-9 text-sm outline-none focus:border-gold focus:ring-4 focus:ring-gold/15 [&::-webkit-search-cancel-button]:hidden"
           />
+          {q && (
+            <button
+              type="button"
+              onClick={clearSearch}
+              aria-label={t("community.clearSearch")}
+              title={t("community.clearSearch")}
+              className="absolute right-2 top-1/2 grid size-6 -translate-y-1/2 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
+            >
+              <X className="size-3.5" />
+            </button>
+          )}
         </label>
         {results.length > 0 && (
           <ul className="mt-2 overflow-hidden rounded-xl border border-border">

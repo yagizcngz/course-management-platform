@@ -1524,6 +1524,7 @@
       "decline": "Reddet",
       "removeFriend": "Arkadaşlıktan çıkar",
       "removeConfirm": "{{name}} arkadaşlarınızdan çıkarılsın mı?",
+      "clearSearch": "Aramayı temizle",
       "newFriendRequests": "{{count}} yeni arkadaşlık isteğiniz var",
       "viewRequests": "Görüntüle",
       "cancelRequest": "İsteği geri çek",
