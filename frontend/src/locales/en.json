@@ -161,6 +161,14 @@
         "student": "Student",
         "teacher": "Instructor",
         "admin": "Admin"
+      },
+      "eyebrow": "Sign in",
+      "signingIn": "Signing in…",
+      "capsLock": "Caps Lock is on.",
+      "ledger": {
+        "title": "The E-Kurs Ledger",
+        "heading": "Register of scholars",
+        "seal": "Seal"
       }
     },
     "register": {

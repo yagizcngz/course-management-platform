@@ -161,6 +161,14 @@
         "student": "Öğrenci",
         "teacher": "Eğitmen",
         "admin": "Yönetici"
+      },
+      "eyebrow": "Giriş yap",
+      "signingIn": "Giriş yapılıyor…",
+      "capsLock": "Caps Lock açık.",
+      "ledger": {
+        "title": "E-Kurs Defteri",
+        "heading": "Öğrenci kayıt defteri",
+        "seal": "Mühür"
       }
     },
     "register": {

@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { Eye, EyeOff } from "lucide-react";
+import { AlertCircle, ArrowRight, Eye, EyeOff, Loader2, Lock, User } from "lucide-react";
 import { motion } from "motion/react";
 
 import { API_BASE } from "@/components/courseHelpers";
 import { AuthShell, authButtonClass, authInputClass, authLabelClass } from "@/components/AuthShell";
-import { CelestialScene } from "@/components/effects/three/CelestialScene";
+import { LedgerScene } from "@/components/effects/three/LedgerScene";
 import { getRoleFromToken, isTeacherRole } from "@/lib/auth";
 import { SplitHeadline } from "@/components/motion";
 
@@ -94,12 +94,17 @@ function LoginPage() {
   const [isShaking, setIsShaking] = useState(false);
   const [isHappy, setIsHappy] = useState(false);
   const [failures, setFailures] = useState(0);
-  // revealed by the token on success: an instructor's orrery opens its armillary rings
+  // revealed by the token on success: an instructor's seal carries a lectern instead of a cap
   const [teacher, setTeacher] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [focus, setFocus] = useState<"name" | "secret" | null>(null);
+  const [capsLock, setCapsLock] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (busy || isHappy) return;
     setError("");
+    setBusy(true);
 
     try {
       const response = await fetch(`${API_BASE}/api/auth/login`, {
@@ -117,15 +122,17 @@ function LoginPage() {
         setIsHappy(true);
         playSuccess();
 
-        // long enough for the sun to flare before the dashboard opens
+        // long enough for the seal to land before the dashboard opens
         setTimeout(() => {
           navigate({ to: "/dashboard" });
         }, 1200);
       } else {
         triggerError(t("login.invalidCredentials"));
       }
-    } catch (err) {
+    } catch {
       triggerError(t("login.serverError"));
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -138,8 +145,7 @@ function LoginPage() {
   };
 
   const filled = Number(!!username.trim()) + Number(!!password);
-  // every typed character brightens the sky a little: a short name and password light it fully
-  const typed = Math.min(6, username.trim().length) + Math.min(8, password.length);
+  const onCaps = (e: React.KeyboardEvent) => setCapsLock(e.getModifierState("CapsLock"));
 
   return (
     <AuthShell
@@ -147,12 +153,22 @@ function LoginPage() {
       eyebrow={t("login.panelEyebrow")}
       steps={{ done: filled, total: 2 }}
       panel={
-        <CelestialScene
-          done={typed}
-          total={14}
-          mode={teacher ? "teacher" : "student"}
+        <LedgerScene
+          name={username.trim()}
+          secretLength={password.length}
+          focus={focus}
+          busy={busy}
           lit={isHappy}
+          teacher={teacher}
           shake={failures}
+          labels={{
+            title: t("login.ledger.title"),
+            heading: t("login.ledger.heading"),
+            name: t("login.usernameOrEmail"),
+            secret: t("login.password"),
+            seal: t("login.ledger.seal"),
+            welcome: t("login.welcomeBack"),
+          }}
         />
       }
     >
@@ -160,6 +176,10 @@ function LoginPage() {
         animate={isShaking ? { x: [0, -10, 10, -6, 6, 0] } : { x: 0 }}
         transition={{ duration: 0.45 }}
       >
+        <p className="mb-4 inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-gold">
+          <span aria-hidden="true" className="h-px w-6 bg-gold" />
+          {t("login.eyebrow")}
+        </p>
         <h1 className="font-serif text-5xl leading-none">
           <SplitHeadline text={t("login.welcomeBack")} />
         </h1>
@@ -191,8 +211,9 @@ function LoginPage() {
         {error && (
           <div
             role="alert"
-            className="mt-6 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-center text-sm font-medium text-destructive"
+            className="mt-6 flex items-start gap-2.5 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm font-medium text-destructive"
           >
+            <AlertCircle aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
             {error}
           </div>
         )}
@@ -202,30 +223,50 @@ function LoginPage() {
             <label htmlFor="login-username" className={authLabelClass}>
               {t("login.usernameOrEmail")}
             </label>
-            <input
-              id="login-username"
-              type="text"
-              required
-              autoComplete="username"
-              className={authInputClass}
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
+            <div className="group relative">
+              <User
+                aria-hidden="true"
+                className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-gold"
+              />
+              <input
+                id="login-username"
+                type="text"
+                required
+                autoComplete="username"
+                className={`${authInputClass} pl-11`}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onFocus={() => setFocus("name")}
+                onBlur={() => setFocus(null)}
+              />
+            </div>
           </div>
 
           <div>
             <label htmlFor="login-password" className={authLabelClass}>
               {t("login.password")}
             </label>
-            <div className="relative">
+            <div className="group relative">
+              <Lock
+                aria-hidden="true"
+                className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-gold"
+              />
               <input
                 id="login-password"
                 type={passwordVisible ? "text" : "password"}
                 required
                 autoComplete="current-password"
-                className={`${authInputClass} pr-12`}
+                aria-describedby={capsLock ? "login-caps" : undefined}
+                className={`${authInputClass} pl-11 pr-12`}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={onCaps}
+                onKeyUp={onCaps}
+                onFocus={() => setFocus("secret")}
+                onBlur={() => {
+                  setFocus(null);
+                  setCapsLock(false);
+                }}
               />
               <button
                 type="button"
@@ -236,10 +277,33 @@ function LoginPage() {
                 {passwordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
+            {capsLock && (
+              <p id="login-caps" role="status" className="mt-1.5 text-xs font-medium text-gold">
+                {t("login.capsLock")}
+              </p>
+            )}
           </div>
 
-          <button type="submit" disabled={isHappy} className={`${authButtonClass} mt-2`}>
-            {t("login.loginButton")}
+          <button
+            type="submit"
+            disabled={busy || isHappy}
+            aria-busy={busy}
+            className={`${authButtonClass} group mt-2 inline-flex items-center justify-center gap-2`}
+          >
+            {busy ? (
+              <>
+                <Loader2 aria-hidden="true" className="size-4 animate-spin" />
+                {t("login.signingIn")}
+              </>
+            ) : (
+              <>
+                {t("login.loginButton")}
+                <ArrowRight
+                  aria-hidden="true"
+                  className="size-4 transition-transform group-hover:translate-x-0.5"
+                />
+              </>
+            )}
           </button>
         </form>
 
