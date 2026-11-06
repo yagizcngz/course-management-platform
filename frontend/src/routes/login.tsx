@@ -7,7 +7,8 @@ import { motion } from "motion/react";
 import { API_BASE } from "@/components/courseHelpers";
 import { AuthShell, authButtonClass, authInputClass, authLabelClass } from "@/components/AuthShell";
 import { LedgerScene } from "@/components/effects/three/LedgerScene";
-import { getRoleFromToken, isTeacherRole } from "@/lib/auth";
+import { getRoleFromToken, isAdminRole, isTeacherRole } from "@/lib/auth";
+import type { SealKind } from "@/components/effects/three/sealEmblems";
 import { SplitHeadline } from "@/components/motion";
 
 export const Route = createFileRoute("/login")({
@@ -94,8 +95,8 @@ function LoginPage() {
   const [isShaking, setIsShaking] = useState(false);
   const [isHappy, setIsHappy] = useState(false);
   const [failures, setFailures] = useState(0);
-  // revealed by the token on success: an instructor's seal carries a lectern instead of a cap
-  const [teacher, setTeacher] = useState(false);
+  // revealed by the token on success: the seal the ledger is stamped with
+  const [seal, setSeal] = useState<SealKind>("student");
   const [busy, setBusy] = useState(false);
   const [focus, setFocus] = useState<"name" | "secret" | null>(null);
   const [capsLock, setCapsLock] = useState(false);
@@ -118,7 +119,8 @@ function LoginPage() {
         localStorage.setItem("jwt_token", data.token);
         localStorage.setItem("username", username);
 
-        setTeacher(isTeacherRole(getRoleFromToken(data.token)));
+        const role = getRoleFromToken(data.token);
+        setSeal(isAdminRole(role) ? "admin" : isTeacherRole(role) ? "teacher" : "student");
         setIsHappy(true);
         playSuccess();
 
@@ -159,7 +161,7 @@ function LoginPage() {
           focus={focus}
           busy={busy}
           lit={isHappy}
-          teacher={teacher}
+          seal={seal}
           shake={failures}
           labels={{
             title: t("login.ledger.title"),

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import type * as THREE_NS from "three";
 import { useThreeScene } from "./useThreeScene";
+import { SEALS, SEAL_RING, type SealKind } from "./sealEmblems";
 
 export interface LedgerProps {
   /** The typed username, written in ink on the register page. */
@@ -13,9 +14,12 @@ export interface LedgerProps {
   busy: boolean;
   /** Signed in: the wax seal is stamped and the book glows. */
   lit: boolean;
-  /** Revealed by the token on success: an instructor's seal carries a lectern, a learner's a cap. */
-  teacher: boolean;
-  /** Bumped on every failed attempt: the ink runs red, the book jolts and two leaves flap back. */
+  /**
+   * Revealed by the token on success: a learner's seal carries a cap, an instructor's a lectern,
+   * an administrator's a crown in blue wax.
+   */
+  seal: SealKind;
+  /** Bumped on every failed attempt: the ink runs red, the book jolts and the top leaves lift. */
   shake: number;
   labels: {
     title: string;
@@ -37,6 +41,22 @@ const TURN = 1.05; // seconds per leaf
 const STAGGER = 0.13;
 const EPS = 0.005; // leaf spacing in a stack
 const SEAL = { x: 0.72 * W, z: -D / 2 + 0.8 * D, r: 0.3 };
+const REBUFF = 0.75; // seconds the top leaves lift and fall back after a failed attempt
+// The bookmark ribbon lies on the register page across one segment of its mesh, half a leaf
+// spacing above it: every leaf, resting or turning, stays at least EPS above that page, so the
+// leaves pass over the ribbon and never through it. Its end hangs over the tail edge.
+const RIB_SEG = 1; // the page segment it covers, counted from the gutter
+const RIB = 18; // ribbon rows: head and tail edge of the page, then the hanging end
+const RIB_TAIL = 0.55; // how far it hangs past the tail edge
+const RIB_DROP = 1.25; // angle of the hanging end, radians below the page plane
+const RIB_CURL = 0.18; // length over which it bends from flat to RIB_DROP
+const TABLE_Y = -0.055; // just above the contact shadow
+/** Wax per seal: gradient highlight and shadow, the disc's side, the emblem's light edge. */
+const WAX: Record<SealKind, { hi: string; lo: string; side: number; edge: string }> = {
+  student: { hi: "#b5352b", lo: "#5e1410", side: 0x8c1f1a, edge: "rgba(255,190,170,0.45)" },
+  teacher: { hi: "#b5352b", lo: "#5e1410", side: 0x8c1f1a, edge: "rgba(255,190,170,0.45)" },
+  admin: { hi: "#36518f", lo: "#121a38", side: 0x1d2a55, edge: "rgba(240,205,130,0.75)" },
+};
 
 const PAPER = "#f2ead6";
 const INK = "#2a1f17";
@@ -57,7 +77,7 @@ const rand = (i: number, k: number) => {
  * The sign-in centrepiece: an open ledger. Its leaves are real bending sheets that curl from the
  * corner and fan over one another; focusing the form turns them to the register page, where the
  * username is inked as it is typed and the password appears as dots. A failed attempt runs the
- * ink red and flaps two leaves back; success stamps a wax seal and fills the air with gold dust.
+ * ink red and lifts the top leaves once; success stamps the role's wax seal and gilds the air.
  */
 export function LedgerScene(props: LedgerProps) {
   const live = useRef(props);
@@ -409,12 +429,43 @@ export function LedgerScene(props: LedgerProps) {
     spine.rotation.x = Math.PI / 2;
     spine.position.y = 0.04;
     book.add(spine);
+    const ribbonGeo = new THREE.PlaneGeometry(1, 1, 1, RIB);
+    {
+      const pos = ribbonGeo.attributes.position;
+      const x0 = (RIB_SEG * W) / SEG_X;
+      const x1 = ((RIB_SEG + 1) * W) / SEG_X;
+      // both edges sit on mesh vertices of the page, so the strip is the page's own chord lifted
+      const y0 = restY(x0) + EPS / 2;
+      const y1 = restY(x1) + EPS / 2;
+      const mid = (y0 + y1) / 2;
+      // flat = 1 follows the page's slope, 0 lies level (the hanging end untwists)
+      const row = (r: number, dx: number, y: number, z: number, flat: number) => {
+        pos.setXYZ(r * 2, x0 + dx, y + mid + (y0 - mid) * flat, z);
+        pos.setXYZ(r * 2 + 1, x1 + dx, y + mid + (y1 - mid) * flat, z);
+      };
+      row(0, 0, 0, -D / 2 + 0.12, 1);
+      row(1, 0, 0, D / 2, 1);
+      // over the tail edge: flat at first to clear the text block and the board, then falling
+      // to the table
+      const du = RIB_TAIL / (RIB - 1);
+      let y = 0;
+      let z = D / 2;
+      for (let r = 2; r <= RIB; r++) {
+        const u = clamp01(((r - 1.5) * du) / RIB_CURL);
+        const a = RIB_DROP * u * u * (3 - 2 * u);
+        const resting = mid + y - Math.sin(a) * du <= TABLE_Y;
+        y = resting ? TABLE_Y - mid : y - Math.sin(a) * du;
+        z += (resting ? 1 : Math.cos(a)) * du;
+        const loose = (r - 1) / (RIB - 1);
+        row(r, 0.1 * loose * loose, y, z, Math.max(0, 1 - (r - 1) / 5));
+      }
+      ribbonGeo.computeVertexNormals();
+    }
     const ribbon = new THREE.Mesh(
-      new THREE.BoxGeometry(0.07, 0.004, 0.7),
-      new THREE.MeshStandardMaterial({ color: 0x8c2f2f, roughness: 0.5 }),
+      ribbonGeo,
+      new THREE.MeshStandardMaterial({ color: 0x8c2f2f, roughness: 0.5, side: THREE.DoubleSide }),
     );
-    ribbon.position.set(0.05, T + 0.005, D / 2 + 0.2);
-    ribbon.rotation.set(0.35, 0.18, 0);
+    ribbon.receiveShadow = true;
     book.add(ribbon);
 
     /** A page surface lying on one side of the gutter (side 1 right, -1 left). */
@@ -489,60 +540,48 @@ export function LedgerScene(props: LedgerProps) {
       geo.computeVertexNormals();
     };
 
-    // the wax seal: a disc with an embossed emblem on top
-    const emblem = (kind: "student" | "teacher") =>
+    // the wax seal: a disc with the role's emblem embossed on top
+    const emblem = (kind: SealKind) =>
       canvasTexture(256, 256, (g) => {
+        const { hi, lo, edge } = WAX[kind];
         const r = g.createRadialGradient(110, 100, 10, 128, 128, 128);
-        r.addColorStop(0, "#b5352b");
-        r.addColorStop(1, "#5e1410");
+        r.addColorStop(0, hi);
+        r.addColorStop(1, lo);
         g.fillStyle = r;
         g.fillRect(0, 0, 256, 256);
+        const { strokes, dots = [] } = SEALS[kind];
         const stroke = (dx: number, color: string) => {
           g.strokeStyle = color;
           g.fillStyle = color;
           g.lineWidth = 6;
           g.lineJoin = "round";
+          g.lineCap = "round";
           g.save();
           g.translate(dx, dx);
           g.beginPath();
-          g.arc(128, 128, 100, 0, Math.PI * 2);
+          g.arc(SEAL_RING.cx, SEAL_RING.cy, SEAL_RING.r, 0, Math.PI * 2);
           g.stroke();
           g.beginPath();
-          if (kind === "student") {
-            // mortarboard with its tassel
-            g.moveTo(128, 70);
-            g.lineTo(200, 108);
-            g.lineTo(128, 146);
-            g.lineTo(56, 108);
-            g.closePath();
-            g.moveTo(84, 124);
-            g.lineTo(84, 160);
-            g.quadraticCurveTo(128, 186, 172, 160);
-            g.lineTo(172, 124);
-            g.moveTo(200, 108);
-            g.lineTo(200, 160);
-          } else {
-            // an open book on a lectern
-            g.moveTo(128, 92);
-            g.quadraticCurveTo(96, 76, 60, 86);
-            g.lineTo(60, 146);
-            g.quadraticCurveTo(96, 136, 128, 152);
-            g.quadraticCurveTo(160, 136, 196, 146);
-            g.lineTo(196, 86);
-            g.quadraticCurveTo(160, 76, 128, 92);
-            g.lineTo(128, 152);
-            g.moveTo(128, 152);
-            g.lineTo(128, 196);
-            g.moveTo(100, 196);
-            g.lineTo(156, 196);
+          for (const [first, ...rest] of strokes) {
+            g.moveTo(...first);
+            for (const p of rest) g.lineTo(...p);
           }
           g.stroke();
+          for (const [x, y] of dots) {
+            g.beginPath();
+            g.arc(x, y, 9, 0, Math.PI * 2);
+            g.fill();
+          }
           g.restore();
         };
-        stroke(3, "rgba(40,5,5,0.6)");
-        stroke(-2, "rgba(255,190,170,0.45)");
+        stroke(3, "rgba(10,5,5,0.6)");
+        stroke(-2, edge);
       });
-    const emblems = { student: emblem("student"), teacher: emblem("teacher") };
+    const emblems = {
+      student: emblem("student"),
+      teacher: emblem("teacher"),
+      admin: emblem("admin"),
+    };
     const wax = new THREE.MeshStandardMaterial({
       color: 0x8c1f1a,
       roughness: 0.35,
@@ -601,7 +640,7 @@ export function LedgerScene(props: LedgerProps) {
     let shakeSeen = live.current.shake;
     let jolt = 0;
     let ember = 0;
-    let flapUntil = -1;
+    let rebuffAt = -Infinity; // when the last failed attempt landed
     let warmth = 0;
     let stamp = -1; // seconds since the seal started to fall, -1 = not yet
     let typed = live.current.name.length + live.current.secretLength;
@@ -636,7 +675,7 @@ export function LedgerScene(props: LedgerProps) {
         camera.updateProjectionMatrix();
       },
       update(time, delta) {
-        const { name, secretLength, focus, busy, lit, teacher, shake } = live.current;
+        const { name, secretLength, focus, busy, lit, seal: kind, shake } = live.current;
         clock += delta;
         const k = reduce ? 1 : 1 - Math.exp(-delta * 3);
 
@@ -644,7 +683,7 @@ export function LedgerScene(props: LedgerProps) {
           shakeSeen = shake;
           jolt = 1;
           ember = 1;
-          flapUntil = clock + 0.6;
+          rebuffAt = clock;
         }
         jolt = Math.max(0, jolt - delta * 2.4);
         ember = Math.max(0, ember - delta * 0.7);
@@ -655,9 +694,11 @@ export function LedgerScene(props: LedgerProps) {
         }
         flick = Math.max(0, flick - delta * 2.5);
 
-        // the register opens as soon as the form is touched; a failure flaps two leaves back
+        // the register opens as soon as the form is touched and stays open through a failure:
+        // no leaf turns back for it, the top two only lift and fall once (below)
         const open = !!(focus || name || secretLength || busy || lit);
-        turnTo(clock < flapUntil ? K - 2 : open ? K : 0);
+        turnTo(open ? K : 0);
+        const rebuff = clamp01((clock - rebuffAt) / REBUFF);
         drawRegister(ember > 0.3);
         reprint();
 
@@ -673,6 +714,9 @@ export function LedgerScene(props: LedgerProps) {
           if (!reduce) {
             if (topRight) pe += 0.006 * (1 + Math.sin(time * 1.4));
             if (topLeft) pe -= 0.006 * (1 + Math.sin(time * 1.2)) + flick * 0.035;
+            // one phase for both, the upper further, so the stack never reorders
+            if (rebuff < 1 && leaf.p === 1 && i >= spread - 2)
+              pe -= (i === spread - 1 ? 0.14 : 0.07) * Math.sin(Math.PI * rebuff) ** 2;
             // higher leaves lift further in one phase, so the stack never reorders
             if (busy && leaf.p === 1) pe -= ((0.025 * (i + 1)) / K) * (1 + Math.sin(time * 9));
             if (leaf.p > 0 && leaf.p < 1) flutter = Math.sin(time * 7 + i) * 0.04;
@@ -684,8 +728,9 @@ export function LedgerScene(props: LedgerProps) {
         warmth += ((lit ? 1 : 0) - warmth) * k;
         if (lit && stamp < 0) {
           stamp = 0;
-          sealTop.map = emblems[teacher ? "teacher" : "student"];
+          sealTop.map = emblems[kind];
           sealTop.needsUpdate = true;
+          wax.color.setHex(WAX[kind].side);
           seal.visible = true;
         }
         if (stamp >= 0) {
