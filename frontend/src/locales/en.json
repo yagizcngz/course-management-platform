@@ -1492,7 +1492,7 @@
       "earnedCount": "{{earned}} of {{total}} badges earned",
       "earned": "Earned",
       "earnedOn": "Earned on {{date}}",
-      "locked": "In progress",
+      "locked": "Locked",
       "viewAll": "All badges",
       "graduate": {
         "title": "First Milestone",
@@ -1531,7 +1531,90 @@
       "pinFull": "You can feature at most {{max}} badges",
       "pinFailed": "Could not save your featured badges.",
       "moreEarned_one": "+{{count}} more earned badge",
-      "moreEarned_other": "+{{count}} more earned badges"
+      "moreEarned_other": "+{{count}} more earned badges",
+      "inProgress": "In progress",
+      "anyField": "one field",
+      "howToUnlock": "To unlock",
+      "filterLabel": "Filter badges by rarity",
+      "filterAll": "All",
+      "sections": {
+        "earned": "Unlocked",
+        "progress": "In progress",
+        "locked": "Not started yet",
+        "earnedEmpty": "Nothing unlocked yet. Your first badge is one lesson away.",
+        "progressEmpty": "No badge in progress right now.",
+        "lockedEmpty": "Every badge has been started."
+      },
+      "rarity": {
+        "common": "Common",
+        "uncommon": "Uncommon",
+        "rare": "Rare",
+        "epic": "Epic",
+        "legendary": "Legendary"
+      },
+      "firstLesson": {
+        "title": "First Step",
+        "criteria": "Complete your first lesson."
+      },
+      "devoted": {
+        "title": "Devoted Learner"
+      },
+      "sage": {
+        "title": "Sage"
+      },
+      "explorer": {
+        "title": "Explorer",
+        "criteria_one": "Enrol in a course.",
+        "criteria_other": "Enrol in {{count}} courses."
+      },
+      "avidLearner": {
+        "title": "Avid Learner"
+      },
+      "finisher": {
+        "title": "Finisher",
+        "criteria_one": "Complete a course.",
+        "criteria_other": "Complete {{count}} courses."
+      },
+      "completionist": {
+        "title": "Completionist"
+      },
+      "lifelong": {
+        "title": "Lifelong Learner"
+      },
+      "renaissance": {
+        "title": "Renaissance Mind"
+      },
+      "author": {
+        "criteria_one": "Publish your first course.",
+        "criteria_other": "Publish {{count}} courses."
+      },
+      "firstChapter": {
+        "title": "First Chapter"
+      },
+      "curator": {
+        "title": "Course Curator"
+      },
+      "prolific": {
+        "title": "Prolific Author"
+      },
+      "firstStudent": {
+        "title": "First Student"
+      },
+      "crowdFavourite": {
+        "title": "Crowd Favourite"
+      },
+      "luminary": {
+        "title": "Luminary"
+      },
+      "masterBuilder": {
+        "title": "Master Builder"
+      },
+      "veteran": {
+        "title": "Veteran Educator"
+      },
+      "pillar": {
+        "title": "Pillar of the Academy"
+      }
     },
     "errorPage": {
       "notFoundEyebrow": "Error · 404",

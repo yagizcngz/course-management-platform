@@ -1411,7 +1411,7 @@
       "earnedCount": "{{earned}}/{{total}} rozet kazanıldı",
       "earned": "Kazanıldı",
       "earnedOn": "{{date}} tarihinde kazanıldı",
-      "locked": "Devam ediyor",
+      "locked": "Kilitli",
       "viewAll": "Tüm rozetler",
       "graduate": {
         "title": "İlk Mezuniyet",
@@ -1449,7 +1449,87 @@
       "unpin": "Profilden kaldır",
       "pinFull": "En fazla {{max}} rozet öne çıkarabilirsiniz",
       "pinFailed": "Öne çıkan rozetler kaydedilemedi.",
-      "moreEarned": "+{{count}} kazanılmış rozet daha"
+      "moreEarned": "+{{count}} kazanılmış rozet daha",
+      "inProgress": "Devam ediyor",
+      "anyField": "bir alan",
+      "howToUnlock": "Kazanmak için",
+      "filterLabel": "Rozetleri nadirliğe göre filtrele",
+      "filterAll": "Tümü",
+      "sections": {
+        "earned": "Kazanılanlar",
+        "progress": "Devam edenler",
+        "locked": "Henüz başlanmamış",
+        "earnedEmpty": "Henüz rozet yok. İlk rozetiniz bir ders uzakta.",
+        "progressEmpty": "Şu anda devam eden rozet yok.",
+        "lockedEmpty": "Tüm rozetlere başlandı."
+      },
+      "rarity": {
+        "common": "Yaygın",
+        "uncommon": "Sıra dışı",
+        "rare": "Nadir",
+        "epic": "Destansı",
+        "legendary": "Efsanevi"
+      },
+      "firstLesson": {
+        "title": "İlk Adım",
+        "criteria": "İlk dersini tamamla."
+      },
+      "devoted": {
+        "title": "Azimli Öğrenci"
+      },
+      "sage": {
+        "title": "Bilge"
+      },
+      "explorer": {
+        "title": "Kaşif",
+        "criteria": "{{count}} kursa kaydol."
+      },
+      "avidLearner": {
+        "title": "Bilgi Avcısı"
+      },
+      "finisher": {
+        "title": "Bitirici",
+        "criteria": "{{count}} kurs tamamla."
+      },
+      "completionist": {
+        "title": "Tamamlayıcı"
+      },
+      "lifelong": {
+        "title": "Ömür Boyu Öğrenci"
+      },
+      "renaissance": {
+        "title": "Rönesans İnsanı"
+      },
+      "author": {
+        "criteria": "{{count}} kurs yayımla."
+      },
+      "firstChapter": {
+        "title": "İlk Bölüm"
+      },
+      "curator": {
+        "title": "Kurs Küratörü"
+      },
+      "prolific": {
+        "title": "Üretken Yazar"
+      },
+      "firstStudent": {
+        "title": "İlk Öğrenci"
+      },
+      "crowdFavourite": {
+        "title": "Gözde Eğitmen"
+      },
+      "luminary": {
+        "title": "Işık Saçan"
+      },
+      "masterBuilder": {
+        "title": "Usta Kurucu"
+      },
+      "veteran": {
+        "title": "Deneyimli Eğitmen"
+      },
+      "pillar": {
+        "title": "Akademinin Direği"
+      }
     },
     "errorPage": {
       "notFoundEyebrow": "Hata · 404",

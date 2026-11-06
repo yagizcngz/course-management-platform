@@ -16,14 +16,28 @@ export interface AchievementStats {
   teaching: { joinedAt: string; courses: number; students: number; lessons: number } | null;
 }
 
+/** Rarity tiers, from the easiest to the hardest to earn. */
+export const RARITIES = ["common", "uncommon", "rare", "epic", "legendary"] as const;
+export type Rarity = (typeof RARITIES)[number];
+export const rarityRank = (r: Rarity) => RARITIES.indexOf(r);
+
 export type BadgeKind =
-  "graduate" | "specialist" | "polymath" | "scholar" | "senior" | "mentor" | "architect";
+  | "spark"
+  | "explorer"
+  | "graduate"
+  | "trophy"
+  | "specialist"
+  | "polymath"
+  | "scholar"
+  | "author"
+  | "senior"
+  | "mentor"
+  | "architect";
 
 export interface Badge {
   id: string;
   kind: BadgeKind;
-  /** 1 for the first tier, 2 for the higher one (specialist only). */
-  tier: 1 | 2;
+  rarity: Rarity;
   title: string;
   criteria: string;
   current: number;
@@ -32,136 +46,173 @@ export interface Badge {
   earnedAt?: string;
 }
 
-const DAY = 86_400_000;
-const SPECIALIST = [3, 5] as const;
-const POLYMATH = 3;
-const SCHOLAR = 15;
-const SENIOR_DAYS = 180;
-const MENTOR = 10;
-const ARCHITECT = 20;
+/** earned, in progress (some progress) or locked (nothing yet). */
+export const badgeState = (b: Badge) =>
+  b.earned ? "earned" : b.current > 0 ? "progress" : ("locked" as const);
 
-const badge = (b: Omit<Badge, "earned">): Badge => ({
-  ...b,
-  current: Math.min(b.current, b.target),
-  earned: b.current >= b.target,
-});
+const DAY = 86_400_000;
 
 /** The n-th earliest date (1-based), or undefined when there are fewer. */
 const nth = (dates: string[], n: number) => [...dates].sort()[n - 1];
 
+// [id (also the locale key), kind, rarity, target]; ids of the original badges are kept so pins survive
+type Rule = readonly [string, BadgeKind, Rarity, number];
+const ENROLLED: Rule[] = [
+  ["explorer", "explorer", "common", 3],
+  ["avidLearner", "explorer", "uncommon", 10],
+];
+const LESSONS: Rule[] = [
+  ["firstLesson", "spark", "common", 1],
+  ["scholar", "scholar", "uncommon", 15],
+  ["devoted", "scholar", "rare", 50],
+  ["sage", "scholar", "epic", 150],
+];
+const COMPLETED: Rule[] = [
+  ["graduate", "graduate", "uncommon", 1],
+  ["finisher", "trophy", "rare", 5],
+  ["completionist", "trophy", "epic", 10],
+  ["lifelong", "trophy", "legendary", 25],
+];
+const FIELDS: Rule[] = [
+  ["polymath", "polymath", "rare", 3],
+  ["renaissance", "polymath", "legendary", 5],
+];
+const SPECIALIST = 3;
+const MASTER = 5;
+/** Fields that get their own specialist and master badges, most completed first. */
+const SPECIALIST_FIELDS = 3;
+
+const COURSES: Rule[] = [
+  ["firstChapter", "author", "common", 1],
+  ["curator", "author", "rare", 5],
+  ["prolific", "author", "epic", 10],
+];
+const STUDENTS: Rule[] = [
+  ["firstStudent", "mentor", "common", 1],
+  ["mentor", "mentor", "uncommon", 10],
+  ["crowdFavourite", "mentor", "rare", 50],
+  ["luminary", "mentor", "legendary", 250],
+];
+const LESSONS_TAUGHT: Rule[] = [
+  ["architect", "architect", "uncommon", 20],
+  ["masterBuilder", "architect", "epic", 100],
+];
+const DAYS: Rule[] = [
+  ["senior", "senior", "rare", 180],
+  ["veteran", "senior", "epic", 365],
+  ["pillar", "senior", "legendary", 730],
+];
+
 export function buildBadges(stats: AchievementStats, t: TFunction, label: (cat: string) => string) {
   const out: Badge[] = [];
+  const add = (
+    [id, kind, rarity, target]: Rule,
+    current: number,
+    criteria: string,
+    earnedAt?: (target: number) => string | undefined,
+    title = t(`badges.${id}.title`),
+  ) =>
+    out.push({
+      id,
+      kind,
+      rarity,
+      title,
+      criteria,
+      current: Math.min(current, target),
+      target,
+      earned: current >= target,
+      earnedAt: current >= target ? earnedAt?.(target) : undefined,
+    });
+  const ladder = (
+    rules: Rule[],
+    current: number,
+    criteria: (id: string, count: number) => string,
+    earnedAt?: (target: number) => string | undefined,
+  ) => rules.forEach((r) => add(r, current, criteria(r[0], r[3]), earnedAt));
+
   const l = stats.learning;
   if (l) {
     const done = l.courses.filter((c) => c.percent >= 100 && c.completedAt);
     const dates = done.map((c) => c.completedAt!);
-    out.push(
-      badge({
-        id: "graduate",
-        kind: "graduate",
-        tier: 1,
-        title: t("badges.graduate.title"),
-        criteria: t("badges.graduate.criteria"),
-        current: done.length,
-        target: 1,
-        earnedAt: nth(dates, 1),
+
+    ladder(ENROLLED, l.courses.length, (_, count) => t("badges.explorer.criteria", { count }));
+    ladder(LESSONS, l.completedLessons, (id, count) =>
+      t(id === "firstLesson" ? "badges.firstLesson.criteria" : "badges.scholar.criteria", {
+        count,
       }),
     );
+    ladder(
+      COMPLETED,
+      done.length,
+      (id, count) =>
+        t(id === "graduate" ? "badges.graduate.criteria" : "badges.finisher.criteria", { count }),
+      (n) => nth(dates, n),
+    );
 
-    // one specialist badge per field the student studies, most completed first
-    const fields = [...new Set(l.courses.map((c) => c.category).filter(Boolean))]
-      .map((cat) => ({ cat, done: done.filter((c) => c.category === cat) }))
-      .sort((a, b) => b.done.length - a.done.length || a.cat.localeCompare(b.cat));
-    for (const { cat, done: inField } of fields.slice(0, 3)) {
-      // the highest tier reached, or the first one while still working towards it
-      const tier = inField.length >= SPECIALIST[1] ? 2 : 1;
-      const target = SPECIALIST[tier - 1];
-      const field = label(cat);
-      out.push(
-        badge({
-          id: `specialist-${cat}`,
-          kind: "specialist",
-          tier,
-          title: t(tier === 2 ? "badges.master.title" : "badges.specialist.title", { field }),
-          criteria: t("badges.specialist.criteria", { count: target, field }),
-          current: inField.length,
-          target,
-          earnedAt: nth(
-            inField.map((c) => c.completedAt!),
-            target,
-          ),
-        }),
-      );
-    }
-
-    // the date the third distinct field was finished
+    // the date each distinct field was first finished
     const firstPerField = new Map<string, string>();
     for (const c of [...done].sort((a, b) => a.completedAt!.localeCompare(b.completedAt!)))
       if (!firstPerField.has(c.category)) firstPerField.set(c.category, c.completedAt!);
-    out.push(
-      badge({
-        id: "polymath",
-        kind: "polymath",
-        tier: 1,
-        title: t("badges.polymath.title"),
-        criteria: t("badges.polymath.criteria", { count: POLYMATH }),
-        current: firstPerField.size,
-        target: POLYMATH,
-        earnedAt: nth([...firstPerField.values()], POLYMATH),
-      }),
-      badge({
-        id: "scholar",
-        kind: "scholar",
-        tier: 1,
-        title: t("badges.scholar.title"),
-        criteria: t("badges.scholar.criteria", { count: SCHOLAR }),
-        current: l.completedLessons,
-        target: SCHOLAR,
-      }),
+    ladder(
+      FIELDS,
+      firstPerField.size,
+      (_, count) => t("badges.polymath.criteria", { count }),
+      (n) => nth([...firstPerField.values()], n),
     );
+
+    // specialist and master per field the student studies; a generic pair until they enrol
+    const fields = [...new Set(l.courses.map((c) => c.category).filter(Boolean))]
+      .map((cat) => ({ cat, done: done.filter((c) => c.category === cat) }))
+      .sort((a, b) => b.done.length - a.done.length || a.cat.localeCompare(b.cat))
+      .slice(0, SPECIALIST_FIELDS);
+    if (fields.length === 0) fields.push({ cat: "", done: [] });
+    for (const { cat, done: inField } of fields) {
+      const field = cat ? label(cat) : t("badges.anyField");
+      const key = cat || "any";
+      const fieldDates = inField.map((c) => c.completedAt!);
+      for (const [id, rarity, target] of [
+        [`specialist-${key}`, "rare", SPECIALIST],
+        [`master-${key}`, "epic", MASTER],
+      ] as const)
+        add(
+          [id, "specialist", rarity, target],
+          inField.length,
+          t("badges.specialist.criteria", { count: target, field }),
+          (n) => nth(fieldDates, n),
+          t(id.startsWith("master") ? "badges.master.title" : "badges.specialist.title", {
+            field,
+          }),
+        );
+    }
   }
 
   const te = stats.teaching;
   if (te) {
     const joined = new Date(te.joinedAt).getTime();
     const days = Math.max(0, Math.floor((Date.now() - joined) / DAY));
-    out.push(
-      badge({
-        id: "senior",
-        kind: "senior",
-        tier: 1,
-        title: t("badges.senior.title"),
-        criteria: t("badges.senior.criteria", { count: SENIOR_DAYS }),
-        current: days,
-        target: SENIOR_DAYS,
-        earnedAt:
-          days >= SENIOR_DAYS ? new Date(joined + SENIOR_DAYS * DAY).toISOString() : undefined,
-      }),
-      badge({
-        id: "mentor",
-        kind: "mentor",
-        tier: 1,
-        title: t("badges.mentor.title"),
-        criteria: t("badges.mentor.criteria", { count: MENTOR }),
-        current: te.students,
-        target: MENTOR,
-      }),
-      badge({
-        id: "architect",
-        kind: "architect",
-        tier: 1,
-        title: t("badges.architect.title"),
-        criteria: t("badges.architect.criteria", { count: ARCHITECT }),
-        current: te.lessons,
-        target: ARCHITECT,
-      }),
+    ladder(COURSES, te.courses, (_, count) => t("badges.author.criteria", { count }));
+    ladder(STUDENTS, te.students, (_, count) => t("badges.mentor.criteria", { count }));
+    ladder(LESSONS_TAUGHT, te.lessons, (_, count) => t("badges.architect.criteria", { count }));
+    ladder(
+      DAYS,
+      days,
+      (_, count) => t("badges.senior.criteria", { count }),
+      (n) => new Date(joined + n * DAY).toISOString(),
     );
   }
-  // earned first, then the closest to unlocking
-  return out.sort(
-    (a, b) => Number(b.earned) - Number(a.earned) || b.current / b.target - a.current / a.target,
-  );
+  return sortBadges(out);
 }
+
+/** Earned first (rarest on top), then the closest to unlocking (easiest tier first on ties). */
+export const sortBadges = (badges: Badge[]) =>
+  badges.sort(
+    (a, b) =>
+      Number(b.earned) - Number(a.earned) ||
+      (a.earned
+        ? rarityRank(b.rarity) - rarityRank(a.rarity)
+        : b.current / b.target - a.current / a.target ||
+          rarityRank(a.rarity) - rarityRank(b.rarity)),
+  );
 
 /** Most badges a profile showcases; the API enforces the same limit. */
 export const MAX_FEATURED = 5;
