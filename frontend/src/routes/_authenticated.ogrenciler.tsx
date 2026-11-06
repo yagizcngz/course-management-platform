@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { adminOnly } from "../hooks/useAdminGuard";
 
+import { ProfileRecord } from "@/components/ProfileModal";
 import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/_authenticated/ogrenciler")({
   component: adminOnly(StudentsPage),
@@ -259,18 +260,6 @@ function StudentsPage() {
       fCourse.toLowerCase().includes(searchLower)
     );
   });
-
-  // Seçili öğrencinin kurs kayıtlarını profil modalı için hesaplayan yardımcı fonksiyon
-  const getSelectedStudentEnrollments = () => {
-    if (!selectedProfileStudent) return [];
-
-    return dbEnrollments.filter((e) => {
-      return (
-        String(e.studentId || e.StudentId) ===
-        String(selectedProfileStudent.id || selectedProfileStudent.Id)
-      );
-    });
-  };
 
   const handleStartEditProfile = () => {
     if (!selectedProfileStudent) return;
@@ -562,7 +551,7 @@ function StudentsPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-card border border-border rounded-2xl shadow-lg w-full max-w-sm max-h-[90vh] overflow-y-auto p-8 relative flex flex-col items-center animate-in zoom-in-95 duration-200"
+            className="bg-card border border-border rounded-2xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto p-8 relative flex flex-col items-center animate-in zoom-in-95 duration-200"
           >
             <button
               onClick={() => setSelectedProfileStudent(null)}
@@ -775,30 +764,13 @@ function StudentsPage() {
                     </p>
                   </div>
 
-                  <div>
-                    <h3 className="text-sm font-bold text-foreground/80 mb-2">
-                      {t("students.enrolledCourses")}
-                    </h3>
-                    {getSelectedStudentEnrollments().length > 0 ? (
-                      <ul className="text-sm text-foreground space-y-1.5">
-                        {getSelectedStudentEnrollments().map((enr, idx) => (
-                          <li key={idx} className="flex items-center gap-2">
-                            <span className="size-1.5 rounded-full bg-foreground/50 shrink-0"></span>
-                            {(() => {
-                              const rawTitle = enr.courseTitle || enr.CourseTitle;
-                              return rawTitle
-                                ? i18n.exists(`dynamic.courses.${rawTitle}`)
-                                  ? t(`dynamic.courses.${rawTitle}`)
-                                  : rawTitle
-                                : "-";
-                            })()}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">{t("students.noEnrollments")}</p>
-                    )}
-                  </div>
+                  {/* badges, courses in progress and finished: the same record a public profile shows */}
+                  <ProfileRecord
+                    target={{
+                      kind: "student",
+                      id: Number(selectedProfileStudent.id ?? selectedProfileStudent.Id),
+                    }}
+                  />
                 </div>
               </>
             )}

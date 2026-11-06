@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { adminOnly } from "../hooks/useAdminGuard";
 import { fetchCategories } from "../components/courseHelpers";
 
+import { ProfileRecord } from "@/components/ProfileModal";
 import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/_authenticated/ogretmenler")({
   component: adminOnly(TeachersPage),
@@ -585,7 +586,7 @@ function TeachersPage() {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-card border border-border rounded-2xl shadow-lg w-full max-w-sm max-h-[90vh] overflow-y-auto p-8 relative flex flex-col items-center animate-in zoom-in-95 duration-200"
+            className="bg-card border border-border rounded-2xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto p-8 relative flex flex-col items-center animate-in zoom-in-95 duration-200"
           >
             <button
               onClick={() => setSelectedProfileTeacher(null)}
@@ -838,6 +839,11 @@ function TeachersPage() {
                       })()}
                     </p>
                   </div>
+
+                  {/* teaching and learning record: courses taught, badges, own course progress */}
+                  {currentTeacherId != null && (
+                    <ProfileRecord target={{ kind: "teacher", id: Number(currentTeacherId) }} />
+                  )}
                 </div>
               </>
             )}

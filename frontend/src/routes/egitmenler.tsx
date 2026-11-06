@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Search } from "lucide-react";
 import { GuestCourseModal, PageIntro, PublicPage } from "../components/PublicPage";
+import { ProfileModal, type ProfileTarget } from "../components/ProfileModal";
 import { Stagger, StaggerItem } from "../components/motion";
 import { Portrait } from "../components/landing/VariantAtelier";
 import { fold, price } from "../components/landing/catalog";
@@ -47,6 +48,7 @@ function FacultyDirectory() {
   const navigate = useNavigate({ from: "/egitmenler" });
   const { courses, categories, teachers, teachersLoaded, label } = usePublicCatalog();
   const [selected, setSelected] = useState<LandingCourse | null>(null);
+  const [profile, setProfile] = useState<ProfileTarget | null>(null);
   const [query, setQuery] = useState(search.q ?? "");
 
   const set = (patch: Partial<FacultySearch>) =>
@@ -169,6 +171,9 @@ function FacultyDirectory() {
                   .filter((c): c is LandingCourse => !!c)}
                 label={label}
                 onOpen={setSelected}
+                onProfile={() =>
+                  setProfile({ kind: "teacher", id: Number(teacher.id ?? teacher.Id) })
+                }
               />
             </StaggerItem>
           ))}
@@ -176,6 +181,7 @@ function FacultyDirectory() {
       </div>
 
       <GuestCourseModal course={selected} teachers={teachers} onClose={() => setSelected(null)} />
+      <ProfileModal target={profile} onClose={() => setProfile(null)} />
     </PublicPage>
   );
 }
@@ -185,11 +191,13 @@ function FacultyCard({
   courses,
   label,
   onOpen,
+  onProfile,
 }: {
   teacher: TeacherLiteDto;
   courses: LandingCourse[];
   label: LandingProps["label"];
   onOpen: (course: LandingCourse) => void;
+  onProfile: () => void;
 }) {
   const { t } = useTranslation();
   const [bioOpen, setBioOpen] = useState(false);
@@ -208,7 +216,16 @@ function FacultyCard({
           className="h-20 w-20 shrink-0 rounded-full text-2xl"
         />
         <div className="min-w-0">
-          <h2 className="font-serif text-2xl leading-tight">{name}</h2>
+          <h2 className="font-serif text-2xl leading-tight">
+            <button
+              type="button"
+              onClick={onProfile}
+              title={t("community.viewProfile")}
+              className="text-left underline-offset-4 hover:text-gold hover:underline"
+            >
+              {name}
+            </button>
+          </h2>
           <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.14em] text-gold">
             {getTeacherBranches(teacher)
               .map((b) => label("categories", b))
