@@ -57,8 +57,21 @@ const RULES: Rule[] = [
   [/Yönetici hesapları buradan silinemez/i, "adminCannotDelete"],
   [/Bu hesaba karşılık gelen bir kayıt/i, "accountRecordNotFound"],
   [/Kullanıcı bulunamadı/i, "userNotFound"],
-  [/davet kodu geçersiz/i, "invalidInvite"],
-  [/geçersiz kayıt kodu/i, "invalidRegistrationCode"],
+  [/^Geçersiz rol/i, "invalidRole"],
+  [/^Ad ve soyad zorunludur/i, "nameRequired"],
+  [/En fazla (\d+) rozet/i, "tooManyBadges", (m) => ({ count: m[1] })],
+  [/^Geçersiz rozet/i, "invalidBadge"],
+  [/videonun en az %(\d+)/i, "watchMoreToComplete", (m) => ({ percent: m[1] })],
+
+  // community
+  [/^Başlık (\d+)-(\d+) karakter/i, "titleLength", (m) => ({ min: m[1], max: m[2] })],
+  [/^Mesaj (\d+)-(\d+) karakter/i, "messageLength", (m) => ({ min: m[1], max: m[2] })],
+  [/^Başlık bulunamadı/i, "threadNotFound"],
+  [/Bu mesajı silemezsiniz/i, "cannotDeletePost"],
+  [/Kendinize arkadaşlık isteği/i, "cannotFriendSelf"],
+  [/zaten bir arkadaşlık isteği var/i, "friendRequestExists"],
+  [/^İstek bulunamadı/i, "requestNotFound"],
+  [/Yalnızca arkadaşlarınıza mesaj/i, "friendsOnlyMessages"],
 
   // permissions
   [/yetkiniz yok|Admin access required|^Forbidden$/i, "noPermission"],

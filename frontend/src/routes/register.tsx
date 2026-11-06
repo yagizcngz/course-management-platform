@@ -13,6 +13,7 @@ import { toast } from "sonner";
 
 const MIN_BIO = 40;
 const MIN_PASSWORD = 8; // AuthController.MinPasswordLength
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CODE_TTL_MS = 5 * 60 * 1000; // AuthController keeps the e-mail code for five minutes
 export const Route = createFileRoute("/register")({
   component: RegisterPage,
@@ -32,11 +33,9 @@ function RegisterPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [registrationCode, setRegistrationCode] = useState("");
   const [asTeacher, setAsTeacher] = useState(false);
   const [branch, setBranch] = useState("");
   const [aboutMe, setAboutMe] = useState("");
-  const [showCode, setShowCode] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [isSending, setIsSending] = useState(false);
@@ -59,8 +58,7 @@ function RegisterPage() {
     setError("");
 
     try {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
+      if (!EMAIL_RE.test(email.trim())) {
         setError(t("register.invalidEmail"));
         return;
       }
@@ -77,7 +75,6 @@ function RegisterPage() {
         setError(t("register.bioTooShort", { count: MIN_BIO }));
         return;
       }
-      const code = asTeacher ? registrationCode.trim() : "";
       const response = await fetch(`${API_BASE}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -87,7 +84,6 @@ function RegisterPage() {
           username,
           email,
           password,
-          registrationCode: code || null,
           verificationCode: verificationCode.trim(),
           applyAsTeacher: asTeacher,
           branch: asTeacher ? branch : null,
@@ -98,7 +94,6 @@ function RegisterPage() {
       if (response.ok) {
         const data = await response.json().catch(() => null);
         if (data?.teacherApplication === "Pending") toast.success(t("register.applicationSent"));
-        else if (data?.role === "Teacher") toast.success(t("register.teacherReady"));
         navigate({ to: "/login" });
       } else {
         // the email code stays valid after a failed attempt, so the user only fixes the field
@@ -114,8 +109,7 @@ function RegisterPage() {
   const handleSendVerificationEmail = async () => {
     setError("");
     setSuccessMsg("");
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!EMAIL_RE.test(email.trim())) {
       setError(t("register.invalidEmail"));
       return;
     }
@@ -148,22 +142,30 @@ function RegisterPage() {
     i18n.exists(`dynamic.categories.${c}`) ? t(`dynamic.categories.${c}`) : c,
   );
 
-  // each filled step pulls one more book into place on the panel
-  const steps = [
-    !!firstName.trim(),
-    !!lastName.trim(),
-    isEmailSent && verificationCode.trim().length === 6,
-    !!username.trim(),
-    password.length >= MIN_PASSWORD,
-    ...(asTeacher ? [!!branch, aboutMe.trim().length >= MIN_BIO] : []),
+  // entering the address and confirming its code are separate steps, so filling every visible
+  // field leaves exactly one tick open and the panel names it
+  const steps: [boolean, string][] = [
+    [!!firstName.trim(), t("register.firstName")],
+    [!!lastName.trim(), t("register.lastName")],
+    [EMAIL_RE.test(email.trim()), t("register.email")],
+    [isEmailSent && verificationCode.trim().length === 6, t("register.stepVerify")],
+    [!!username.trim(), t("register.username")],
+    [password.length >= MIN_PASSWORD, t("register.password")],
+    ...(asTeacher
+      ? ([
+          [!!branch, t("register.branch")],
+          [aboutMe.trim().length >= MIN_BIO, t("register.bio")],
+        ] as [boolean, string][])
+      : []),
   ];
-  const done = steps.filter(Boolean).length;
+  const done = steps.filter(([ok]) => ok).length;
+  const next = steps.find(([ok]) => !ok)?.[1];
 
   return (
     <AuthShell
       caption={t("register.panelTitle")}
       eyebrow={t(asTeacher ? "register.panelEyebrowTeacher" : "register.panelEyebrow")}
-      steps={{ done, total: steps.length }}
+      steps={{ done, total: steps.length, next }}
       panel={
         <FolioScene
           progress={done / steps.length}
@@ -422,36 +424,6 @@ function RegisterPage() {
               <p id="reg-bio-hint" className="mt-1 text-xs text-muted-foreground">
                 {t("register.bioHint", { count: MIN_BIO, length: aboutMe.trim().length })}
               </p>
-            </div>
-            <div>
-              <button
-                type="button"
-                aria-expanded={showCode}
-                aria-controls="reg-invite"
-                onClick={() => setShowCode((v) => !v)}
-                className="text-sm font-medium text-gold underline-offset-4 hover:underline"
-              >
-                {t("register.haveInviteCode")}
-              </button>
-              {showCode && (
-                <div id="reg-invite" className="mt-2">
-                  <label htmlFor="reg-teacher-code" className={authLabelClass}>
-                    {t("register.inviteCode")}{" "}
-                    <span className="text-xs font-normal text-muted-foreground">
-                      {t("register.optional")}
-                    </span>
-                  </label>
-                  <input
-                    id="reg-teacher-code"
-                    type="text"
-                    autoComplete="off"
-                    className={authInputClass}
-                    value={registrationCode}
-                    onChange={(e) => setRegistrationCode(e.target.value)}
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">{t("register.inviteHint")}</p>
-                </div>
-              )}
             </div>
           </div>
         )}

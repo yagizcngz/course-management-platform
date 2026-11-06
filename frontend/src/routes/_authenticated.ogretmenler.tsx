@@ -214,9 +214,8 @@ function TeachersPage() {
 
     setIsSubmitting(true);
     try {
-      // Register endpoint kullanıcıyı + öğretmen profilini otomatik oluşturur
-      // (RegistrationCode="12345" = "Teacher" rolü = otomatik Teacher kaydı)
-      const res = await fetch(`${API_BASE}/api/auth/register`, {
+      // yönetici uç noktası giriş hesabını ve eğitmen profilini (branşıyla) birlikte açar
+      const res = await fetch(`${API_BASE}/api/auth/admin-create`, {
         method: "POST",
         headers: authHeaders(),
         body: JSON.stringify({
@@ -225,7 +224,8 @@ function TeachersPage() {
           username: newUsername.trim(),
           email,
           password: newPassword,
-          registrationCode: "ADMIN_BYPASS_TEACHER",
+          role: "Teacher",
+          branch: newBranch.length > 0 ? newBranch.join(", ") : null,
         }),
       });
 
@@ -234,44 +234,7 @@ function TeachersPage() {
         return;
       }
 
-      // Branş girildiyse, oluşturulan öğretmeni bulup PUT ile branş güncelle
-      let branchSaved = true;
-      if (newBranch.length > 0) {
-        try {
-          const headers = authHeaders();
-          const listRes = await fetch(`${API_BASE}/api/teachers`, { headers });
-          if (listRes.ok) {
-            const teachers: TeacherData[] = await listRes.json();
-            const created = teachers.find(
-              (t) => (t.email || t.Email || "").toLowerCase() === email.toLowerCase(),
-            );
-            const createdId = created?.id ?? created?.Id;
-            if (createdId) {
-              const putRes = await fetch(`${API_BASE}/api/teachers/${createdId}`, {
-                method: "PUT",
-                headers,
-                body: JSON.stringify({
-                  Id: createdId,
-                  FirstName: firstName,
-                  LastName: lastName,
-                  Email: email,
-                  Branch: newBranch.join(", "),
-                  Date: created?.date || created?.Date || new Date().toISOString(),
-                }),
-              });
-              if (!putRes.ok) {
-                branchSaved = false;
-                showToast(await readError(putRes, t("teachers.errors.registerFailed")), "error");
-              }
-            }
-          }
-        } catch (branchErr) {
-          console.error("Branş güncellenirken hata:", branchErr);
-        }
-      }
-
-      // Hesap oluştu; branş kaydedilemediyse yalnızca hata gösterilir, liste yine yenilenir
-      if (branchSaved) showToast(t("teachers.errors.registerSuccess"));
+      showToast(t("teachers.errors.registerSuccess"));
       setNewFirstName("");
       setNewLastName("");
       setNewEmail("");

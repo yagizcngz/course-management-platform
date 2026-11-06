@@ -85,7 +85,7 @@
       "backToDashboard": "Back to Dashboard",
       "system": {
         "title": "System Settings",
-        "description": "Manage system parameters in the database (e.g. TEACHER_CODE, ADMIN_CODE).",
+        "description": "Manage system parameters stored in the database (e.g. TEACHER_SHARE_PERCENT).",
         "newSettingTitle": "Add New Setting",
         "keyPlaceholder": "Key",
         "valuePlaceholder": "Value",
@@ -101,8 +101,6 @@
         "deleteTitle": "Delete this setting?",
         "deleteBtn": "Delete setting",
         "keys": {
-          "TEACHER_CODE": "Instructor invite code. Someone who enters it at sign-up becomes an instructor right away; applications without it wait for admin approval. Leave it empty to review every application.",
-          "ADMIN_CODE": "Admin sign-up code. An account that enters it at sign-up becomes an admin; share it only with people you trust.",
           "TEACHER_SHARE_PERCENT": "The share of each course sale paid to the instructor (percent, 0-100). Defaults to 70; the rest is platform revenue."
         }
       },
@@ -130,7 +128,14 @@
         "usernameFailed": "Could not update the username."
       },
       "eyebrow": "Account · Preferences · Platform",
-      "intro": "Manage your sign-in details, password and notification preferences here. Admins also edit instructor application codes, the instructor share and the category tree."
+      "intro": "Manage your sign-in details, password and notification preferences here. Admins also edit instructor application codes, the instructor share and the category tree.",
+      "admins": {
+        "title": "Administrators",
+        "description": "Open another administrator account. Public sign-up can never create one; only a signed-in admin can.",
+        "submit": "Create administrator",
+        "created": "Administrator {{username}} created.",
+        "failed": "The administrator could not be created."
+      }
     },
     "login": {
       "panelTitle": "Pick up from the *page* you left.",
@@ -193,11 +198,7 @@
       "bioPlaceholder": "Education, teaching experience, what you teach and how…",
       "bioHint": "At least {{count}} characters ({{length}} so far).",
       "bioTooShort": "Write at least {{count}} characters about your background so an admin can review your application.",
-      "haveInviteCode": "I have an invite code",
-      "inviteCode": "Invite code",
-      "inviteHint": "A valid code from an admin activates your instructor account at once. Leave it empty to send an application instead.",
       "applicationSent": "Account created. Your instructor application is waiting for admin approval; meanwhile you can sign in as a learner.",
-      "teacherReady": "Instructor account created. You can sign in now.",
       "codeStillValid": "Your email code is still valid for its 5 minutes: fix the field and submit again.",
       "panelEyebrow": "New account · Student",
       "panelEyebrowTeacher": "New account · Instructor",
@@ -205,7 +206,8 @@
       "roleTeacherDesc": "Teach in your field once your application is approved.",
       "codeExpiresIn": "Code valid for {{time}}",
       "codeExpired": "The code has expired.",
-      "resendCode": "Send a new code"
+      "resendCode": "Send a new code",
+      "stepVerify": "Verification code"
     },
     "dashboard": {
       "alerts": {
@@ -1036,8 +1038,6 @@
       "invalidCode": "The verification code is wrong or has expired. Request a new code.",
       "branchRequired": "Choose a discipline from the list.",
       "bioTooShort": "Write at least {{count}} characters about your background for the instructor application.",
-      "invalidInvite": "This invite code is not valid. Check it, or leave the field empty to send your application for admin approval.",
-      "invalidRegistrationCode": "This registration code is not valid.",
       "missingBranchForCourse": "You cannot request to teach this course: you do not have the {{branch}} discipline.",
       "branchHasCourses": "You teach courses in these disciplines: {{branches}}. Delete or hand over those courses first.",
       "branchLocked": "The discipline cannot change: the instructor is still assigned to these {{branch}} courses: {{courses}}. Assign them to another instructor first.",
@@ -1108,7 +1108,19 @@
       "imageTypeOnly": "Only jpg, png, gif or webp files can be uploaded.",
       "videoTypeOnly": "Only mp4 or webm videos can be uploaded.",
       "unexpected": "An unexpected error occurred. Please try again.",
-      "announcementNotFound": "Announcement not found."
+      "announcementNotFound": "Announcement not found.",
+      "invalidRole": "That role is not valid.",
+      "nameRequired": "First and last name are required.",
+      "tooManyBadges": "You can feature at most {{count}} badges.",
+      "invalidBadge": "That badge is not valid.",
+      "watchMoreToComplete": "Watch at least {{percent}}% of the video to complete this lesson.",
+      "titleLength": "The title must be {{min}}-{{max}} characters.",
+      "messageLength": "The message must be {{min}}-{{max}} characters.",
+      "threadNotFound": "Thread not found.",
+      "cannotDeletePost": "You cannot delete this message.",
+      "cannotFriendSelf": "You cannot send yourself a friend request.",
+      "friendRequestExists": "There is already a friend request with this person.",
+      "friendsOnlyMessages": "You can only message your friends."
     },
     "validation": {
       "required": "Please fill out this field."
@@ -1517,6 +1529,9 @@
       "crashTitle": "This page could not load",
       "crashBody": "Something went wrong. You can try again or return to the home page.",
       "retry": "Try again"
+    },
+    "auth": {
+      "nextStep": "Next: {{step}}"
     }
   }
 }

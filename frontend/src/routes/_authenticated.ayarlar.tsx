@@ -1,6 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import { User as UserIcon, Lock, Mail, Database, List, Plus, Trash2, Palette } from "lucide-react";
+import {
+  User as UserIcon,
+  Lock,
+  Mail,
+  Database,
+  List,
+  Plus,
+  Trash2,
+  Palette,
+  ShieldPlus,
+} from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
@@ -593,6 +603,8 @@ function SettingsPage() {
           </Panel>
         )}
 
+        {isAdmin && activeTab === "system" && <AdminCreator />}
+
         {isAdmin && activeTab === "categories" && (
           <Panel no="01" title={t("settings.categories.title")} icon={<List />}>
             <p className="text-sm text-muted-foreground">{t("settings.categories.description")}</p>
@@ -671,7 +683,88 @@ function SettingsPage() {
   );
 }
 
-const KNOWN_SETTINGS = ["TEACHER_CODE", "ADMIN_CODE", "TEACHER_SHARE_PERCENT"];
+const KNOWN_SETTINGS = ["TEACHER_SHARE_PERCENT"];
+
+/** Opens another administrator account; the server checks the caller's admin role from the token. */
+function AdminCreator() {
+  const { t } = useTranslation();
+  const empty = { firstName: "", lastName: "", username: "", email: "", password: "" };
+  const [form, setForm] = useState(empty);
+  const [busy, setBusy] = useState(false);
+  const set = (k: keyof typeof empty) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/admin-create`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify({ ...form, role: "Admin" }),
+      });
+      if (!res.ok) throw new Error(await readError(res, t("settings.admins.failed")));
+      toast.success(t("settings.admins.created", { username: form.username }));
+      setForm(empty);
+    } catch (err) {
+      toast.error((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Panel no="02" title={t("settings.admins.title")} icon={<ShieldPlus />}>
+      <p className="text-sm text-muted-foreground">{t("settings.admins.description")}</p>
+      <form onSubmit={submit} className="grid gap-3 md:grid-cols-2">
+        <input
+          required
+          placeholder={t("register.firstName")}
+          className={field}
+          value={form.firstName}
+          onChange={set("firstName")}
+        />
+        <input
+          required
+          placeholder={t("register.lastName")}
+          className={field}
+          value={form.lastName}
+          onChange={set("lastName")}
+        />
+        <input
+          required
+          autoComplete="off"
+          placeholder={t("register.username")}
+          className={field}
+          value={form.username}
+          onChange={set("username")}
+        />
+        <input
+          required
+          type="email"
+          autoComplete="off"
+          placeholder={t("register.email")}
+          className={field}
+          value={form.email}
+          onChange={set("email")}
+        />
+        <input
+          required
+          type="password"
+          minLength={8}
+          autoComplete="new-password"
+          placeholder={t("register.password")}
+          className={`${field} md:col-span-2`}
+          value={form.password}
+          onChange={set("password")}
+        />
+        <button type="submit" disabled={busy} className={`${pillButton.primary} w-fit`}>
+          <ShieldPlus className="size-4" /> {t("settings.admins.submit")}
+        </button>
+      </form>
+    </Panel>
+  );
+}
 
 const field =
   "h-10 w-full min-w-0 rounded-lg border border-border bg-background px-3 text-sm outline-none transition-[border-color,box-shadow] focus:border-gold focus:ring-4 focus:ring-gold/15";

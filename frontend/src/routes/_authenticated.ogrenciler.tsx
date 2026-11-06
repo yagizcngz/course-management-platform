@@ -214,9 +214,8 @@ function StudentsPage() {
 
     setIsSubmitting(true);
     try {
-      // Register endpoint kullanıcıyı + öğrenci profilini otomatik oluşturur
-      // (RegistrationCode boş = "User" rolü = otomatik Student kaydı)
-      const res = await fetch(`${API_BASE}/api/auth/register`, {
+      // yönetici uç noktası giriş hesabını ve öğrenci profilini birlikte açar
+      const res = await fetch(`${API_BASE}/api/auth/admin-create`, {
         method: "POST",
         headers: authHeaders(),
         body: JSON.stringify({
@@ -225,7 +224,7 @@ function StudentsPage() {
           username: newUsername.trim(),
           email: newEmail.trim(),
           password: newPassword,
-          registrationCode: null,
+          role: "User",
         }),
       });
 

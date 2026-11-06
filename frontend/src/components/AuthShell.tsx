@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { Logo, PublicControls } from "./PublicHeader";
+import { useTranslation } from "react-i18next";
 import { SplitHeadline } from "./motion";
 
 // The panel is always night slate, so its effect uses champagne in both themes.
@@ -20,9 +21,10 @@ export function AuthShell({
   panel: ReactNode;
   caption: string;
   eyebrow: string;
-  /** Filled form steps, drawn as ticks in the panel's corner. */
-  steps: { done: number; total: number };
+  /** Filled form steps, drawn as ticks in the panel's corner; `next` names the first open one. */
+  steps: { done: number; total: number; next?: string };
 }) {
+  const { t } = useTranslation();
   return (
     <div className="grid min-h-screen bg-background font-display text-foreground lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
       <div className="flex flex-col px-5 py-6 sm:px-10">
@@ -53,6 +55,14 @@ export function AuthShell({
             {String(steps.done).padStart(2, "0")}/{String(steps.total).padStart(2, "0")}
           </span>
         </div>
+        {steps.next && (
+          <p
+            aria-live="polite"
+            className="absolute right-10 top-16 max-w-[60%] truncate text-right font-mono text-[11px] uppercase tracking-[0.18em] text-[hsl(42_60%_62%)]"
+          >
+            {t("auth.nextStep", { step: steps.next })}
+          </p>
+        )}
         <div className="absolute inset-x-10 bottom-10">
           <p className="max-w-md font-serif text-4xl leading-[1.1]">
             <SplitHeadline text={caption} />

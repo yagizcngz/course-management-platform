@@ -85,7 +85,7 @@
       "backToDashboard": "Panele Dön",
       "system": {
         "title": "Sistem Ayarları",
-        "description": "Veritabanındaki sistem parametrelerini (Örn: TEACHER_CODE, ADMIN_CODE) yönetin.",
+        "description": "Veritabanındaki sistem parametrelerini (Örn: TEACHER_SHARE_PERCENT) yönetin.",
         "newSettingTitle": "Yeni Ayar Ekle",
         "keyPlaceholder": "Anahtar (Key)",
         "valuePlaceholder": "Değer (Value)",
@@ -101,8 +101,6 @@
         "deleteTitle": "Ayar silinsin mi?",
         "deleteBtn": "Ayarı sil",
         "keys": {
-          "TEACHER_CODE": "Eğitmen davet kodu. Kayıtta bu kodu giren kişi doğrudan eğitmen olur; kodsuz eğitmen başvuruları yönetici onayına düşer. Boş bırakılırsa tüm başvurular onay bekler.",
-          "ADMIN_CODE": "Yönetici kayıt kodu. Kayıtta bu kodu giren hesap yönetici olur; yalnızca güvendiğiniz kişilerle paylaşın.",
           "TEACHER_SHARE_PERCENT": "Bir kurs satışında eğitmene aktarılan pay (yüzde, 0-100). Varsayılan 70; kalan kısım platform gelirine yazılır."
         }
       },
@@ -130,7 +128,14 @@
         "usernameFailed": "Kullanıcı adı güncellenemedi."
       },
       "eyebrow": "Hesap · Tercihler · Platform",
-      "intro": "Giriş bilgilerinizi, şifrenizi ve bildirim tercihlerinizi buradan yönetin. Yöneticiler eğitmen başvurusu kodlarını, öğretmen payını ve kategori ağacını da buradan düzenler."
+      "intro": "Giriş bilgilerinizi, şifrenizi ve bildirim tercihlerinizi buradan yönetin. Yöneticiler eğitmen başvurusu kodlarını, öğretmen payını ve kategori ağacını da buradan düzenler.",
+      "admins": {
+        "title": "Yöneticiler",
+        "description": "Yeni bir yönetici hesabı açın. Herkese açık kayıt hiçbir zaman yönetici açamaz; yalnızca giriş yapmış bir yönetici açabilir.",
+        "submit": "Yönetici oluştur",
+        "created": "{{username}} yönetici olarak oluşturuldu.",
+        "failed": "Yönetici oluşturulamadı."
+      }
     },
     "login": {
       "panelTitle": "Bıraktığın *sayfadan* devam et.",
@@ -193,11 +198,7 @@
       "bioPlaceholder": "Eğitiminiz, öğretmenlik deneyiminiz, neyi nasıl öğrettiğiniz…",
       "bioHint": "En az {{count}} karakter (şu an {{length}}).",
       "bioTooShort": "Başvurunuzun değerlendirilebilmesi için geçmişinizi en az {{count}} karakterle anlatın.",
-      "haveInviteCode": "Davet kodum var",
-      "inviteCode": "Davet kodu",
-      "inviteHint": "Yöneticiden aldığınız geçerli kod eğitmen hesabınızı hemen açar. Boş bırakırsanız başvurunuz onaya gönderilir.",
       "applicationSent": "Hesabınız oluşturuldu. Eğitmen başvurunuz yönetici onayını bekliyor; bu sürede öğrenci olarak giriş yapabilirsiniz.",
-      "teacherReady": "Eğitmen hesabınız oluşturuldu. Şimdi giriş yapabilirsiniz.",
       "codeStillValid": "E-posta kodunuz 5 dakikalık süresi boyunca geçerli: alanı düzeltip tekrar gönderin.",
       "panelEyebrow": "Yeni kayıt · Öğrenci",
       "panelEyebrowTeacher": "Yeni kayıt · Eğitmen",
@@ -205,7 +206,8 @@
       "roleTeacherDesc": "Branşında kurs ver; başvurun onaylanınca başla.",
       "codeExpiresIn": "Kod {{time}} daha geçerli",
       "codeExpired": "Kodun süresi doldu.",
-      "resendCode": "Yeni kod gönder"
+      "resendCode": "Yeni kod gönder",
+      "stepVerify": "Doğrulama kodu"
     },
     "dashboard": {
       "alerts": {
@@ -961,8 +963,6 @@
       "invalidCode": "Doğrulama kodu hatalı ya da süresi dolmuş. Yeni kod isteyin.",
       "branchRequired": "Listeden bir alan seçin.",
       "bioTooShort": "Eğitmen başvurusu için en az {{count}} karakterlik bir özgeçmiş yazın.",
-      "invalidInvite": "Davet kodu geçersiz. Kodu kontrol edin ya da alanı boş bırakıp başvurunuzu yönetici onayına gönderin.",
-      "invalidRegistrationCode": "Kayıt kodu geçersiz.",
       "missingBranchForCourse": "Bu kursa ders verme isteği gönderemezsiniz: {{branch}} branşına sahip değilsiniz.",
       "branchHasCourses": "Şu branşlarda verdiğiniz kurslar var: {{branches}}. Önce bu kursları silin veya devredin.",
       "branchLocked": "Branş değiştirilemez: {{branch}} branşındaki şu kurslara hâlâ atanmış: {{courses}}. Önce kursları başka bir eğitmene atayın.",
@@ -1033,7 +1033,19 @@
       "imageTypeOnly": "Yalnızca jpg, png, gif veya webp dosyaları yüklenebilir.",
       "videoTypeOnly": "Yalnızca mp4 veya webm videoları yüklenebilir.",
       "unexpected": "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.",
-      "announcementNotFound": "Duyuru bulunamadı."
+      "announcementNotFound": "Duyuru bulunamadı.",
+      "invalidRole": "Geçersiz rol.",
+      "nameRequired": "Ad ve soyad zorunludur.",
+      "tooManyBadges": "En fazla {{count}} rozet öne çıkarabilirsiniz.",
+      "invalidBadge": "Geçersiz rozet.",
+      "watchMoreToComplete": "Dersi tamamlamak için videonun en az %{{percent}}'ini izleyin.",
+      "titleLength": "Başlık {{min}}-{{max}} karakter olmalıdır.",
+      "messageLength": "Mesaj {{min}}-{{max}} karakter olmalıdır.",
+      "threadNotFound": "Başlık bulunamadı.",
+      "cannotDeletePost": "Bu mesajı silemezsiniz.",
+      "cannotFriendSelf": "Kendinize arkadaşlık isteği gönderemezsiniz.",
+      "friendRequestExists": "Bu kişiyle zaten bir arkadaşlık isteği var.",
+      "friendsOnlyMessages": "Yalnızca arkadaşlarınıza mesaj gönderebilirsiniz."
     },
     "validation": {
       "required": "Lütfen bu alanı doldurun."
@@ -1432,6 +1444,9 @@
       "crashTitle": "Bu sayfa yüklenemedi",
       "crashBody": "Bir sorun oluştu. Sayfayı yeniden deneyebilir veya ana sayfaya dönebilirsiniz.",
       "retry": "Tekrar dene"
+    },
+    "auth": {
+      "nextStep": "Sıradaki: {{step}}"
     }
   }
 }
