@@ -6,7 +6,10 @@ import { LanguageToggle, ThemeToggle } from "./DisplayToggles";
 
 export function Logo({ className = "text-2xl" }: { className?: string }) {
   return (
-    <Link to="/" className={`font-serif leading-none text-foreground ${className}`}>
+    <Link
+      to="/"
+      className={`whitespace-nowrap font-serif leading-none text-foreground ${className}`}
+    >
       E-<span className="text-gold italic">Kurs</span>
     </Link>
   );
@@ -36,7 +39,7 @@ const NAV_LINK =
 function PublicNav() {
   const { t } = useTranslation();
   return (
-    <nav aria-label={t("publicNav.label")} className="hidden items-center gap-1 lg:flex">
+    <nav aria-label={t("publicNav.label")} className="hidden items-center gap-1 xl:flex">
       {PUBLIC_LINKS.map((l) => (
         <Link
           key={l.key}
@@ -80,7 +83,7 @@ function AuthLinks({ authed, stacked = false }: { authed: boolean; stacked?: boo
 
 /**
  * Logo left, nav centred, account links then the language/theme toggles pinned to the right
- * edge, so a language switch never moves the toggles under the pointer. Below `lg` the nav
+ * edge, so a language switch never moves the toggles under the pointer. Below `xl` the nav
  * and account links move into a menu panel.
  */
 export function PublicHeader() {
@@ -98,7 +101,7 @@ export function PublicHeader() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border/70 bg-background/70 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr]">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 xl:grid xl:grid-cols-[1fr_auto_1fr]">
         <Logo />
         <PublicNav />
         <div className="flex items-center justify-end gap-2 sm:gap-3">
@@ -112,7 +115,7 @@ export function PublicHeader() {
             aria-controls="public-menu"
             aria-label={t("publicNav.menu")}
             onClick={() => setOpen((v) => !v)}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-secondary/70 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 lg:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-secondary/70 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 xl:hidden"
           >
             {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </button>
@@ -122,7 +125,7 @@ export function PublicHeader() {
         <nav
           id="public-menu"
           aria-label={t("publicNav.label")}
-          className="border-t border-border/70 bg-background/95 px-4 pb-5 pt-3 backdrop-blur-md sm:px-6 lg:hidden"
+          className="border-t border-border/70 bg-background/95 px-4 pb-5 pt-3 backdrop-blur-md sm:px-6 xl:hidden"
         >
           <ul className="mx-auto flex max-w-7xl flex-col">
             {PUBLIC_LINKS.map((l) => (

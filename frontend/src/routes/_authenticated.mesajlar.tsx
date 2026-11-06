@@ -501,7 +501,9 @@ function Chat({
     // onActivity only refreshes the unread counts after the first read
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [load]);
-  useEffect(() => end.current?.scrollIntoView({ block: "end" }), [messages]);
+  useEffect(() => {
+    end.current?.scrollIntoView({ block: "end" });
+  }, [messages]);
 
   const send = async () => {
     const body = draft.trim();
@@ -543,7 +545,8 @@ function Chat({
               {name}
             </span>
             <span className="block truncate font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
-              {roleLabel(partner.role, t)} · @{partner.username}
+              {roleLabel(partner.role, t)} ·{" "}
+              <span className="normal-case">@{partner.username}</span>
             </span>
           </span>
         </button>
