@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import {
   LayoutDashboard,
   Users,
@@ -20,6 +21,7 @@ import {
   Menu,
   MessageSquare,
   MessagesSquare,
+  UserPlus,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -194,21 +196,45 @@ export function AppSidebar() {
   }, [showBalance]);
 
   // unread direct messages, refreshed on navigation, after a conversation is read and every minute
+  // plus pending incoming friend requests; a rise since the last check shows a toast
   const [unread, setUnread] = useState(0);
+  const [requests, setRequests] = useState(0);
+  const lastRequests = useRef<number | null>(null);
   useEffect(() => {
     if (!getToken()) return;
+    let alive = true;
     const load = () =>
       fetch(`${API_BASE}/api/messages/unread-count`, { headers: authHeaders() })
         .then((r) => (r.ok ? r.json() : null))
-        .then((d) => d && setUnread(d.count))
+        .then((d) => {
+          if (!d || !alive) return;
+          setUnread(d.count);
+          const n: number = d.friendRequests ?? 0;
+          const prev = lastRequests.current;
+          lastRequests.current = n;
+          setRequests(n);
+          if (prev !== null && n > prev && location.pathname !== "/mesajlar")
+            toast(t("community.newFriendRequests", { count: n - prev }), {
+              id: "friend-requests",
+              action: {
+                label: t("community.viewRequests"),
+                onClick: () => navigate({ to: "/mesajlar" }),
+              },
+            });
+        })
         .catch(() => {});
     load();
     const id = window.setInterval(load, 60_000);
     window.addEventListener("messages-read", load);
+    window.addEventListener("friends-changed", load);
     return () => {
+      alive = false;
       window.clearInterval(id);
       window.removeEventListener("messages-read", load);
+      window.removeEventListener("friends-changed", load);
     };
+    // t and navigate are stable enough; reload only on navigation
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
   useEffect(() => {
@@ -311,6 +337,16 @@ export function AppSidebar() {
                 <span className="rounded-full bg-gold px-1.5 font-mono text-[10px] text-night tabular-nums">
                   {unread}
                   <span className="sr-only"> {t("community.unread")}</span>
+                </span>
+              )}
+              {item.url === "/mesajlar" && requests > 0 && (
+                <span
+                  className="inline-flex items-center gap-0.5 rounded-full border border-gold/60 px-1.5 font-mono text-[10px] text-gold tabular-nums"
+                  title={t("community.incoming", { count: requests })}
+                >
+                  <UserPlus className="size-2.5" aria-hidden="true" />
+                  {requests}
+                  <span className="sr-only"> {t("community.incoming", { count: requests })}</span>
                 </span>
               )}
             </Link>

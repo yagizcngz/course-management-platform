@@ -68,7 +68,11 @@ namespace EdTechApi.API.Controllers
         public async Task<IActionResult> UnreadCount()
         {
             var me = await _context.CurrentUserIdAsync(User);
-            return Ok(new { count = await _context.DirectMessages.CountAsync(m => m.RecipientId == me && m.ReadAt == null) });
+            return Ok(new
+            {
+                count = await _context.DirectMessages.CountAsync(m => m.RecipientId == me && m.ReadAt == null),
+                friendRequests = await _context.Friendships.CountAsync(f => f.AddresseeId == me && f.Status == FriendsController.Pending)
+            });
         }
 
         // Konuşma geçmişi (son 200 mesaj); gelen okunmamışlar okundu işaretlenir

@@ -108,7 +108,8 @@ function MessagesPage() {
   const act = async (path: string, method: "POST" | "DELETE") => {
     try {
       await api(`friends/${path}`, t("community.friendFailed"), { method });
-      await Promise.all([loadFriends(), loadConversations()]);
+      // the page and the sidebar badge both reload on this event
+      window.dispatchEvent(new Event("friends-changed"));
     } catch (e) {
       toast.error((e as Error).message);
     }
