@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ToplulukRouteImport } from './routes/topluluk'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
@@ -25,6 +26,7 @@ import { Route as AuthenticatedRaporlarRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedProfilRouteImport } from './routes/_authenticated.profil'
 import { Route as AuthenticatedOgretmenlerRouteImport } from './routes/_authenticated.ogretmenler'
 import { Route as AuthenticatedOgrencilerRouteImport } from './routes/_authenticated.ogrenciler'
+import { Route as AuthenticatedMesajlarRouteImport } from './routes/_authenticated.mesajlar'
 import { Route as AuthenticatedKurslarimRouteImport } from './routes/_authenticated.kurslarim'
 import { Route as AuthenticatedKayitlarRouteImport } from './routes/_authenticated.kayitlar'
 import { Route as AuthenticatedKatalogRouteImport } from './routes/_authenticated.katalog'
@@ -35,6 +37,11 @@ import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedAyarlarRouteImport } from './routes/_authenticated.ayarlar'
 import { Route as AuthenticatedKursIdRouteImport } from './routes/_authenticated.kurs.$id'
 
+const ToplulukRoute = ToplulukRouteImport.update({
+  id: '/topluluk',
+  path: '/topluluk',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -117,6 +124,11 @@ const AuthenticatedOgrencilerRoute = AuthenticatedOgrencilerRouteImport.update({
   path: '/ogrenciler',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedMesajlarRoute = AuthenticatedMesajlarRouteImport.update({
+  id: '/mesajlar',
+  path: '/mesajlar',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedKurslarimRoute = AuthenticatedKurslarimRouteImport.update({
   id: '/kurslarim',
   path: '/kurslarim',
@@ -172,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/topluluk': typeof ToplulukRoute
   '/ayarlar': typeof AuthenticatedAyarlarRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -180,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/katalog': typeof AuthenticatedKatalogRoute
   '/kayitlar': typeof AuthenticatedKayitlarRoute
   '/kurslarim': typeof AuthenticatedKurslarimRoute
+  '/mesajlar': typeof AuthenticatedMesajlarRoute
   '/ogrenciler': typeof AuthenticatedOgrencilerRoute
   '/ogretmenler': typeof AuthenticatedOgretmenlerRoute
   '/profil': typeof AuthenticatedProfilRoute
@@ -198,6 +212,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/topluluk': typeof ToplulukRoute
   '/ayarlar': typeof AuthenticatedAyarlarRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -206,6 +221,7 @@ export interface FileRoutesByTo {
   '/katalog': typeof AuthenticatedKatalogRoute
   '/kayitlar': typeof AuthenticatedKayitlarRoute
   '/kurslarim': typeof AuthenticatedKurslarimRoute
+  '/mesajlar': typeof AuthenticatedMesajlarRoute
   '/ogrenciler': typeof AuthenticatedOgrencilerRoute
   '/ogretmenler': typeof AuthenticatedOgretmenlerRoute
   '/profil': typeof AuthenticatedProfilRoute
@@ -226,6 +242,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/topluluk': typeof ToplulukRoute
   '/_authenticated/ayarlar': typeof AuthenticatedAyarlarRoute
   '/_authenticated/cuzdan': typeof AuthenticatedCuzdanRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -234,6 +251,7 @@ export interface FileRoutesById {
   '/_authenticated/katalog': typeof AuthenticatedKatalogRoute
   '/_authenticated/kayitlar': typeof AuthenticatedKayitlarRoute
   '/_authenticated/kurslarim': typeof AuthenticatedKurslarimRoute
+  '/_authenticated/mesajlar': typeof AuthenticatedMesajlarRoute
   '/_authenticated/ogrenciler': typeof AuthenticatedOgrencilerRoute
   '/_authenticated/ogretmenler': typeof AuthenticatedOgretmenlerRoute
   '/_authenticated/profil': typeof AuthenticatedProfilRoute
@@ -254,6 +272,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/sitemap.xml'
+    | '/topluluk'
     | '/ayarlar'
     | '/cuzdan'
     | '/dashboard'
@@ -262,6 +281,7 @@ export interface FileRouteTypes {
     | '/katalog'
     | '/kayitlar'
     | '/kurslarim'
+    | '/mesajlar'
     | '/ogrenciler'
     | '/ogretmenler'
     | '/profil'
@@ -280,6 +300,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/sitemap.xml'
+    | '/topluluk'
     | '/ayarlar'
     | '/cuzdan'
     | '/dashboard'
@@ -288,6 +309,7 @@ export interface FileRouteTypes {
     | '/katalog'
     | '/kayitlar'
     | '/kurslarim'
+    | '/mesajlar'
     | '/ogrenciler'
     | '/ogretmenler'
     | '/profil'
@@ -307,6 +329,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/register'
     | '/sitemap.xml'
+    | '/topluluk'
     | '/_authenticated/ayarlar'
     | '/_authenticated/cuzdan'
     | '/_authenticated/dashboard'
@@ -315,6 +338,7 @@ export interface FileRouteTypes {
     | '/_authenticated/katalog'
     | '/_authenticated/kayitlar'
     | '/_authenticated/kurslarim'
+    | '/_authenticated/mesajlar'
     | '/_authenticated/ogrenciler'
     | '/_authenticated/ogretmenler'
     | '/_authenticated/profil'
@@ -335,10 +359,18 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ToplulukRoute: typeof ToplulukRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/topluluk': {
+      id: '/topluluk'
+      path: '/topluluk'
+      fullPath: '/topluluk'
+      preLoaderRoute: typeof ToplulukRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -451,6 +483,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOgrencilerRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/mesajlar': {
+      id: '/_authenticated/mesajlar'
+      path: '/mesajlar'
+      fullPath: '/mesajlar'
+      preLoaderRoute: typeof AuthenticatedMesajlarRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/kurslarim': {
       id: '/_authenticated/kurslarim'
       path: '/kurslarim'
@@ -526,6 +565,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedKatalogRoute: typeof AuthenticatedKatalogRoute
   AuthenticatedKayitlarRoute: typeof AuthenticatedKayitlarRoute
   AuthenticatedKurslarimRoute: typeof AuthenticatedKurslarimRoute
+  AuthenticatedMesajlarRoute: typeof AuthenticatedMesajlarRoute
   AuthenticatedOgrencilerRoute: typeof AuthenticatedOgrencilerRoute
   AuthenticatedOgretmenlerRoute: typeof AuthenticatedOgretmenlerRoute
   AuthenticatedProfilRoute: typeof AuthenticatedProfilRoute
@@ -545,6 +585,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedKatalogRoute: AuthenticatedKatalogRoute,
   AuthenticatedKayitlarRoute: AuthenticatedKayitlarRoute,
   AuthenticatedKurslarimRoute: AuthenticatedKurslarimRoute,
+  AuthenticatedMesajlarRoute: AuthenticatedMesajlarRoute,
   AuthenticatedOgrencilerRoute: AuthenticatedOgrencilerRoute,
   AuthenticatedOgretmenlerRoute: AuthenticatedOgretmenlerRoute,
   AuthenticatedProfilRoute: AuthenticatedProfilRoute,
@@ -569,6 +610,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ToplulukRoute: ToplulukRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

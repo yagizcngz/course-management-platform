@@ -4,7 +4,14 @@ import type { TFunction } from "i18next";
 export interface AchievementStats {
   learning: {
     completedLessons: number;
-    courses: { courseId: number; category: string; percent: number; completedAt: string | null }[];
+    courses: {
+      courseId: number;
+      category: string;
+      percent: number;
+      completedAt: string | null;
+      /** Sent by the public profile endpoint. */
+      title?: string;
+    }[];
   } | null;
   teaching: { joinedAt: string; courses: number; students: number; lessons: number } | null;
 }
@@ -154,4 +161,16 @@ export function buildBadges(stats: AchievementStats, t: TFunction, label: (cat: 
   return out.sort(
     (a, b) => Number(b.earned) - Number(a.earned) || b.current / b.target - a.current / a.target,
   );
+}
+
+/** Most badges a profile showcases; the API enforces the same limit. */
+export const MAX_FEATURED = 5;
+
+/** The badges a profile shows off: the pinned earned ones in pin order, else the first earned ones. */
+export function featuredBadges(badges: Badge[], pinned: string[] | null | undefined): Badge[] {
+  const earned = badges.filter((b) => b.earned);
+  const picked = (pinned ?? [])
+    .map((id) => earned.find((b) => b.id === id))
+    .filter((b): b is Badge => !!b);
+  return (picked.length ? picked : earned).slice(0, MAX_FEATURED);
 }

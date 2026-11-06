@@ -18,6 +18,8 @@ import {
   CheckCircle,
   Wallet,
   Menu,
+  MessageSquare,
+  MessagesSquare,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -62,6 +64,8 @@ const getMenuItems = (t: TFunction) => [
   { title: t("sidebar.reports"), url: "/raporlar", icon: BarChart3 },
   { title: t("sidebar.announcements"), url: "/duyurular", icon: Bell },
   { title: t("sidebar.wallet"), url: "/cuzdan", icon: Wallet },
+  { title: t("sidebar.messages"), url: "/mesajlar", icon: MessageSquare },
+  { title: t("sidebar.community"), url: "/topluluk", icon: MessagesSquare },
   {
     title: t("sidebar.mySupportRequests", "Yardım Taleplerim"),
     url: "/yardim-taleplerim",
@@ -189,6 +193,24 @@ export function AppSidebar() {
     return () => window.removeEventListener("wallet-changed", load);
   }, [showBalance]);
 
+  // unread direct messages, refreshed on navigation, after a conversation is read and every minute
+  const [unread, setUnread] = useState(0);
+  useEffect(() => {
+    if (!getToken()) return;
+    const load = () =>
+      fetch(`${API_BASE}/api/messages/unread-count`, { headers: authHeaders() })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => d && setUnread(d.count))
+        .catch(() => {});
+    load();
+    const id = window.setInterval(load, 60_000);
+    window.addEventListener("messages-read", load);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener("messages-read", load);
+    };
+  }, [location.pathname]);
+
   useEffect(() => {
     const onProfileUpdated = (e: Event) => {
       const detail = (e as CustomEvent).detail as { name?: string; photoUrl?: string } | undefined;
@@ -224,8 +246,14 @@ export function AppSidebar() {
   const visibleMenuItems = getMenuItems(t).filter((item) => {
     const role = currentUser.rawRole?.toLowerCase();
 
-    // Everyone sees Home, Announcements, and Courses
-    if (item.url === "/dashboard" || item.url === "/duyurular" || item.url === "/katalog") {
+    // Everyone sees Home, Announcements, Courses, Messages and Community
+    if (
+      item.url === "/dashboard" ||
+      item.url === "/duyurular" ||
+      item.url === "/katalog" ||
+      item.url === "/mesajlar" ||
+      item.url === "/topluluk"
+    ) {
       return true;
     }
 
@@ -278,7 +306,13 @@ export function AppSidebar() {
               <Icon
                 className={`h-4 w-4 transition-colors ${isActive ? "text-gold" : "group-hover:text-gold"}`}
               />
-              {item.title}
+              <span className="min-w-0 flex-1 truncate">{item.title}</span>
+              {item.url === "/mesajlar" && unread > 0 && (
+                <span className="rounded-full bg-gold px-1.5 font-mono text-[10px] text-night tabular-nums">
+                  {unread}
+                  <span className="sr-only"> {t("community.unread")}</span>
+                </span>
+              )}
             </Link>
           );
         })}

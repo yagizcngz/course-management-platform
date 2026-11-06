@@ -26,7 +26,9 @@
       "themeDark": "Theme (Dark)",
       "logout": "Log Out",
       "mySupportRequests": "My Support Requests",
-      "wallet": "Wallet"
+      "wallet": "Wallet",
+      "messages": "Messages",
+      "community": "Community"
     },
     "settings": {
       "title": "Settings",
@@ -1282,7 +1284,8 @@
       "close": "Close",
       "preview": "Preview",
       "loadFailed": "Could not load the data. Refresh the page and try again.",
-      "user": "User"
+      "user": "User",
+      "back": "Back"
     },
     "wallet": {
       "title": "Wallet",
@@ -1360,7 +1363,8 @@
       "teachers": "Instructors",
       "about": "About",
       "dashboard": "My dashboard",
-      "menu": "Menu"
+      "menu": "Menu",
+      "community": "Community"
     },
     "footer": {
       "tagline": "Video courses from instructors who work in their field. Read the full syllabus before you buy, pay from your wallet, and get a refund within 7 days.",
@@ -1524,7 +1528,13 @@
       "architect": {
         "title": "Curriculum Architect",
         "criteria": "Publish {{count}} lessons across your courses."
-      }
+      },
+      "pinHint": "Pin up to {{max}} earned badges to feature them on your public profile ({{count}}/{{max}} pinned). With none pinned, your first earned badges are shown.",
+      "pin": "Feature on profile",
+      "unpin": "Remove from profile",
+      "pinFull": "You can feature at most {{max}} badges",
+      "moreEarned_one": "+{{count}} more earned badge",
+      "moreEarned_other": "+{{count}} more earned badges"
     },
     "errorPage": {
       "notFoundEyebrow": "Error · 404",
@@ -1537,6 +1547,103 @@
     },
     "auth": {
       "nextStep": "Next: {{step}}"
+    },
+    "community": {
+      "eyebrow": "Community · Discussion",
+      "title": "Ask, *share*, study together.",
+      "lead": "Topic channels where learners and instructors trade questions, resources and study plans. Anyone can read; members can post, reply and connect.",
+      "channels": "Topic channels",
+      "toMessages": "Messages & friends",
+      "topics": {
+        "software": {
+          "name": "Software & Architecture",
+          "description": "Code, design patterns, debugging and the systems behind them."
+        },
+        "math": {
+          "name": "Mathematics & Logic",
+          "description": "Proofs, problem sets, exam strategies and the intuition behind formulas."
+        },
+        "science": {
+          "name": "Science & Engineering",
+          "description": "Experiments, observations and the physics, chemistry and biology behind them."
+        },
+        "design": {
+          "name": "Design & Arts",
+          "description": "Interfaces, typography, colour, drawing and feedback on your work."
+        },
+        "career": {
+          "name": "Career & Study Groups",
+          "description": "Internships, portfolios and finding people to study with."
+        },
+        "general": {
+          "name": "General Discussion",
+          "description": "Everything else: introductions, study habits and platform news."
+        }
+      },
+      "deletedAccount": "Deleted account",
+      "viewProfile": "View profile",
+      "lockedTitle": "Sign in to join the discussion",
+      "lockedBody": "Reading is open to everyone. Sign in or create a free account to start threads, reply, like posts and add friends.",
+      "loadFailed": "Could not load the discussion.",
+      "postFailed": "Could not post your message.",
+      "newThread": "New thread",
+      "threadTitle": "Thread title",
+      "message": "Message",
+      "firstPost": "What would you like to ask or share?",
+      "publish": "Publish",
+      "noThreads": "No threads in this channel yet. Start the first one!",
+      "replies_one": "{{count}} reply",
+      "replies_other": "{{count}} replies",
+      "deleteConfirm": "Delete this message? Deleting the opening message removes the whole thread.",
+      "like": "Like",
+      "delete": "Delete",
+      "reply": "Your reply",
+      "send": "Send",
+      "profile": "Profile",
+      "profileLoadFailed": "Could not load this profile.",
+      "friendFailed": "The friend request could not be updated.",
+      "joined": "joined {{date}}",
+      "noBio": "No bio yet.",
+      "addFriend": "Add friend",
+      "requestSent": "Request sent · cancel",
+      "acceptRequest": "Accept request",
+      "decline": "Decline",
+      "removeFriend": "Remove friend",
+      "removeConfirm": "Remove {{name}} from your friends?",
+      "cancelRequest": "Cancel request",
+      "signIn": "Sign in",
+      "signInToConnect": "to add friends and send messages.",
+      "privateProfile": "This profile is private: learning progress and badges are hidden.",
+      "featuredBadges": "Featured badges",
+      "ongoing_one": "{{count}} ongoing course",
+      "ongoing_other": "{{count}} ongoing courses",
+      "completed_one": "{{count}} completed course",
+      "completed_other": "{{count}} completed courses",
+      "teaches_one": "Teaches {{count}} course",
+      "teaches_other": "Teaches {{count}} courses",
+      "nothingYet": "No courses or badges to show yet.",
+      "messagesTitle": "Messages & friends",
+      "chats": "Chats",
+      "friends": "Friends",
+      "pickConversation": "Pick a conversation",
+      "pickConversationHint": "Choose a friend on the left, or find people in the Friends tab. You can message anyone who accepted your friend request.",
+      "noConversations": "No conversations yet. Add a friend to start one.",
+      "you": "You",
+      "sayHello": "Say hello",
+      "sayHelloTo": "No messages yet. Say hello to {{name}}!",
+      "unread": "unread",
+      "findPeople": "Find people by name or username",
+      "incoming_one": "{{count}} friend request",
+      "incoming_other": "{{count}} friend requests",
+      "outgoing_one": "{{count}} sent request",
+      "outgoing_other": "{{count}} sent requests",
+      "friendsCount_one": "{{count}} friend",
+      "friendsCount_other": "{{count}} friends",
+      "noFriends": "No friends yet.",
+      "sendFailed": "The message could not be sent.",
+      "seen": "seen",
+      "writeMessage": "Write a message…",
+      "friendsOnly": "You can message this person once you are friends."
     }
   }
 }

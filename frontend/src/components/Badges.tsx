@@ -1,16 +1,36 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Pin, PinOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { API_BASE } from "@/components/courseHelpers";
 import { CourseProgressBar } from "@/components/CourseProgressBar";
 import { authHeaders } from "@/lib/auth";
-import { buildBadges, type AchievementStats, type Badge, type BadgeKind } from "@/lib/badges";
+import {
+  MAX_FEATURED,
+  buildBadges,
+  type AchievementStats,
+  type Badge,
+  type BadgeKind,
+} from "@/lib/badges";
 import { cn, formatDate } from "@/lib/utils";
+
+/** Turns raw stats (own or someone else's) into badges in the UI language. */
+export function useBadgeBuilder() {
+  const { t, i18n } = useTranslation();
+  return useCallback(
+    (stats: AchievementStats | null) => {
+      if (!stats || (!stats.learning && !stats.teaching)) return null;
+      const label = (cat: string) =>
+        i18n.exists(`dynamic.categories.${cat}`) ? t(`dynamic.categories.${cat}`) : cat;
+      return buildBadges(stats, t, label);
+    },
+    [t, i18n],
+  );
+}
 
 /** The signed-in user's badges, or null while loading (and for accounts with no stats). */
 export function useBadges() {
-  const { t, i18n } = useTranslation();
+  const build = useBadgeBuilder();
   const [stats, setStats] = useState<AchievementStats | null>(null);
   useEffect(() => {
     let off = false;
@@ -22,12 +42,7 @@ export function useBadges() {
       off = true;
     };
   }, []);
-  return useMemo(() => {
-    if (!stats || (!stats.learning && !stats.teaching)) return null;
-    const label = (cat: string) =>
-      i18n.exists(`dynamic.categories.${cat}`) ? t(`dynamic.categories.${cat}`) : cat;
-    return buildBadges(stats, t, label);
-  }, [stats, t, i18n]);
+  return useMemo(() => build(stats), [build, stats]);
 }
 
 // stroke glyphs on a 24x24 grid, drawn at the medal's centre
@@ -94,10 +109,22 @@ export function Medal({ badge, className }: { badge: Badge; className?: string }
   );
 }
 
-/** The full "Badges & Achievements" grid: every badge with its criteria and progress. */
-export function BadgeShowcase({ badges }: { badges: Badge[] }) {
+/**
+ * The full "Badges & Achievements" grid: every badge with its criteria and progress. With
+ * `pinned` and `onTogglePin`, earned badges get a pin that features them on the public profile.
+ */
+export function BadgeShowcase({
+  badges,
+  pinned,
+  onTogglePin,
+}: {
+  badges: Badge[];
+  pinned?: string[];
+  onTogglePin?: (id: string) => void;
+}) {
   const { t, i18n } = useTranslation();
   const earned = badges.filter((b) => b.earned).length;
+  const full = (pinned?.length ?? 0) >= MAX_FEATURED;
   return (
     <section aria-labelledby="badges-title" className="min-w-0">
       <div className="mb-5 flex items-baseline justify-between gap-4 border-b border-border pb-2">
@@ -108,6 +135,11 @@ export function BadgeShowcase({ badges }: { badges: Badge[] }) {
           {t("badges.earnedCount", { earned, total: badges.length })}
         </span>
       </div>
+      {pinned && (
+        <p className="-mt-2 mb-5 text-sm text-muted-foreground">
+          {t("badges.pinHint", { count: pinned.length, max: MAX_FEATURED })}
+        </p>
+      )}
       <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {badges.map((b) => (
           <li
@@ -131,7 +163,41 @@ export function BadgeShowcase({ badges }: { badges: Badge[] }) {
                     : t("badges.earned")
                   : t("badges.locked")}
               </p>
-              <h3 className="mt-1 font-serif text-xl leading-tight break-words">{b.title}</h3>
+              <div className="mt-1 flex items-start gap-2">
+                <h3 className="min-w-0 flex-1 font-serif text-xl leading-tight break-words">
+                  {b.title}
+                </h3>
+                {onTogglePin && b.earned && (
+                  <button
+                    type="button"
+                    aria-pressed={pinned?.includes(b.id)}
+                    disabled={!pinned?.includes(b.id) && full}
+                    onClick={() => onTogglePin(b.id)}
+                    title={
+                      pinned?.includes(b.id)
+                        ? t("badges.unpin")
+                        : full
+                          ? t("badges.pinFull", { max: MAX_FEATURED })
+                          : t("badges.pin")
+                    }
+                    className={cn(
+                      "shrink-0 rounded-full border p-1.5 transition-colors disabled:opacity-40",
+                      pinned?.includes(b.id)
+                        ? "border-gold bg-gold/15 text-gold"
+                        : "border-border text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {pinned?.includes(b.id) ? (
+                      <PinOff aria-hidden="true" className="size-3.5" />
+                    ) : (
+                      <Pin aria-hidden="true" className="size-3.5" />
+                    )}
+                    <span className="sr-only">
+                      {pinned?.includes(b.id) ? t("badges.unpin") : t("badges.pin")}
+                    </span>
+                  </button>
+                )}
+              </div>
               <p className="mt-1 text-sm text-muted-foreground break-words">{b.criteria}</p>
               {!b.earned && (
                 <CourseProgressBar
@@ -185,6 +251,31 @@ export function BadgeStrip({ badges }: { badges: Badge[] }) {
           className="size-3.5 transition-transform group-hover:translate-x-0.5"
         />
       </Link>
+    </div>
+  );
+}
+
+/** Up to five medals in a row with their titles; for profile cards. */
+export function FeaturedBadgeRow({ badges, total }: { badges: Badge[]; total: number }) {
+  const { t } = useTranslation();
+  if (badges.length === 0) return null;
+  return (
+    <div className="min-w-0">
+      <ul className="flex min-w-0 flex-wrap gap-3">
+        {badges.map((b) => (
+          <li key={b.id} className="flex w-16 flex-col items-center gap-1 text-center">
+            <Medal badge={b} className="h-12 w-11" />
+            <span className="line-clamp-2 w-full break-words text-[10px] leading-tight text-muted-foreground">
+              {b.title}
+            </span>
+          </li>
+        ))}
+      </ul>
+      {total > badges.length && (
+        <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+          {t("badges.moreEarned", { count: total - badges.length })}
+        </p>
+      )}
     </div>
   );
 }

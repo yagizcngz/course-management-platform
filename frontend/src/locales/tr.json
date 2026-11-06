@@ -26,7 +26,9 @@
       "themeDark": "Tema (Karanlık)",
       "logout": "Çıkış Yap",
       "mySupportRequests": "Yardım Taleplerim",
-      "wallet": "Cüzdan"
+      "wallet": "Cüzdan",
+      "messages": "Mesajlar",
+      "community": "Topluluk"
     },
     "settings": {
       "title": "Ayarlar",
@@ -1199,7 +1201,8 @@
       "close": "Kapat",
       "preview": "Önizleme",
       "loadFailed": "Veriler yüklenemedi. Sayfayı yenileyip tekrar deneyin.",
-      "user": "Kullanıcı"
+      "user": "Kullanıcı",
+      "back": "Geri"
     },
     "wallet": {
       "title": "Cüzdan",
@@ -1277,7 +1280,8 @@
       "teachers": "Eğitmenler",
       "about": "Hakkımızda",
       "dashboard": "Panelim",
-      "menu": "Menü"
+      "menu": "Menü",
+      "community": "Topluluk"
     },
     "footer": {
       "tagline": "İşini yapan eğitmenlerden video kurslar. Satın almadan önce müfredatın tamamını okuyun, cüzdanınızdan ödeyin, 7 gün içinde iade alın.",
@@ -1439,7 +1443,12 @@
       "architect": {
         "title": "Müfredat Mimarı",
         "criteria": "Kurslarında toplam {{count}} ders yayımla."
-      }
+      },
+      "pinHint": "Kazandığınız en fazla {{max}} rozeti sabitleyerek herkese açık profilinizde öne çıkarın ({{count}}/{{max}} sabitli). Hiçbiri sabitlenmezse ilk kazandığınız rozetler gösterilir.",
+      "pin": "Profilde öne çıkar",
+      "unpin": "Profilden kaldır",
+      "pinFull": "En fazla {{max}} rozet öne çıkarabilirsiniz",
+      "moreEarned": "+{{count}} kazanılmış rozet daha"
     },
     "errorPage": {
       "notFoundEyebrow": "Hata · 404",
@@ -1452,6 +1461,96 @@
     },
     "auth": {
       "nextStep": "Sıradaki: {{step}}"
+    },
+    "community": {
+      "eyebrow": "Topluluk · Tartışma",
+      "title": "Sor, *paylaş*, birlikte çalış.",
+      "lead": "Öğrencilerin ve eğitmenlerin soru, kaynak ve çalışma planı paylaştığı konu kanalları. Herkes okuyabilir; üyeler yazabilir, yanıtlayabilir ve bağlantı kurabilir.",
+      "channels": "Konu kanalları",
+      "toMessages": "Mesajlar ve arkadaşlar",
+      "topics": {
+        "software": {
+          "name": "Yazılım ve Mimari",
+          "description": "Kod, tasarım kalıpları, hata ayıklama ve arkalarındaki sistemler."
+        },
+        "math": {
+          "name": "Matematik ve Mantık",
+          "description": "İspatlar, soru setleri, sınav stratejileri ve formüllerin arkasındaki sezgi."
+        },
+        "science": {
+          "name": "Fen ve Mühendislik",
+          "description": "Deneyler, gözlemler ve arkalarındaki fizik, kimya ve biyoloji."
+        },
+        "design": {
+          "name": "Tasarım ve Sanat",
+          "description": "Arayüz, tipografi, renk, çizim ve çalışmalarınıza geri bildirim."
+        },
+        "career": {
+          "name": "Kariyer ve Çalışma Grupları",
+          "description": "Staj, portfolyo ve birlikte çalışacak arkadaş bulma."
+        },
+        "general": {
+          "name": "Genel Sohbet",
+          "description": "Geri kalan her şey: tanışma, çalışma alışkanlıkları ve platform haberleri."
+        }
+      },
+      "deletedAccount": "Silinmiş hesap",
+      "viewProfile": "Profili görüntüle",
+      "lockedTitle": "Tartışmaya katılmak için giriş yapın",
+      "lockedBody": "Okumak herkese açık. Başlık açmak, yanıtlamak, beğenmek ve arkadaş eklemek için giriş yapın ya da ücretsiz hesap oluşturun.",
+      "loadFailed": "Tartışma yüklenemedi.",
+      "postFailed": "Mesajınız gönderilemedi.",
+      "newThread": "Yeni başlık",
+      "threadTitle": "Başlık",
+      "message": "Mesaj",
+      "firstPost": "Ne sormak ya da paylaşmak istersiniz?",
+      "publish": "Yayınla",
+      "noThreads": "Bu kanalda henüz başlık yok. İlkini siz açın!",
+      "replies": "{{count}} yanıt",
+      "deleteConfirm": "Bu mesaj silinsin mi? Açılış mesajını silmek tüm başlığı kaldırır.",
+      "like": "Beğen",
+      "delete": "Sil",
+      "reply": "Yanıtınız",
+      "send": "Gönder",
+      "profile": "Profil",
+      "profileLoadFailed": "Profil yüklenemedi.",
+      "friendFailed": "Arkadaşlık isteği güncellenemedi.",
+      "joined": "{{date}} tarihinde katıldı",
+      "noBio": "Henüz biyografi yok.",
+      "addFriend": "Arkadaş ekle",
+      "requestSent": "İstek gönderildi · geri çek",
+      "acceptRequest": "İsteği kabul et",
+      "decline": "Reddet",
+      "removeFriend": "Arkadaşlıktan çıkar",
+      "removeConfirm": "{{name}} arkadaşlarınızdan çıkarılsın mı?",
+      "cancelRequest": "İsteği geri çek",
+      "signIn": "Giriş yapın,",
+      "signInToConnect": "arkadaş ekleyin ve mesaj gönderin.",
+      "privateProfile": "Bu profil gizli: öğrenme ilerlemesi ve rozetler görünmüyor.",
+      "featuredBadges": "Öne çıkan rozetler",
+      "ongoing": "{{count}} devam eden kurs",
+      "completed": "{{count}} tamamlanan kurs",
+      "teaches": "{{count}} kurs veriyor",
+      "nothingYet": "Henüz gösterilecek kurs ya da rozet yok.",
+      "messagesTitle": "Mesajlar ve arkadaşlar",
+      "chats": "Sohbetler",
+      "friends": "Arkadaşlar",
+      "pickConversation": "Bir sohbet seçin",
+      "pickConversationHint": "Soldan bir arkadaşınızı seçin ya da Arkadaşlar sekmesinden kişi bulun. İsteğinizi kabul eden herkese mesaj gönderebilirsiniz.",
+      "noConversations": "Henüz sohbet yok. Başlamak için bir arkadaş ekleyin.",
+      "you": "Siz",
+      "sayHello": "Merhaba deyin",
+      "sayHelloTo": "Henüz mesaj yok. {{name}} ile ilk mesajı siz başlatın!",
+      "unread": "okunmamış",
+      "findPeople": "Ad veya kullanıcı adıyla kişi bulun",
+      "incoming": "{{count}} arkadaşlık isteği",
+      "outgoing": "{{count}} gönderilen istek",
+      "friendsCount": "{{count}} arkadaş",
+      "noFriends": "Henüz arkadaşınız yok.",
+      "sendFailed": "Mesaj gönderilemedi.",
+      "seen": "görüldü",
+      "writeMessage": "Bir mesaj yazın…",
+      "friendsOnly": "Arkadaş olduğunuzda bu kişiye mesaj gönderebilirsiniz."
     }
   }
 }

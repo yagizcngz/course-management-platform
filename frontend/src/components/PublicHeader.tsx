@@ -26,6 +26,7 @@ export const PUBLIC_LINKS = [
   { key: "courses", to: "/kurslar" },
   { key: "categories", to: "/kategoriler" },
   { key: "teachers", to: "/egitmenler" },
+  { key: "community", to: "/topluluk" },
   { key: "about", to: "/hakkimizda" },
 ] as const;
 
