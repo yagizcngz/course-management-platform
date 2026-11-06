@@ -1,8 +1,10 @@
 {
   "translation": {
     "header": {
-      "language": "Dili değiştir",
-      "toggleTheme": "Koyu modu aç/kapat"
+      "language": "Dil",
+      "toggleTheme": "Görünüm",
+      "lightMode": "Açık mod",
+      "darkMode": "Koyu mod"
     },
     "searchPlaceholder": "Sistemde ara...",
     "sidebar": {
@@ -258,7 +260,9 @@
         "Veri Bilimi & Yapay Zeka": "Veri Bilimi & Yapay Zeka",
         "Ekonomi & Finans": "Ekonomi & Finans",
         "Edebiyat & Felsefe": "Edebiyat & Felsefe",
-        "Fotoğrafçılık & Sinema": "Fotoğrafçılık & Sinema"
+        "Fotoğrafçılık & Sinema": "Fotoğrafçılık & Sinema",
+        "Türk Dili ve Edebiyatı": "Türk Dili ve Edebiyatı",
+        "Psikoloji & Bilişsel Bilimler": "Psikoloji & Bilişsel Bilimler"
       },
       "categoryDescriptions": {
         "Yazılım": "Programlama dilleri, web ve backend geliştirme, veri yapıları ve algoritmalar. Sıfırdan başlayanlardan profesyonel geliştiricilere kadar, proje odaklı ve uygulamalı yazılım eğitimleri.",
@@ -275,7 +279,9 @@
         "Veri Bilimi & Yapay Zeka": "Veri analizi, istatistiksel modelleme, makine öğrenmesi ve derin öğrenme. Python ile veriyi temizlemekten model kurup sonuçlarını dürüstçe yorumlamaya kadar uygulamalı veri bilimi eğitimleri.",
         "Ekonomi & Finans": "Mikro ve makroekonomi, para politikası, muhasebe ve kişisel finans. Piyasaları, finansal tabloları ve ekonomik haberleri bilinçli okumayı öğreten dersler.",
         "Edebiyat & Felsefe": "Türk ve dünya edebiyatı, felsefenin büyük soruları, mantık ve eleştirel düşünme. Metni dikkatle okumayı, argüman kurmayı ve kendi yorumunu yazmayı öğreten dersler.",
-        "Fotoğrafçılık & Sinema": "Dijital fotoğrafçılık, sinema dili, film analizi ve kısa film yapımı. Işığı, kadrajı ve kurguyu anlayarak görüntüyle hikâye anlatmayı öğreten atölyeler."
+        "Fotoğrafçılık & Sinema": "Dijital fotoğrafçılık, sinema dili, film analizi ve kısa film yapımı. Işığı, kadrajı ve kurguyu anlayarak görüntüyle hikâye anlatmayı öğreten atölyeler.",
+        "Türk Dili ve Edebiyatı": "Türkçe dil bilgisi, paragraf ve anlam bilgisi, metin analizi, kompozisyon, Cumhuriyet dönemi edebiyatı ve Osmanlı Türkçesi paleografyası. Anadil bilincini, etkili sözlü ve yazılı iletişimi ile zengin edebiyat geleneğimizi akademik derinlikle kazandıran dersler.",
+        "Psikoloji & Bilişsel Bilimler": "Gelişim psikolojisi, bilişsel modeller, zihin felsefesi, sosyal psikoloji, deneysel desenler ve davranışsal araştırma yöntemleri. İnsan davranışını, düşünme süreçlerini ve zihnin biyolojik ile hesaplamalı temellerini bilimsel yöntemlerle inceleyen dersler."
       },
       "courses": {
         "İleri Seviye C# ve .NET API": "İleri Seviye C# ve .NET API",
@@ -334,7 +340,31 @@
         "İspanyolca A1": "İspanyolca A1",
         "Müzik Teorisi ve Kulak Eğitimi": "Müzik Teorisi ve Kulak Eğitimi",
         "Suluboya Atölyesi": "Suluboya Atölyesi",
-        "Yoga ve Mobilite": "Yoga ve Mobilite"
+        "Yoga ve Mobilite": "Yoga ve Mobilite",
+        "TYT-AYT Türkçe Paragraf ve Anlam Bilgisi": "TYT-AYT Türkçe Paragraf ve Anlam Bilgisi",
+        "Türkçe Dil Bilgisi ve Yazım Kuralları": "Türkçe Dil Bilgisi ve Yazım Kuralları",
+        "Akademik Türkçe ve Kompozisyon": "Akademik Türkçe ve Kompozisyon",
+        "Cumhuriyet Dönemi Türk Edebiyatı": "Cumhuriyet Dönemi Türk Edebiyatı",
+        "Osmanlı Türkçesi ve Metin Okumaları": "Osmanlı Türkçesi ve Metin Okumaları",
+        "Diksiyon ve Etkili Hitabet": "Diksiyon ve Etkili Hitabet",
+        "Psikolojiye Giriş": "Psikolojiye Giriş",
+        "Gelişim Psikolojisi": "Gelişim Psikolojisi",
+        "Bilişsel Bilime Giriş": "Bilişsel Bilime Giriş",
+        "Araştırma Yöntemleri ve Deney Tasarımı": "Araştırma Yöntemleri ve Deney Tasarımı",
+        "YKS Tarih Soru Kampı": "YKS Tarih Soru Kampı",
+        "Kent Sosyolojisi ve Saha Araştırması": "Kent Sosyolojisi ve Saha Araştırması",
+        "Figma ile Prototipleme Atölyesi": "Figma ile Prototipleme Atölyesi",
+        "Marka Kimliği ve Logo Tasarımı": "Marka Kimliği ve Logo Tasarımı",
+        "Rönesans'tan Modernizme Sanat Tarihi": "Rönesans'tan Modernizme Sanat Tarihi",
+        "Armoni ve Beste Atölyesi": "Armoni ve Beste Atölyesi",
+        "Sporcu Beslenmesi ve Performans": "Sporcu Beslenmesi ve Performans",
+        "YKS ve LGS Sınav Stratejileri": "YKS ve LGS Sınav Stratejileri",
+        "Hızlı Okuma ve Not Alma Teknikleri": "Hızlı Okuma ve Not Alma Teknikleri",
+        "Dünya Edebiyatından Klasikler": "Dünya Edebiyatından Klasikler",
+        "Mobil Fotoğrafçılık ve Video Kurgu": "Mobil Fotoğrafçılık ve Video Kurgu",
+        "Genetik ve Moleküler Biyoloji": "Genetik ve Moleküler Biyoloji",
+        "LGS Fen Bilimleri Kampı": "LGS Fen Bilimleri Kampı",
+        "Jeopolitik ve Beşeri Coğrafya": "Jeopolitik ve Beşeri Coğrafya"
       },
       "descriptions": {
         "İleri Seviye C# ve .NET API": "C#'ın ileri özellikleri ve ASP.NET Core ile test edilmiş, belgelenmiş REST API geliştirme.",

@@ -102,6 +102,7 @@ namespace EdTechApi.API.Helpers
                         c.Instructor = FullName(teacher);
                     }
                 }
+                if (string.IsNullOrWhiteSpace(c.Level) && Levels.TryGetValue(s.Title, out var level)) c.Level = level;
                 seeded.Add(c);
 
                 // müfredat: seed derslerinden eksik olanlar eklenir, silinmiş olanlar geri yüklenir
@@ -275,6 +276,49 @@ namespace EdTechApi.API.Helpers
 
         private const string Domain = "@edtech.example";
 
+        private const string Beginner = "Beginner", Intermediate = "Intermediate", Advanced = "Advanced";
+
+        // seed kurslarının seviyesi; yalnızca boş seviyeye yazılır, yöneticinin seçimi korunur
+        private static readonly Dictionary<string, string> Levels = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["İleri Seviye C# ve .NET API"] = Advanced, ["Java"] = Beginner, ["Veri Yapıları"] = Intermediate,
+            ["Algoritmalar"] = Intermediate, ["React ile Modern Web Geliştirme"] = Intermediate, ["Python"] = Beginner,
+            ["SQL ve Veritabanı Tasarımı"] = Intermediate,
+            ["Matematik"] = Beginner, ["Temel Matematik"] = Beginner, ["Matematik Geometri"] = Intermediate,
+            ["Ayrık Matematik"] = Intermediate, ["Olasılık ve İstatistik"] = Intermediate,
+            ["Kalkülüs ve Analiz"] = Advanced, ["Lineer Cebir"] = Advanced,
+            ["Biyoloji"] = Beginner, ["Astronomiye Giriş"] = Beginner, ["LGS Fen Bilimleri Kampı"] = Intermediate,
+            ["Fizik"] = Intermediate, ["Kimya"] = Intermediate, ["Genetik ve Moleküler Biyoloji"] = Advanced,
+            ["Coğrafya"] = Beginner, ["Fiziki Coğrafya"] = Beginner, ["Türkiye Coğrafyası"] = Intermediate,
+            ["Harita Bilgisi ve CBS"] = Intermediate, ["Jeopolitik ve Beşeri Coğrafya"] = Intermediate, ["Jeomorfoloji"] = Advanced,
+            ["Tarih"] = Beginner, ["Sosyolojiye Giriş"] = Beginner, ["Cumhuriyet Tarihi"] = Intermediate,
+            ["YKS Tarih Soru Kampı"] = Intermediate, ["Kent Sosyolojisi ve Saha Araştırması"] = Advanced,
+            ["İngilizce A1-A2"] = Beginner, ["Almanca A1"] = Beginner, ["İspanyolca A1"] = Beginner, ["İngilizce"] = Intermediate,
+            ["UI/UX Tasarımın Temelleri"] = Beginner, ["Grafik Tasarım ve Tipografi"] = Intermediate,
+            ["Marka Kimliği ve Logo Tasarımı"] = Intermediate, ["Figma ile Prototipleme Atölyesi"] = Advanced,
+            ["Karakalem ve Desen"] = Beginner, ["Sanat Tarihine Giriş"] = Beginner, ["Suluboya Atölyesi"] = Intermediate,
+            ["Rönesans'tan Modernizme Sanat Tarihi"] = Advanced,
+            ["Piyano Eğitimi"] = Beginner, ["Gitar Eğitimi"] = Beginner, ["Müzik Teorisi ve Kulak Eğitimi"] = Intermediate,
+            ["Armoni ve Beste Atölyesi"] = Advanced,
+            ["Beden Eğitimi"] = Beginner, ["Yoga ve Mobilite"] = Beginner, ["Fonksiyonel Antrenman"] = Intermediate,
+            ["Sporcu Beslenmesi ve Performans"] = Intermediate,
+            ["Etkili Çalışma Teknikleri"] = Beginner, ["Hızlı Okuma ve Not Alma Teknikleri"] = Beginner,
+            ["YKS ve LGS Sınav Stratejileri"] = Beginner, ["Topluluk Önünde Konuşma"] = Intermediate,
+            ["Python ile Veri Analizi"] = Beginner, ["Makine Öğrenmesine Giriş"] = Intermediate,
+            ["Veri Görselleştirme ve Hikâye Anlatımı"] = Intermediate, ["Derin Öğrenme ve Sinir Ağları"] = Advanced,
+            ["Mikroekonomiye Giriş"] = Beginner, ["Kişisel Finans ve Yatırım"] = Beginner, ["Muhasebenin Temelleri"] = Beginner,
+            ["Makroekonomi ve Para Politikası"] = Intermediate,
+            ["Türk Edebiyatına Giriş"] = Beginner, ["Felsefeye Giriş"] = Beginner, ["Mantık ve Eleştirel Düşünme"] = Intermediate,
+            ["Dünya Edebiyatından Klasikler"] = Intermediate,
+            ["Dijital Fotoğrafçılığın Temelleri"] = Beginner, ["Mobil Fotoğrafçılık ve Video Kurgu"] = Beginner,
+            ["Sinema Dili ve Film Analizi"] = Intermediate, ["Kısa Film Yapımı"] = Advanced,
+            ["Türkçe Dil Bilgisi ve Yazım Kuralları"] = Beginner, ["TYT-AYT Türkçe Paragraf ve Anlam Bilgisi"] = Intermediate,
+            ["Akademik Türkçe ve Kompozisyon"] = Intermediate, ["Diksiyon ve Etkili Hitabet"] = Intermediate,
+            ["Cumhuriyet Dönemi Türk Edebiyatı"] = Advanced, ["Osmanlı Türkçesi ve Metin Okumaları"] = Advanced,
+            ["Psikolojiye Giriş"] = Beginner, ["Gelişim Psikolojisi"] = Intermediate, ["Bilişsel Bilime Giriş"] = Intermediate,
+            ["Araştırma Yöntemleri ve Deney Tasarımı"] = Advanced,
+        };
+
         private static readonly SeedTeacher[] Teachers =
         {
             new("emre.aydin" + Domain, "Emre", "Aydın", "Yazılım",
@@ -331,6 +375,16 @@ namespace EdTechApi.API.Helpers
                 "Sosyolog. ODTÜ Sosyoloji bölümünde kentleşme ve göç üzerine doktora yaptı; saha araştırmalarında görüşme ve gözlem yöntemleriyle çalışıyor. Toplumsal olayları kavramlar ve gündelik hayattan örneklerle birlikte okumayı öğretiyor."),
             new("sena.yurt" + Domain, "Sena", "Yurt", "Yabancı Dil",
                 "İspanyolca öğretmeni ve çevirmen. Ankara Üniversitesi İspanyol Dili ve Edebiyatı mezunu; Madrid'de bir yıl Erasmus, iki yıl dil okulunda öğretmenlik yaptı. DELE sınavlarına hazırlık ve iletişim odaklı başlangıç dersleri veriyor."),
+            new("hatice.sonmez" + Domain, "Hatice", "Sönmez", "Türk Dili ve Edebiyatı",
+                "İstanbul Üniversitesi Türk Dili ve Edebiyatı Bölümünden mezun olduktan sonra Marmara Üniversitesinde pedagojik formasyon eğitimini tamamladı. On dört yıldır ortaöğretim ve lise düzeyinde Türkçe öğretmenliği yapmaktadır. Çalışmalarında özellikle YKS ve LGS Türkçe hazırlığı, paragrafta yapı ve anlam bilgisi, sözcükte ve cümlede anlam konularına odaklanır. Derslerinde ezbere dayalı yöntemler yerine metin çözümleme, soru kalıplarını mantıksal olarak analiz etme ve akademik kompozisyon kurgulama tekniklerini uygulamalı biçimde işler."),
+            new("kemal.erol" + Domain, "Kemal", "Erol", "Türk Dili ve Edebiyatı",
+                "Boğaziçi Üniversitesi Türk Dili ve Edebiyatı Bölümünden lisans, Ankara Üniversitesinden yeni Türk edebiyatı alanında yüksek lisans derecesini aldı. On altı yıldır üniversite ve araştırma kurumlarında edebiyat tarihi ve Osmanlı Türkçesi dersleri vermektedir. Uzmanlık alanları arasında erken ve geç Cumhuriyet dönemi Türk edebiyatı, edebi akımlar ve Osmanlı paleografyası yer alır. Eğitimlerinde matbu ve rîka hatlı arşiv belgeleri üzerinden metin okuma çalışmaları yürütür; edebi eserleri dönemin toplumsal ve kültürel bağlamıyla ele alır."),
+            new("derya.oktem" + Domain, "Derya", "Öktem", "Türk Dili ve Edebiyatı, Genel",
+                "Hacettepe Üniversitesi Ankara Devlet Konservatuvarı Tiyatro Bölümünden mezun oldu. On sekiz yıl boyunca Devlet Tiyatrolarında oyuncu ve TRT radyolarında seslendirme sanatçısı olarak görev yaptı. Bireysel ve kurumsal düzeyde diksiyon, doğru nefes, fonetik, artikülasyon ve sahne konuşması eğitimleri vermektedir. Derslerinde diyafram kullanımını teknik egzersizlerle pekiştirir; katılımcıların konuşma kayıtlarını çözümleyerek vurgu, tonlama, beden dili ve ikna edici hitabet becerilerini birebir uygulamalarla geliştirir."),
+            new("aylin.kara" + Domain, "Aylin", "Kara", "Psikoloji & Bilişsel Bilimler",
+                "Orta Doğu Teknik Üniversitesi Psikoloji Bölümünü tamamladıktan sonra Ege Üniversitesinde gelişim psikolojisi alanında yüksek lisans yaptı. On iki yıldır gelişim psikolojisi ve sosyal psikoloji alanlarında akademik araştırmalar yürütmekte ve dersler vermektedir. Çocukluktan yetişkinliğe bilişsel değişim, bağlanma kuramları ve grup dinamikleri üzerine yoğunlaşır. Derslerinde klasik kuramsal yaklaşımları çağdaş ampirik araştırmalarla birleştirir; katılımcılara vaka çözümlemeleri ve gözlem protokolleri üzerinden analitik bakış kazandırır."),
+            new("volkan.sener" + Domain, "Volkan", "Şener", "Psikoloji & Bilişsel Bilimler",
+                "İstanbul Teknik Üniversitesindeki mühendislik lisansının ardından Boğaziçi Üniversitesi Bilişsel Bilim yüksek lisans programını tamamladı. On yıldır bilişsel bilim, nörobilişsel modelleme ve deneysel araştırma yöntemleri konularında dersler vermektedir. İnsan belleği, dikkat mekanizmaları ve karar verme süreçlerinin deneysel yollarla incelenmesi üzerine çalışır. Eğitimlerinde katılımcılara hipotez kurma, bilgisayarlı deney tasarımı ve toplanan davranışsal verilerin istatistiksel olarak modellenmesi adımlarını uygulamalı olarak aktarır."),
         };
 
         private const string StudentDomain = "@ogrenci.example";
@@ -880,6 +934,221 @@ namespace EdTechApi.API.Helpers
                     ("Omuz ve göğüs açıklığı", "Masa başı duruşuna karşı rutinler."),
                     ("Denge ve güç akışları", "Ayakta duruşlar ve geçişler."),
                     ("Kişisel rutin", "Haftalık mobilite programı kurmak."),
+                }),
+            // --- Türk Dili ve Edebiyatı ---
+            new("TYT-AYT Türkçe Paragraf ve Anlam Bilgisi", "Türk Dili ve Edebiyatı", "hatice.sonmez" + Domain, 749m, 80,
+                "YKS adayları için hazırlanan bu orta ve ileri düzey kursta öğrenciler paragraf sorularını süre baskısı altında doğru ve hızlı çözme becerisi kazanır. Ana düşünce, yardımcı düşünceler, anlatım teknikleri ve paragrafta yapı çözümlemeleri derinlemesine ele alınır. Sınavda zaman yönetimini sağlamak ve çeldirici seçenekleri hızla elemek isteyen lise son sınıf öğrencileri ile mezun adaylar hedeflenmektedir.",
+                new[] {
+                    ("Paragrafta ana düşünce ve konu tespiti", "Metnin ana fikrini ilk okumada saptama ve anahtar kelimeleri doğru belirleme yöntemleri."),
+                    ("Yardımcı düşünceler ve olumsuz köklü sorular", "Soru kökündeki ayrıntıları yakalama ve şıkları metinle eşleştirerek eleme adımları."),
+                    ("Paragrafın yapısı ve akışı bozan cümleler", "Düşüncenin akışını bozan ifadeleri bulma, iki paragrafa bölme ve yer değiştirme teknikleri."),
+                    ("Süre yönetimi ve deneme stratejileri", "YKS Türkçe testinde 40 soruyu kırk beş dakikada tamamlamaya yönelik süre ve odaklanma pratikleri."),
+                }),
+            new("Türkçe Dil Bilgisi ve Yazım Kuralları", "Türk Dili ve Edebiyatı", "hatice.sonmez" + Domain, 599m, 80,
+                "LGS ve TYT sınavlarına hazırlanan öğrenciler için tasarlanan bu başlangıç ve orta düzey eğitimde sözcük türleri, ekler, cümle ögeleri ve güncel TDK yazım kuralları sistematik olarak işlenir. Katılımcılar dil bilgisi sorularında kalıplaşmış hatalardan kurtulur ve kuralları metin üzerinde uygulayabilir. Sınavlarda tam net hedefleyen ve temel Türkçe bilgisini eksiksiz oturtmak isteyen tüm öğrenciler içindir.",
+                new[] {
+                    ("Sözcükte yapı ve ek kök analizi", "Yapım ve çekim eklerinin işlevleri ile sözcüğün yapısını doğru ayrıştırma yolları."),
+                    ("Sözcük türleri ve eylemsiler", "İsim, sıfat, zamir ve zarf ayrımları ile fiilimsilerin cümledeki görevlerini tanıma."),
+                    ("Cümlenin ögeleri ve vurgu", "Yüklem merkezli öge bulma sırası ve ara sözlerin öge tahlilindeki yerini kavrama."),
+                    ("Yazım kuralları ve noktalama işaretleri", "Büyük harflerin kullanımı, birleşik sözcükler ve sık karıştırılan noktalama kuralları."),
+                }),
+            new("Akademik Türkçe ve Kompozisyon", "Türk Dili ve Edebiyatı", "hatice.sonmez" + Domain, 799m, 40,
+                "Üniversite öğrencileri ve tez yazım sürecindeki araştırmacılar için hazırlanan bu orta düzey kursta akademik dilin kuralları, metin yapısı ve kompozisyon geliştirme incelenir. Katılımcılar akademik bir makalenin veya denemenin argümantasyon yapısını kurabilir, intihalden kaçınarak kaynak gösterebilir ve akıcı metinler üretebilir. Bilimsel yazı dilini yetkinleştirmek isteyen tüm lisans ve lisansüstü öğrencilerine yöneliktir.",
+                new[] {
+                    ("Akademik yazımın temel ilkeleri", "Nesnel üslup, terim kullanımı ve akademik metin türlerinin yapısal özellikleri."),
+                    ("Paragraf kurgusu ve argüman geliştirme", "Giriş, gelişme ve sonuç paragraflarında tez cümlesini destekleyen kanıtları sıralama."),
+                    ("Alıntılama ve kaynakça yönetimi", "Doğrudan ve dolaylı aktarım kuralları ile akademik dürüstlük ilkelerini benimseme."),
+                    ("Metin düzenleme ve son okuma", "Yazılan metni anlatım bozuklukları, akıcılık ve biçimsel tutarlılık açısından gözden geçirme."),
+                }),
+            new("Cumhuriyet Dönemi Türk Edebiyatı", "Türk Dili ve Edebiyatı", "kemal.erol" + Domain, 899m, 50,
+                "Edebiyat fakültesi öğrencileri ve edebiyat meraklıları için tasarlanan bu ileri düzey kursta 1923 sonrasından günümüze Türk edebiyatının dönüşümü çözümlenir. Katılımcılar Garip, İkinci Yeni, Toplumcu Gerçekçilik gibi akımların kuramsal zeminini kavrar ve dönemin başat roman ile şiirlerini edebi kuramlar ışığında tahlil edebilir. Türk edebiyatının modernleşme sürecini derinlemesine incelemek isteyen araştırmacılara hitap eder.",
+                new[] {
+                    ("Milli Edebiyat zevkini sürdüren şiir ve nesir", "Cumhuriyetin ilk yıllarında Anadolu teması ve memleket edebiyatı anlayışının analizi."),
+                    ("Toplumcu gerçekçi roman ve öykü", "Köy ve kasaba gerçekliğini işleyen yazarların tematik ve biçimsel yaklaşımları."),
+                    ("Garip hareketi ve İkinci Yeni şiiri", "Şiirde biçimsel devrimler, imge dünyası ve modern Türk şiirinin dönüşüm durakları."),
+                    ("1980 sonrası Türk romanında postmodernizm", "Üstkurmaca, metinlerarasılık ve çoğulcu anlatım tekniklerinin eserler üzerinden incelenmesi."),
+                }),
+            new("Osmanlı Türkçesi ve Metin Okumaları", "Türk Dili ve Edebiyatı", "kemal.erol" + Domain, 1099m, 30,
+                "Tarih ve edebiyat araştırmacıları için hazırlanan bu ileri düzey eğitimde Osmanlı Türkçesiyle kaleme alınmış matbu ve el yazması metinlerin okunması öğretilir. Katılımcılar Arapça ve Farsça kökenli dil kurallarını öğrenir, rîka ve nesih hat türlerini ayırt edebilir ve arşiv belgelerini bağımsız olarak çözümleyebilir. Tarihsel kaynakları doğrudan orijinal metinlerinden okumayı amaçlayan araştırmacılar içindir.",
+                new[] {
+                    ("Arapça ve Farsça unsurların gramer yapısı", "Bablara göre kelime türetme, terkipler ve Osmanlı Türkçesinde sıkça geçen kalıplar."),
+                    ("Matbu metin okumaları ve gazete çevirileri", "Geç dönem Osmanlı basını ve edebi mecmualarından seçilmiş matbu metinlerin çözümlenmesi."),
+                    ("Rîka hattına giriş ve harf bağlantıları", "El yazısı belgelerin paleografik özellikleri, harf birleşimleri ve kısaltma işaretleri."),
+                    ("Arşiv vesikaları ve ferman okuma pratiği", "Osmanlı arşivlerindeki resmi yazışmalar, beratlar ve şeriyye sicili kayıtlarının transkripsiyonu."),
+                }),
+            new("Diksiyon ve Etkili Hitabet", "Türk Dili ve Edebiyatı", "derya.oktem" + Domain, 849m, 25,
+                "Topluluk önünde konuşan profesyoneller ve öğrenciler için tasarlanan bu orta düzey uygulamalı atölyede sesin doğru kullanımı ve hitabet sanatı işlenir. Katılımcılar doğru diyafram nefesi almayı, Türkçenin ses ve vurgu kurallarını uygulamayı, heyecanlarını yöneterek ikna edici sunumlar yapmayı öğrenir. İletişim becerilerini güçlendirmek ve sahnede güvenle var olmak isteyen herkese yöneliktir.",
+                new[] {
+                    ("Diyafram nefesi ve sesin anatomisi", "Doğru solunum tekniğiyle sesi yormadan gür ve net çıkarma çalışmaları."),
+                    ("Fonetik kuralları ve doğru telaffuz", "Türkçede açık ve kapalı e sesleri, daralma ve harflerin boğumlanma noktaları."),
+                    ("Cümle vurgusu ve tonlama dinamikleri", "Anlatıma duygu ve inandırıcılık katan tonlama iniş çıkışlarını metin üzerinde çalışma."),
+                    ("Beden dili ve sahne heyecanını yönetme", "Topluluk önünde konuşurken postür, el jestleri ve sahne stresini dengeleme pratikleri."),
+                }),
+
+            // --- Psikoloji & Bilişsel Bilimler ---
+            new("Psikolojiye Giriş", "Psikoloji & Bilişsel Bilimler", "aylin.kara" + Domain, 799m, 60,
+                "Psikoloji bilimine ilgi duyanlar için hazırlanan bu başlangıç düzeyindeki kursta insan davranışı ve zihinsel süreçlerin temel kuramları incelenir. Katılımcılar biyolojik temellerden öğrenmeye, bellekten sosyal psikolojiye kadar ana psikoloji ekollerini kavrar ve insan davranışlarını bilimsel bir çerçevede değerlendirebilir. Zihnin işleyişini temel kavramlarla anlamak isteyen tüm meraklılara uygundur.",
+                new[] {
+                    ("Psikolojinin tarihi ve temel yaklaşımlar", "Yapısalcılıktan davranışçılığa ve bilişsel devrime uzanan kuramsal akımların özeti."),
+                    ("Davranışın biyolojik temelleri ve algı", "Sinir sistemi, nörotransmitterler ve duyusal bilgilerin zihinde örgütlenme ilkeleri."),
+                    ("Öğrenme kuramları ve bellek sistemleri", "Klasik ve edimsel koşullanma ile kısa ve uzun süreli bellek yapıları."),
+                    ("Sosyal psikoloji ve grup dinamikleri", "Sosyal etki, uyma davranışı, tutumlar ve önyargıların oluşum mekanizmaları."),
+                }),
+            new("Gelişim Psikolojisi", "Psikoloji & Bilişsel Bilimler", "aylin.kara" + Domain, 899m, 50,
+                "Eğitimciler ve psikoloji öğrencileri için geliştirilen bu orta düzey kursta doğumdan yetişkinliğe kadar bireyin zihinsel, duygusal ve sosyal gelişimi ele alınır. Katılımcılar Piaget, Vygotsky ve Erikson gibi öncü kuramcıların modellerini analiz edebilir ve gelişim evrelerindeki kilit dönüm noktalarını vaka örnekleri üzerinden yorumlayabilir. İnsan gelişiminin evrelerini derinlemesine öğrenmek isteyenlere yöneliktir.",
+                new[] {
+                    ("Bilişsel gelişim kuramları", "Piaget evreleri ve Vygotsky sosyokültürel yaklaşımının temel kavramları."),
+                    ("Bağlanma kuramı ve duygusal gelişim", "Bowlby ve Ainsworth modelleri ışığında güvenli ve kaygılı bağlanma türleri."),
+                    ("Psikososyal gelişim ve kimlik arayışı", "Erikson yaşam boyu gelişim evreleri ve ergenlikte kimlik kazanımı süreci."),
+                    ("Ahlak gelişimi ve yetişkinlik evreleri", "Kohlberg ahlak kuramı ve yetişkinlikten yaşlılığa bilişsel ve sosyal değişimler."),
+                }),
+            new("Bilişsel Bilime Giriş", "Psikoloji & Bilişsel Bilimler", "volkan.sener" + Domain, 949m, 50,
+                "Yapay zeka, bilişim ve psikoloji alanlarında çalışanlar için hazırlanan bu orta düzey kursta zihnin bilgi işleme süreçleri disiplinlerarası bir bakışla ele alınır. Katılımcılar sinirbilim, yapay zeka ve bilişsel psikolojinin kesişiminde zihinsel modeller kurabilir ve algı ile düşünme süreçlerini hesaplamalı yöntemlerle açıklayabilir. Zihnin çalışma mekanizmasını çok yönlü incelemek isteyenlere yöneliktir.",
+                new[] {
+                    ("Bilişsel bilimlerin disiplinlerarası temelleri", "Felsefe, yapay zeka, dilbilim ve sinirbilimin zihin araştırmalarındaki ortak paydası."),
+                    ("Hesaplamalı zihin kuramı ve bilgi işleme", "Zihinsel temsiller, sembolik sistemler ve bağlantıcı yapay sinir ağı yaklaşımları."),
+                    ("Dikkat ve görsel algının bilişsel modelleri", "Seçici dikkat filtreleri, nesne tanıma kuramları ve görme sisteminin hesaplamalı yapısı."),
+                    ("Karar verme ve uslamlama süreçleri", "Bilişsel yanılgılar, sezgisel yöntemler ve olasılıksal akıl yürütme mekanizmaları."),
+                }),
+            new("Araştırma Yöntemleri ve Deney Tasarımı", "Psikoloji & Bilişsel Bilimler", "volkan.sener" + Domain, 1099m, 30,
+                "Davranış ve biliş bilimlerinde tez veya makale yazan araştırmacılar için hazırlanan bu ileri düzey kursta deneysel metodoloji ve veri analizi işlenir. Katılımcılar test edilebilir hipotezler kurgulayabilir, karıştırıcı değişkenleri kontrol eden laboratuvar deneyleri tasarlayabilir ve toplanan verileri doğru testlerle analiz edebilir. Bilimsel araştırmalarını bağımsız yürütmek isteyen lisansüstü öğrencilere hitap eder.",
+                new[] {
+                    ("Bilimsel araştırma sorusu ve hipotez kurma", "Bağımsız ve bağımlı değişkenleri tanımlama ve operasyonel hale getirme yolları."),
+                    ("Deneysel desenler ve kontrol mekanizmaları", "Gruplararası ve grupiçi desenler ile iç ve dış geçerliliği koruma teknikleri."),
+                    ("Bilgisayarlı deney tasarımı ve veri toplama", "Tepki süresi ve doğruluk ölçümlerini kaydeden deneysel yazılım protokolleri."),
+                    ("Veri analizi ve araştırma raporu yazımı", "Parametrik testler, varyans analizi ve APA formatında bilimsel raporlama kuralları."),
+                }),
+
+            // --- Sosyal Bilimler ---
+            new("YKS Tarih Soru Kampı", "Sosyal Bilimler", "selin.koc" + Domain, 699m, 80,
+                "YKS adayları için hazırlanan bu orta düzey soru çözüm kampında TYT ve AYT Tarih konuları kronolojik testler ve kavram haritalarıyla taranır. Katılımcılar öncüllü ve haritalı tarih sorularını hızla analiz etme, tarihsel neden-sonuç bağlarını kurma ve çeldiricileri eleme becerisi edinir. Sınav öncesinde eksiklerini kapatmak ve soru çözüm pratiğini artırmak isteyen lise son sınıf öğrencileri içindir.",
+                new[] {
+                    ("İlk Türk devletleri ve İslam tarihi soru analizi", "Kültür ve medeniyet kavramları ile sık karşılaşılan öncüllü soru çözümleri."),
+                    ("Osmanlı Devleti siyasi ve askeri gelişmeler", "Kuruluştan dağılmaya kadar antlaşmalar, ıslahatlar ve savaşların soru tahlilleri."),
+                    ("Kurtuluş Savaşı ve cepheler", "Kongreler süreci, muharebeler ve Mudanya ile Lozan antlaşmalarının odak noktaları."),
+                    ("Atatürk ilkeleri ve inkılap tarihi pratikleri", "İnkılapların ilkelerle eşleştirilmesi ve sınav tipi karma deneme çözümleri."),
+                }),
+            new("Kent Sosyolojisi ve Saha Araştırması", "Sosyal Bilimler", "onur.balci" + Domain, 949m, 30,
+                "Sosyoloji ve şehir bölge planlama öğrencileri için hazırlanan bu ileri düzey uygulamalı kursta kentsel dönüşüm, göç ve mekânsal ayrışma kuramları ele alınır. Katılımcılar kentsel mekânda nitel araştırma teknikleri uygulayabilir, derinlemesine mülakat ve katılımcı gözlem verilerini kuramsal olarak yorumlayabilir. Kentsel dinamikleri doğrudan sahada araştırmayı hedefleyen araştırmacılara yöneliktir.",
+                new[] {
+                    ("Kent kuramları ve mekânın üretimi", "Chicago ekolünden David Harvey ve Lefebvre kuramlarına kentsel mekân okumaları."),
+                    ("Kentsel dönüşüm ve mutenalaştırma", "Soylulaştırma süreçleri, soylulaştırmanın toplumsal etkileri ve mekânsal ayrışma."),
+                    ("Saha araştırması metodolojisi ve etik", "Kentte katılımcı gözlem yapma, yarı yapılandırılmış mülakat tasarımı ve saha etiği."),
+                    ("Nitel verilerin kodlanması ve raporlama", "Saha notları ile ses kayıtlarının tematik analizi ve araştırma raporu haline getirilmesi."),
+                }),
+
+            // --- Tasarım ---
+            new("Figma ile Prototipleme Atölyesi", "Tasarım", "deniz.aksoy" + Domain, 1199m, 25,
+                "Dijital ürün tasarımcıları ve arayüz geliştiricileri için hazırlanan bu ileri düzey uygulamalı atölyede Figma üzerinde karmaşık etkileşimli prototipler üretilir. Katılımcılar değişkenler, akıllı animasyonlar ve bileşen setleri kullanarak gerçek uygulama deneyimi sunan prototipler inşa edebilir ve kullanıcı testlerine hazır hale getirebilir. Portfolyosuna güçlü projeler eklemek isteyen tasarımcılara yöneliktir.",
+                new[] {
+                    ("Gelişmiş bileşenler ve varyant mimarisi", "Bileşen özellikleri, yuvalama ve durum varyantlarıyla esnek arayüz elemanları kurma."),
+                    ("Değişkenler ve koşullu mantık yapıları", "String, boolean ve sayı değişkenleriyle çalışan dinamik sepet ve form prototipleri."),
+                    ("Akıllı animasyonlar ve mikromimikler", "Ekran geçişleri, sürükleme hareketleri ve mikro etkileşimlerin zamanlama ayarları."),
+                    ("Kullanıcı testi hazırlığı ve paylaşım", "Prototipi paylaşıma açma, test senaryoları belirleme ve geri bildirim toplama süreçleri."),
+                }),
+            new("Marka Kimliği ve Logo Tasarımı", "Tasarım", "deniz.aksoy" + Domain, 1099m, 30,
+                "Grafik tasarımcılar ve ajans çalışanları için kurgulanan bu orta düzey kursta bir markanın sıfırdan görsel kimliğinin tasarlanması adımları işlenir. Katılımcılar brief analizinden logo eskizine, renk paleti ve tipografi seçiminden marka rehberi hazırlamaya kadar tüm tasarım sürecini yürütebilir ve müşteriye sunabilir. Markalama alanında profesyonel standartlarda iş üretmek isteyen tasarımcılar içindir.",
+                new[] {
+                    ("Tasarım briefi ve pazar araştırması", "Müşteri beklentilerini anlama, rakip görsel analizi ve duygu panosu oluşturma."),
+                    ("Logo eskizleri ve geometrik konstrüksiyon", "Fikir geliştirme, ızgara sistemi üzerinde sembol inşası ve tipografik uyum."),
+                    ("Renk teorisi ve tipografi hiyerarşisi", "Kurumsal renk sistemleri, kontrast dengesi ve metin fontu eşleştirmeleri."),
+                    ("Kurumsal kimlik kılavuzu hazırlama", "Logo kullanım sınırları, basılı ve dijital materyal şablonları ile rehber teslimi."),
+                }),
+
+            // --- Sanat ---
+            new("Rönesans'tan Modernizme Sanat Tarihi", "Sanat", "leyla.erdem" + Domain, 899m, 50,
+                "Sanat ve mimarlık öğrencileri ile kültür meraklıları için hazırlanan bu ileri düzey kursta Batı sanatının 14. yüzyıldan 20. yüzyıla kadar olan evrimi incelenir. Katılımcılar Rönesans, Barok, Romantizm ve Modernizm akımlarının felsefi arka planını kavrar, dönem eserlerini ikonografik ve biçimsel yöntemlerle çözümleyebilir. Görsel sanatların tarihsel gelişimini akademik derinlikle anlamak isteyenlere yöneliktir.",
+                new[] {
+                    ("İtalyan ve Kuzey Rönesansı", "Perspektifin keşfi, hümanizm etkisi ve Da Vinci, Michelangelo ile Dürer karşılaştırması."),
+                    ("Barok sanat ve ışık gölge ustalığı", "Dramatik aydınlatma, hareket algısı ve Caravaggio ile Bernini eserlerinin analizi."),
+                    ("Neoklasisizm ve Romantizm çatışması", "Akıl ile duygunun mücadelesi, Fransız Devrimi etkisi ve Goya ile Delacroix tahlilleri."),
+                    ("Empresyonizmden Avangart akımlara geçiş", "Işığın anlık kaydı, Kübizm, Soyut dışavurumculuk ve modern sanatın temelleri."),
+                }),
+
+            // --- Müzik ---
+            new("Armoni ve Beste Atölyesi", "Müzik", "ozan.gunes" + Domain, 999m, 20,
+                "Müzisyenler ve prodüktörler için hazırlanan bu ileri düzey kursta tonal ve modal armoni kuralları uygulamalı olarak incelenir. Katılımcılar akor yürüyüşleri kurabilir, polifonik ses iletimi kurallarını uygulayabilir ve kendi melodilerini zengin armonik katmanlarla besteleyebilir. Temel müzik teorisine hâkim olup kendi özgün eserlerini profesyonel standartlarda düzenlemek isteyen müzisyenler içindir.",
+                new[] {
+                    ("Tonal armoni ve kadans yapıları", "Dört sesli armonide akor bağlantıları, anahtarlar ve açık ile kapalı pozisyonlar."),
+                    ("Akor modülasyonları ve geçki teknikleri", "Yakın ve uzak tonlara geçiş yolları, ortak akorlar ve kromatizm kullanımı."),
+                    ("Modal armoni ve modern tınılar", "Dorian, Mixolydian ve Lydian modlarında armonik yürüyüşler ve melodi ilişkisi."),
+                    ("Beste kurgusu ve aranjman pratikleri", "Motif geliştirme, form yapısı oluşturma ve orkestrasyon taslakları hazırlama."),
+                }),
+
+            // --- Spor ---
+            new("Sporcu Beslenmesi ve Performans", "Spor", "kerem.tan" + Domain, 649m, 60,
+                "Aktif sporcular ve antrenörler için tasarlanan bu orta düzey kursta antrenman verimini ve toparlanmayı optimize eden beslenme stratejileri incelenir. Katılımcılar makro ve mikro besin ihtiyaçlarını branşlarına göre hesaplayabilir, yarışma öncesi ile sonrası beslenme protokolleri oluşturabilir ve ergojenik destekleri bilimsel temelde değerlendirebilir. Fiziksel performansını beslenmeyle artırmak isteyenlere yöneliktir.",
+                new[] {
+                    ("Enerji sistemleri ve makro besin dengesi", "Dayanıklılık ve kuvvet sporlarında karbonhidrat, protein ve yağ gereksinimleri."),
+                    ("Sıvı dengesi ve elektrolit yönetimi", "Antrenman esnasında hidrasyon takibi, terleme testi ve toparlanma içecekleri."),
+                    ("Antrenman ve müsabaka zamanlaması", "Müsabaka öncesi glikojen depolarını doldurma ve sonrası kas onarım öğünleri."),
+                    ("Kanıta dayalı takviyeler ve ergojenik destekler", "Kreatin, kafein ve beta-alanin gibi desteklerin etki mekanizmaları ve güvenli kullanımı."),
+                }),
+
+            // --- Genel ---
+            new("YKS ve LGS Sınav Stratejileri", "Genel", "gizem.ucar" + Domain, 499m, 100,
+                "Merkezi sınavlara hazırlanan öğrenciler ve veliler için tasarlanan bu rehberlik odaklı başlangıç ve orta düzey kursta çalışma metodolojisi işlenir. Katılımcılar kişisel çalışma programı hazırlayabilir, deneme sınavı analizleriyle eksik noktalarını belirleyebilir ve sınav anı kaygısını yönetme tekniklerini uygulayabilir. YKS veya LGS maratonunu plansızlıktan kurtarıp verimli yürütmek isteyen tüm adaylara uygundur.",
+                new[] {
+                    ("Kişisel çalışma programı ve hedef belirleme", "Haftalık net takibi, konu tarama çizelgeleri ve gerçekçi çalışma hedefleri koyma."),
+                    ("Deneme sınavı analizi ve eksik tamamlama", "Doğru ve yanlış soru tahliliyle eksik konuları nokta atışı tespit etme yolları."),
+                    ("Sınav turu taktiği ve zaman planlaması", "Turlama tekniğiyle vakit kazandıran soru çözme disiplini ve odaklanma."),
+                    ("Sınav kaygısı ve psikolojik dayanıklılık", "Sınav stresini kontrol altında tutma, nefes pratikleri ve motivasyon yönetimi."),
+                }),
+            new("Hızlı Okuma ve Not Alma Teknikleri", "Genel", "gizem.ucar" + Domain, 449m, 100,
+                "Öğrenciler ve yoğun okuma yapan çalışanlar için tasarlanan bu başlangıç düzeyindeki eğitimde okuma hızını ve anlama oranını artıran teknikler işlenir. Katılımcılar göz kaslarını geliştirerek iç seslendirmeyi azaltabilir, Cornell gibi yapılandırılmış not alma sistemlerini uygulayabilir ve bilgiyi kalıcı biçimde özetleyebilir. Okuma verimini katlayıp zamandan tasarruf etmek isteyen herkese uygundur.",
+                new[] {
+                    ("Göz kası egzersizleri ve görme alanını genişletme", "Göz sıçramalarını hızlandıran blok okuma çalışmaları ve satır takibi yöntemleri."),
+                    ("İç seslendirmeyi azaltma ve kavrama", "Metni zihinde kelime kelime tekrarlamadan kavramsal olarak anlama pratikleri."),
+                    ("Cornell ve zihin haritası sistemleri", "Derslerde ve kitap okurken bilgiyi hiyerarşik biçimde yapılandırarak kaydetme."),
+                    ("Aktif hatırlama ve aralıklı tekrar", "Notları periyodik gözden geçirme stratejileriyle uzun süreli hafızaya aktarma."),
+                }),
+
+            // --- Edebiyat & Felsefe ---
+            new("Dünya Edebiyatından Klasikler", "Edebiyat & Felsefe", "orhan.yesil" + Domain, 799m, 50,
+                "Edebiyatseverler ve üniversite öğrencileri için hazırlanan bu orta düzey kursta Doğu ve Batı klasiklerinin temel yapıtları felsefi ve edebi açıdan tahlil edilir. Katılımcılar Dostoyevski, Goethe ve Kafka gibi yazarların metinlerindeki ana izlekleri çözümler, insanlık durumunu yansıtan anlatı tekniklerini karşılaştırmalı olarak değerlendirebilir. Klasik metinlerin derin katmanlarını keşfetmek isteyen okurlara yöneliktir.",
+                new[] {
+                    ("Antik trajedi ve epik anlatı", "Homeros destanları ve Sofokles tragedyalarında ahlak, kader ve kahramanlık temaları."),
+                    ("Rus edebiyatında varoluşsal sancılar", "Dostoyevski ve Tolstoy romanlarında vicdan, inanç ve toplumsal çatışmalar."),
+                    ("Modernizmin habercisi Batı klasikleri", "Goethe ve Flaubert üzerinden bireyin toplumla uyumsuzluğu ve arzu arayışı."),
+                    ("20. yüzyıl yabancılaşması ve Kafkaesk dünya", "Kafka ve Camus eserlerinde bürokrasi, saçma kavramı ve modern insan açmazı."),
+                }),
+
+            // --- Fotoğrafçılık & Sinema ---
+            new("Mobil Fotoğrafçılık ve Video Kurgu", "Fotoğrafçılık & Sinema", "cem.oral" + Domain, 699m, 40,
+                "Sosyal medya içerik üreticileri ve görsel sanatlara merak duyanlar için hazırlanan bu başlangıç düzeyindeki uygulamalı eğitimde akıllı telefonla çekim ve kurgu işlenir. Katılımcılar doğal ışığı kullanmayı, kompozisyon kurallarını uygulamayı ve mobil kurgu uygulamalarıyla profesyonel videolar kurgulamayı öğrenir. Akıllı telefonunu yaratıcı bir prodüksiyon aracına dönüştürmek isteyen herkes içindir.",
+                new[] {
+                    ("Mobil kamera ayarları ve temel ışık kullanımı", "Pozlama telafisi, odak kilidi, ızgara kullanımı ve pencere ışığından yararlanma."),
+                    ("Fotoğrafta kompozisyon ve açı belirleme", "Üçler kuralı, simetri, derinlik oluşturma ve yönlendirici çizgileri çerçeveye yerleştirme."),
+                    ("Mobil video çekim teknikleri ve ses kaydı", "Telefon hareketleri, sabit planlar, harici mikrofon ayarları ve rüzgar engelleme."),
+                    ("CapCut ile mobil video kurgusu ve renk", "Klip kesme, tempo ayarı, geçişler, metin animasyonları ve renk düzenleme adımları."),
+                }),
+
+            // --- Fen Bilimleri ---
+            new("Genetik ve Moleküler Biyoloji", "Fen Bilimleri", "elif.sahin" + Domain, 1099m, 40,
+                "Biyoloji, tıp ve biyomühendislik öğrencileri için kurgulanan bu ileri düzey kursta hücrenin moleküler mekanizmaları ve genetik regülasyon ayrıntılı olarak ele alınır. Katılımcılar DNA replikasyonu, gen ifadesi, epigenetik modifikasyonlar ve CRISPR gibi modern gen düzenleme tekniklerini kuramsal ve deneysel yönleriyle tahlil edebilir. Moleküler yaşam bilimlerinde sağlam bir altyapı kazanmak isteyen araştırmacılara yöneliktir.",
+                new[] {
+                    ("Nükleik asit yapısı ve replikasyon mekanizması", "DNA polimerazlar, helikaz, okazyaki parçacıkları ve hata düzeltme süreçleri."),
+                    ("Transkripsiyon ve gen ifadesinin regülasyonu", "RNA sentezi, promotor bölgeler, transkripsiyon faktörleri ve operon sistemleri."),
+                    ("Translasyon ve protein katlanması", "Ribozom mekaniği, tRNA eşleşmesi, translasyon sonrası modifikasyonlar ve şaperonlar."),
+                    ("Rekombinant DNA teknolojisi ve gen düzenleme", "Restriksiyon enzimleri, klonlama vektörleri, PCR analizi ve CRISPR-Cas9 prensipleri."),
+                }),
+            new("LGS Fen Bilimleri Kampı", "Fen Bilimleri", "can.yildiz" + Domain, 649m, 100,
+                "LGS sınavına hazırlanan 8. sınıf öğrencileri için tasarlanan bu orta düzey soru kampında MEB müfredatındaki tüm fen üniteleri yeni nesil sorularla taranır. Katılımcılar grafik ve tablo yorumlama, deney düzenekli soruları çözme ve zamanı kontrollü kullanma becerisi edinir. Fen bilimleri netlerini yükseltmek ve sınavda tam puan hedefleyen ortaokul son sınıf öğrencilerine yöneliktir.",
+                new[] {
+                    ("Mevsimler ve iklim yeni nesil soru kalıpları", "Dünyanın dönme ekseni, gölge boyu değişimleri ve iklim ile hava olayları analizi."),
+                    ("DNA ve genetik kod tahlilleri", "Nükleotid dizilimleri, mutasyon, modifikasyon, adaptasyon ve biyoteknoloji soruları."),
+                    ("Basınç ünitesi ve deney düzenekleri", "Katı, sıvı ve gaz basıncında değişkenlerin grafiğe dökülmesi ve deney yorumlama."),
+                    ("Madde ve endüstri ile basit makineler", "Periyodik tablo, fiziksel kimyasal değişimler ve makara kaldıraç kuvvet kazancı."),
+                }),
+
+            // --- Coğrafya ---
+            new("Jeopolitik ve Beşeri Coğrafya", "Coğrafya", "burak.kaya" + Domain, 899m, 50,
+                "Uluslararası ilişkiler, coğrafya ve kamu yönetimi öğrencileri için hazırlanan bu orta düzey kursta küresel güç dengeleri ile beşeri dinamiklerin etkileşimi incelenir. Katılımcılar nüfus hareketleri, enerji koridorları, sınır ihtilafları ve iklim göçlerini haritalar üzerinden mekânsal olarak analiz edebilir. Dünya siyasetini coğrafi gerçekler üzerinden okumak isteyen tüm araştırmacılara uygundur.",
+                new[] {
+                    ("Beşeri coğrafyanın temel ilkeleri ve nüfus", "Dünya nüfus dağılışı, demografik dönüşüm modeli ve kentsel göç hareketleri."),
+                    ("Küresel enerji koridorları ve boğazlar", "Petrol ve doğal gaz boru hatları, Hürmüz ve Malakka gibi kritik deniz geçitleri."),
+                    ("Sınırlar, jeopolitik teoriler ve çatışma bölgeleri", "Kara ve kenar kuşak teorileri ışığında bölgesel egemenlik ve sınır anlaşmazlıkları."),
+                    ("İklim krizi, su güvenliği ve jeopolitik gelecek", "Kuraklık kaynaklı göç dalgaları, sınır aşan sular ve geleceğin jeopolitik riskleri."),
                 }),
         };
     }

@@ -1,8 +1,10 @@
 {
   "translation": {
     "header": {
-      "language": "Change language",
-      "toggleTheme": "Toggle dark mode"
+      "language": "Language",
+      "toggleTheme": "Display mode",
+      "lightMode": "Light mode",
+      "darkMode": "Dark mode"
     },
     "searchPlaceholder": "Search in system...",
     "sidebar": {
@@ -260,7 +262,9 @@
         "Veri Bilimi & Yapay Zeka": "Data Science & AI",
         "Ekonomi & Finans": "Economics & Finance",
         "Edebiyat & Felsefe": "Literature & Philosophy",
-        "Fotoğrafçılık & Sinema": "Photography & Film"
+        "Fotoğrafçılık & Sinema": "Photography & Film",
+        "Türk Dili ve Edebiyatı": "Turkish Language & Literature",
+        "Psikoloji & Bilişsel Bilimler": "Psychology & Cognitive Science"
       },
       "categoryDescriptions": {
         "Yazılım": "Programming languages, web and backend development, data structures and algorithms. Project-based, hands-on software courses for everyone from beginners to professional developers.",
@@ -277,7 +281,9 @@
         "Veri Bilimi & Yapay Zeka": "Data analysis, statistical modelling, machine learning and deep learning. Hands-on courses that take you from cleaning data in Python to building models and reading their results honestly.",
         "Ekonomi & Finans": "Micro and macroeconomics, monetary policy, accounting and personal finance. Courses that teach you to read markets, financial statements and economic news with confidence.",
         "Edebiyat & Felsefe": "Turkish and world literature, the big questions of philosophy, logic and critical thinking. Courses on close reading, building an argument and writing your own interpretation.",
-        "Fotoğrafçılık & Sinema": "Digital photography, film language, film analysis and short film making. Workshops on telling stories with images by understanding light, framing and editing."
+        "Fotoğrafçılık & Sinema": "Digital photography, film language, film analysis and short film making. Workshops on telling stories with images by understanding light, framing and editing.",
+        "Türk Dili ve Edebiyatı": "Turkish grammar, paragraph and reading comprehension, text analysis, academic composition, Republic-era literature, and Ottoman Turkish paleography. Courses that develop native language awareness, effective written and oral communication, and literary heritage in academic depth.",
+        "Psikoloji & Bilişsel Bilimler": "Developmental psychology, cognitive models, philosophy of mind, social psychology, experimental designs, and behavioral research methods. Courses exploring human behavior, thinking processes, and the biological and computational foundations of the mind using scientific methods."
       },
       "courses": {
         "İleri Seviye C# ve .NET API": "Advanced C# and .NET API",
@@ -336,7 +342,31 @@
         "İspanyolca A1": "Spanish A1",
         "Müzik Teorisi ve Kulak Eğitimi": "Music Theory and Ear Training",
         "Suluboya Atölyesi": "Watercolour Workshop",
-        "Yoga ve Mobilite": "Yoga and Mobility"
+        "Yoga ve Mobilite": "Yoga and Mobility",
+        "TYT-AYT Türkçe Paragraf ve Anlam Bilgisi": "TYT-AYT Turkish Reading Comprehension and Paragraph Analysis",
+        "Türkçe Dil Bilgisi ve Yazım Kuralları": "Turkish Grammar and Spelling Rules",
+        "Akademik Türkçe ve Kompozisyon": "Academic Turkish and Composition",
+        "Cumhuriyet Dönemi Türk Edebiyatı": "Republican Era Turkish Literature",
+        "Osmanlı Türkçesi ve Metin Okumaları": "Ottoman Turkish and Textual Readings",
+        "Diksiyon ve Etkili Hitabet": "Diction and Effective Public Speaking",
+        "Psikolojiye Giriş": "Introduction to Psychology",
+        "Gelişim Psikolojisi": "Developmental Psychology",
+        "Bilişsel Bilime Giriş": "Introduction to Cognitive Science",
+        "Araştırma Yöntemleri ve Deney Tasarımı": "Research Methods and Experimental Design",
+        "YKS Tarih Soru Kampı": "YKS History Question Camp",
+        "Kent Sosyolojisi ve Saha Araştırması": "Urban Sociology and Field Research",
+        "Figma ile Prototipleme Atölyesi": "Figma Prototyping Workshop",
+        "Marka Kimliği ve Logo Tasarımı": "Brand Identity and Logo Design",
+        "Rönesans'tan Modernizme Sanat Tarihi": "Art History from Renaissance to Modernism",
+        "Armoni ve Beste Atölyesi": "Harmony and Composition Workshop",
+        "Sporcu Beslenmesi ve Performans": "Sports Nutrition and Performance",
+        "YKS ve LGS Sınav Stratejileri": "YKS and LGS Exam Strategies",
+        "Hızlı Okuma ve Not Alma Teknikleri": "Speed Reading and Note-Taking Techniques",
+        "Dünya Edebiyatından Klasikler": "Classics of World Literature",
+        "Mobil Fotoğrafçılık ve Video Kurgu": "Mobile Photography and Video Editing",
+        "Genetik ve Moleküler Biyoloji": "Genetics and Molecular Biology",
+        "LGS Fen Bilimleri Kampı": "LGS Science Camp",
+        "Jeopolitik ve Beşeri Coğrafya": "Geopolitics and Human Geography"
       },
       "descriptions": {
         "İleri Seviye C# ve .NET API": "Advanced C# features and building tested, documented REST APIs with ASP.NET Core.",
@@ -395,7 +425,31 @@
         "İspanyolca A1": "A communicative start in Spanish: pronunciation, ser and estar, regular verbs and everyday conversations.",
         "Müzik Teorisi ve Kulak Eğitimi": "Notation, rhythm, intervals, scales, chords and harmony, with ear training in every lesson.",
         "Suluboya Atölyesi": "Control water and pigment: washes, wet-on-wet, colour mixing and preserving the white of the paper.",
-        "Yoga ve Mobilite": "Flows and mobility routines for every level to undo long days at a desk, no equipment needed."
+        "Yoga ve Mobilite": "Flows and mobility routines for every level to undo long days at a desk, no equipment needed.",
+        "TYT-AYT Türkçe Paragraf ve Anlam Bilgisi": "Designed for YKS candidates, this intermediate and advanced course equips students with the skills to solve paragraph questions accurately and quickly under time pressure. Main ideas, supporting details, narrative techniques, and paragraph structure analysis are covered in depth. It targets high school seniors and graduates who want to ensure time management in the exam and eliminate distractor options quickly.",
+        "Türkçe Dil Bilgisi ve Yazım Kuralları": "Designed for students preparing for LGS and TYT exams, this beginner and intermediate course systematically covers parts of speech, affixes, sentence elements, and current TDK spelling rules. Participants overcome habitual errors in grammar questions and apply rules directly to text. It is for all students aiming for full marks on exams and seeking to establish a complete foundation in Turkish.",
+        "Akademik Türkçe ve Kompozisyon": "Prepared for university students and researchers engaged in thesis writing, this intermediate course examines academic language conventions, text structure, and composition development. Participants can build the argumentative framework of an academic article or essay, cite sources avoiding plagiarism, and produce fluent texts. It is aimed at all undergraduate and graduate students who want to master scientific writing.",
+        "Cumhuriyet Dönemi Türk Edebiyatı": "Designed for faculty of literature students and literature enthusiasts, this advanced course analyzes the transformation of Turkish literature from 1923 to the present. Participants understand the theoretical foundations of movements such as Garip, the Second New, and Socialist Realism, and analyze leading novels and poems of the period through literary theories. It addresses researchers seeking an in-depth study of Turkish literary modernization.",
+        "Osmanlı Türkçesi ve Metin Okumaları": "Prepared for history and literature researchers, this advanced course teaches the reading of printed and manuscript texts written in Ottoman Turkish. Participants learn grammatical rules of Arabic and Persian origin, distinguish Rika and Naskh scripts, and independently decipher archival documents. It is intended for researchers aiming to read historical sources directly from original texts.",
+        "Diksiyon ve Etkili Hitabet": "Designed for professionals and students speaking in public, this intermediate applied workshop covers proper vocal usage and the art of rhetoric. Participants learn to breathe with proper diaphragmatic support, apply Turkish phonetics and stress rules, and deliver persuasive presentations by managing anxiety. It is aimed at anyone seeking to strengthen communication skills and present themselves with confidence.",
+        "Psikolojiye Giriş": "Prepared for those interested in psychological science, this beginner course examines the fundamental theories of human behavior and mental processes. Participants grasp major schools of psychology ranging from biological bases to learning, memory, and social psychology, evaluating human behavior within a scientific framework. It is suitable for anyone curious about understanding the mechanics of the mind through core concepts.",
+        "Gelişim Psikolojisi": "Developed for educators and psychology students, this intermediate course examines the cognitive, emotional, and social development of individuals from birth to adulthood. Participants can analyze models from pioneering theorists like Piaget, Vygotsky, and Erikson, interpreting key developmental milestones through case studies. It is designed for those seeking an in-depth understanding of the stages of human development.",
+        "Bilişsel Bilime Giriş": "Prepared for those working in artificial intelligence, computing, and psychology, this intermediate course approaches the information processing mechanisms of the mind from an interdisciplinary perspective. Participants can construct mental models at the intersection of neuroscience, AI, and cognitive psychology, explaining perception and thought processes through computational methods. It is intended for those wanting to investigate the mind comprehensively.",
+        "Araştırma Yöntemleri ve Deney Tasarımı": "Prepared for researchers writing theses or articles in behavioral and cognitive sciences, this advanced course covers experimental methodology and data analysis. Participants can formulate testable hypotheses, design laboratory experiments controlling confounding variables, and analyze collected data using appropriate statistical tests. It is aimed at graduate students seeking to conduct independent scientific research.",
+        "YKS Tarih Soru Kampı": "Prepared for YKS candidates, this intermediate question-solving camp covers TYT and AYT History topics using chronological tests and concept maps. Participants gain skills to quickly analyze premise-based and map-based history questions, establish historical cause-and-effect relationships, and eliminate distractors. It is intended for high school seniors aiming to fill knowledge gaps and increase problem-solving practice before the exam.",
+        "Kent Sosyolojisi ve Saha Araştırması": "Prepared for sociology and urban planning students, this advanced applied course explores theories of urban transformation, migration, and spatial segregation. Participants can apply qualitative research techniques in urban spaces, theoretically interpreting data from in-depth interviews and participant observation. It is directed toward researchers aiming to investigate urban dynamics directly in the field.",
+        "Figma ile Prototipleme Atölyesi": "Prepared for digital product designers and UI developers, this advanced applied workshop produces complex interactive prototypes in Figma. Participants can build prototypes delivering real app experiences using variables, smart animations, and component sets, preparing them for user testing. It is aimed at designers wishing to add strong portfolio projects.",
+        "Marka Kimliği ve Logo Tasarımı": "Created for graphic designers and agency professionals, this intermediate course covers the steps of designing a visual brand identity from scratch. Participants can manage the complete design workflow from brief analysis and logo sketching to color palette and typography selection, delivering a brand guideline to clients. It is for designers aiming to produce work meeting professional branding standards.",
+        "Rönesans'tan Modernizme Sanat Tarihi": "Prepared for art and architecture students and cultural enthusiasts, this advanced course examines the evolution of Western art from the 14th century to the 20th century. Participants understand the philosophical background of Renaissance, Baroque, Romanticism, and Modernism movements, analyzing period works through iconographic and formal methods. It is aimed at those seeking an academic appreciation of visual art history.",
+        "Armoni ve Beste Atölyesi": "Prepared for musicians and producers, this advanced course practically explores the rules of tonal and modal harmony. Participants can construct chord progressions, apply voice leading principles, and compose their own melodies with rich harmonic layers. It is intended for musicians who grasp basic music theory and want to arrange their original compositions at professional standards.",
+        "Sporcu Beslenmesi ve Performans": "Designed for active athletes and coaches, this intermediate course explores nutrition strategies that optimize workout efficiency and recovery. Participants can calculate macro- and micronutrient requirements specific to their sports, build pre- and post-competition nutrition protocols, and scientifically evaluate ergogenic aids. It is intended for those seeking to enhance physical performance through nutrition.",
+        "YKS ve LGS Sınav Stratejileri": "Designed for students preparing for centralized examinations and their parents, this guidance-oriented beginner and intermediate course covers study methodology. Participants can prepare personalized study schedules, identify knowledge gaps through mock exam analysis, and apply exam anxiety management techniques. It is suitable for all candidates seeking to run their YKS or LGS preparation effectively and systematically.",
+        "Hızlı Okuma ve Not Alma Teknikleri": "Designed for students and professionals engaged in heavy reading, this beginner course covers techniques that increase reading speed and comprehension rates. Participants can reduce subvocalization by training eye muscles, apply structured note-taking systems like Cornell, and summarize information permanently. It is suited for anyone wanting to multiply reading efficiency and save time.",
+        "Dünya Edebiyatından Klasikler": "Prepared for literature lovers and university students, this intermediate course analyzes essential masterpieces of Eastern and Western classics from philosophical and literary viewpoints. Participants dissect core motifs in works by authors like Dostoevsky, Goethe, and Kafka, comparatively evaluating narrative techniques reflecting the human condition. It is directed toward readers seeking to explore deeper layers of classic texts.",
+        "Mobil Fotoğrafçılık ve Video Kurgu": "Prepared for social media content creators and visual arts enthusiasts, this beginner applied course covers shooting and editing with smartphones. Participants learn to utilize natural lighting, apply composition principles, and edit professional videos using mobile editing applications. It is for anyone looking to transform their smartphone into a creative production tool.",
+        "Genetik ve Moleküler Biyoloji": "Formulated for biology, medicine, and bioengineering students, this advanced course covers the molecular mechanisms and genetic regulation of the cell in detail. Participants can analyze DNA replication, gene expression, epigenetic modifications, and modern gene-editing techniques like CRISPR in theoretical and experimental dimensions. It is aimed at researchers seeking a solid foundation in molecular life sciences.",
+        "LGS Fen Bilimleri Kampı": "Designed for 8th-grade students preparing for the LGS examination, this intermediate question camp reviews all science units in the national curriculum using new-generation questions. Participants gain skills in interpreting graphs and tables, solving experiment-based questions, and managing time under control. It is aimed at final-year middle school students targeting higher scores and full marks in science.",
+        "Jeopolitik ve Beşeri Coğrafya": "Prepared for international relations, geography, and public administration students, this intermediate course examines the interaction between global balance of power and human dynamics. Participants can spatially analyze demographic movements, energy corridors, border disputes, and climate migration across maps. It is suitable for all researchers wishing to interpret world politics through geographic realities."
       }
     },
     "courseModal": {

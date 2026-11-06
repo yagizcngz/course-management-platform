@@ -58,6 +58,10 @@ namespace EdTechApi.Tests
 
             Assert.True(_db.Enrollments.Any());
             Assert.True(courses.Count(c => c.Category == "Matematik") >= 6);
+            Assert.All(courses, c => Assert.Contains(c.Level, new[] { "Beginner", "Intermediate", "Advanced" }));
+            // her kategoride en az dört kurs; Türkçe kursları da katalogda
+            Assert.All(courses.GroupBy(c => c.Category), g => Assert.True(g.Count() >= 4, g.Key));
+            Assert.True(courses.Count(c => c.Category == "Türk Dili ve Edebiyatı") >= 5);
         }
 
         [Fact]

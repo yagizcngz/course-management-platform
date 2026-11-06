@@ -104,6 +104,9 @@ namespace EdTechApi.DataAccess.Migrations
                     b.Property<bool>("IsFeatured")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Level")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("MaxCapacity")
                         .HasColumnType("int");
 

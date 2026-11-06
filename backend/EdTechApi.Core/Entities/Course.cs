@@ -14,6 +14,8 @@ namespace EdTechApi.Core.Entities
         
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsFeatured { get; set; } = false;
+        // Beginner, Intermediate, Advanced; boşsa "tüm seviyeler" sayılır
+        public string? Level { get; set; }
 
         // --- YENİ EKLENEN SÜTUN ---
         // Kurs kapak fotoğrafının göreli URL'i (örn. /uploads/course-images/xxx.png).
