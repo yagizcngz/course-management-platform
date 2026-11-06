@@ -4,7 +4,8 @@ import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import { AppSidebar } from "../components/AppSidebar";
 
-import { parseJwt } from "@/lib/auth";
+import { authHeaders, parseJwt } from "@/lib/auth";
+import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
 });
@@ -52,6 +53,16 @@ function AuthenticatedLayout() {
     // 1) Layout ilk mount olduğunda hemen kontrol et
     const stillValid = checkAndHandleExpiry(navigate);
     setAuthState(stillValid ? "authed" : "unauthed");
+    // the API rejects a token whose account was closed (or renamed) even before it expires
+    if (stillValid)
+      fetch(`${API_BASE}/api/auth/me`, { headers: authHeaders() })
+        .then((r) => {
+          if (r.status !== 401) return;
+          localStorage.removeItem("jwt_token");
+          localStorage.removeItem("username");
+          navigate({ to: "/login", replace: true });
+        })
+        .catch(() => {});
 
     // 2) ÖNEMLİ: _authenticated layout'u, /ogrenciler, /kurslar, /kayitlar gibi
     // sayfalar arasında sidebar'dan gezinirken yeniden mount OLMUYOR — sadece
