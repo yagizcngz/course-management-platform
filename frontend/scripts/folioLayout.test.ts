@@ -36,7 +36,8 @@ test("shelved books keep clear horizontally at every progress, leaning ones too"
       const [a, b] = [shelf[i], shelf[i + 1]];
       const xa = lerp(a.settled.x, a.loose.x, 1 - ta);
       const xb = lerp(b.settled.x, b.loose.x, 1 - tb);
-      const need = halfW(i, lerp(a.settled.lean, 0, 1 - ta)) + halfW(i + 1, lerp(b.settled.lean, 0, 1 - tb));
+      const need =
+        halfW(i, lerp(a.settled.lean, 0, 1 - ta)) + halfW(i + 1, lerp(b.settled.lean, 0, 1 - tb));
       assert.ok(xb - xa > need, `shelf ${i}/${i + 1} at p=${p}: ${xb - xa} <= ${need}`);
     }
 });
@@ -49,14 +50,21 @@ test("the two regions never overlap and the staging lane clears everything", () 
       const sx = lerp(s.settled.x, s.loose.x, 1 - t);
       const footprint = Math.hypot(dims[i].w, dims[i].d) / 2;
       assert.ok(sx + footprint < SHELF_X0, `stack book ${i} reaches the shelf region`);
-      const stackTop = lerp(s.settled.y, s.loose.y, 1 - t) + dims[i].h / 2 + STACK_BOB + STACK_BREATH;
+      const stackTop =
+        lerp(s.settled.y, s.loose.y, 1 - t) + dims[i].h / 2 + STACK_BOB + STACK_BREATH;
       // upright book: lean widens its height to halfH, pitch about x tips the cover depth up
       const b = shelf[i];
       const lean = Math.abs(lerp(b.settled.lean, 0, 1 - t));
       const pitch = Math.abs(lerp(0, b.loose.pitch, 1 - t));
       const halfH = (dims[i].h * Math.sin(lean) + dims[i].d * Math.cos(lean)) / 2;
       const shelfTop =
-        lerp(b.settled.y, b.loose.y, 1 - t) + halfH * Math.cos(pitch) + (dims[i].w / 2) * Math.sin(pitch) + 0.06;
-      assert.ok(STAGING_Y - radius > Math.max(stackTop, shelfTop), `book ${i} reaches the staging lane`);
+        lerp(b.settled.y, b.loose.y, 1 - t) +
+        halfH * Math.cos(pitch) +
+        (dims[i].w / 2) * Math.sin(pitch) +
+        0.06;
+      assert.ok(
+        STAGING_Y - radius > Math.max(stackTop, shelfTop),
+        `book ${i} reaches the staging lane`,
+      );
     }
 });

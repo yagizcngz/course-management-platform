@@ -1,0 +1,7 @@
+{
+  "//": "Texts i18n-sync fills into a locale that lacks the key (npm run i18n:sync). optionalIn lists key prefixes a locale may skip: Turkish shows course and category texts straight from the database, so only English needs translation.dynamic.*. allowSame lists keys whose English is meant to stay identical to the Turkish.",
+  "tr": {},
+  "en": {},
+  "optionalIn": { "tr": ["translation.dynamic."] },
+  "allowSame": []
+}

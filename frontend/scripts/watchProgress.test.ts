@@ -11,7 +11,8 @@ import {
 
 /** Plays from `from` to `to` in timeupdate-sized steps. */
 const play = (s = emptyWatch(), from: number, to: number, rate = 1, step = 0.25) => {
-  for (let t = from; t < to; t += step * rate) s = advance(s, t, Math.min(t + step * rate, to), rate);
+  for (let t = from; t < to; t += step * rate)
+    s = advance(s, t, Math.min(t + step * rate, to), rate);
   return s;
 };
 

@@ -281,8 +281,6 @@
       "or": "or",
       "chooseFile": "Choose File",
       "noFileChosen": "No file chosen",
-      "uploading": "Uploading...",
-      "uploadSuccess": "Profile picture updated successfully!",
       "displayName": "Display Name",
       "saveProfile": "Save Profile",
       "errors": {
@@ -1163,8 +1161,6 @@
       },
       "exploreNew": "Start learning by discovering new courses.",
       "exploreCourses": "Explore Courses",
-      "registerNow": "Register Now",
-      "returnHome": "Return Home",
       "noResults": "No courses found for “{{query}}”. Try a shorter word.",
       "searchFailed": "Search failed. Check your connection and try again.",
       "indexTitle": "Categories",
