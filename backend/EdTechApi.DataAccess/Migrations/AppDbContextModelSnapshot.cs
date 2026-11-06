@@ -132,6 +132,40 @@ namespace EdTechApi.DataAccess.Migrations
                     b.ToTable("Courses");
                 });
 
+            modelBuilder.Entity("EdTechApi.Core.Entities.DirectMessage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ReadAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RecipientId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SenderId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecipientId", "ReadAt");
+
+                    b.HasIndex("SenderId", "RecipientId", "CreatedAt");
+
+                    b.ToTable("DirectMessages");
+                });
+
             modelBuilder.Entity("EdTechApi.Core.Entities.Enrollment", b =>
                 {
                     b.Property<int>("Id")
@@ -171,6 +205,120 @@ namespace EdTechApi.DataAccess.Migrations
                         .HasFilter("[IsDeleted] = 0");
 
                     b.ToTable("Enrollments");
+                });
+
+            modelBuilder.Entity("EdTechApi.Core.Entities.ForumPost", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AuthorId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ThreadId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("ThreadId");
+
+                    b.ToTable("ForumPosts");
+                });
+
+            modelBuilder.Entity("EdTechApi.Core.Entities.ForumPostLike", b =>
+                {
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PostId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ForumPostLikes");
+                });
+
+            modelBuilder.Entity("EdTechApi.Core.Entities.ForumThread", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AuthorId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastActivityAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("Topic")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("Topic", "LastActivityAt");
+
+                    b.ToTable("ForumThreads");
+                });
+
+            modelBuilder.Entity("EdTechApi.Core.Entities.Friendship", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AddresseeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RequesterId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AddresseeId");
+
+                    b.HasIndex("RequesterId", "AddresseeId")
+                        .IsUnique();
+
+                    b.ToTable("Friendships");
                 });
 
             modelBuilder.Entity("EdTechApi.Core.Entities.Lesson", b =>
@@ -500,9 +648,16 @@ namespace EdTechApi.DataAccess.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FeaturedBadges")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -527,13 +682,15 @@ namespace EdTechApi.DataAccess.Migrations
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Role");
 
                     b.HasIndex("Username")
                         .IsUnique();
@@ -593,6 +750,21 @@ namespace EdTechApi.DataAccess.Migrations
                     b.Navigation("Teacher");
                 });
 
+            modelBuilder.Entity("EdTechApi.Core.Entities.DirectMessage", b =>
+                {
+                    b.HasOne("EdTechApi.Core.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("RecipientId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("EdTechApi.Core.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("EdTechApi.Core.Entities.Enrollment", b =>
                 {
                     b.HasOne("EdTechApi.Core.Entities.Course", "Course")
@@ -610,6 +782,68 @@ namespace EdTechApi.DataAccess.Migrations
                     b.Navigation("Course");
 
                     b.Navigation("Student");
+                });
+
+            modelBuilder.Entity("EdTechApi.Core.Entities.ForumPost", b =>
+                {
+                    b.HasOne("EdTechApi.Core.Entities.User", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("EdTechApi.Core.Entities.ForumThread", "Thread")
+                        .WithMany("Posts")
+                        .HasForeignKey("ThreadId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Thread");
+                });
+
+            modelBuilder.Entity("EdTechApi.Core.Entities.ForumPostLike", b =>
+                {
+                    b.HasOne("EdTechApi.Core.Entities.ForumPost", null)
+                        .WithMany("Likes")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EdTechApi.Core.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("EdTechApi.Core.Entities.ForumThread", b =>
+                {
+                    b.HasOne("EdTechApi.Core.Entities.User", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Author");
+                });
+
+            modelBuilder.Entity("EdTechApi.Core.Entities.Friendship", b =>
+                {
+                    b.HasOne("EdTechApi.Core.Entities.User", "Addressee")
+                        .WithMany()
+                        .HasForeignKey("AddresseeId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("EdTechApi.Core.Entities.User", "Requester")
+                        .WithMany()
+                        .HasForeignKey("RequesterId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Addressee");
+
+                    b.Navigation("Requester");
                 });
 
             modelBuilder.Entity("EdTechApi.Core.Entities.Lesson", b =>
@@ -711,6 +945,16 @@ namespace EdTechApi.DataAccess.Migrations
             modelBuilder.Entity("EdTechApi.Core.Entities.Course", b =>
                 {
                     b.Navigation("Enrollments");
+                });
+
+            modelBuilder.Entity("EdTechApi.Core.Entities.ForumPost", b =>
+                {
+                    b.Navigation("Likes");
+                });
+
+            modelBuilder.Entity("EdTechApi.Core.Entities.ForumThread", b =>
+                {
+                    b.Navigation("Posts");
                 });
 
             modelBuilder.Entity("EdTechApi.Core.Entities.Student", b =>

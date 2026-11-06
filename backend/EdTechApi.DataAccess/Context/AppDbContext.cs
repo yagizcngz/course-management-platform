@@ -28,6 +28,11 @@ namespace EdTechApi.DataAccess.Context
         public DbSet<Lesson> Lessons { get; set; }
         public DbSet<TeacherApplication> TeacherApplications { get; set; }
         public DbSet<LessonCompletion> LessonCompletions { get; set; }
+        public DbSet<ForumThread> ForumThreads { get; set; }
+        public DbSet<ForumPost> ForumPosts { get; set; }
+        public DbSet<ForumPostLike> ForumPostLikes { get; set; }
+        public DbSet<Friendship> Friendships { get; set; }
+        public DbSet<DirectMessage> DirectMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -47,6 +52,8 @@ namespace EdTechApi.DataAccess.Context
 
             modelBuilder.Entity<User>().Property(u => u.Balance).HasPrecision(18, 2);
             modelBuilder.Entity<User>().HasIndex(u => u.Username).IsUnique();
+            modelBuilder.Entity<User>().HasIndex(u => u.Role);
+            modelBuilder.Entity<User>().Property(u => u.FeaturedBadges).HasMaxLength(400);
             modelBuilder.Entity<WalletTransaction>().Property(t => t.Amount).HasPrecision(18, 2);
             modelBuilder.Entity<WalletTransaction>().HasIndex(t => new { t.UserId, t.CreatedAt });
             // bir satın almanın en fazla bir iadesi, bir öğretmen payı ve bir pay geri alımı olur: eşzamanlı iki iade
@@ -74,6 +81,31 @@ namespace EdTechApi.DataAccess.Context
                 .WithMany(t => t.Courses)
                 .HasForeignKey(c => c.TeacherId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // Topluluk: kullanıcıya giden FK'lerin hiçbiri zincirleme silmez (SQL Server çoklu zincir yolunu reddeder);
+            // kalıcı temizlik (SoftDeleteCleanupService) bu satırları kendisi ayıklar
+            modelBuilder.Entity<ForumThread>().Property(t => t.Title).HasMaxLength(160);
+            modelBuilder.Entity<ForumThread>().Property(t => t.Topic).HasMaxLength(32);
+            modelBuilder.Entity<ForumThread>().HasIndex(t => new { t.Topic, t.LastActivityAt });
+            modelBuilder.Entity<ForumThread>().HasOne(t => t.Author).WithMany().HasForeignKey(t => t.AuthorId).OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<ForumPost>().Property(p => p.Body).HasMaxLength(4000);
+            modelBuilder.Entity<ForumPost>().HasOne(p => p.Thread).WithMany(t => t.Posts).HasForeignKey(p => p.ThreadId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<ForumPost>().HasOne(p => p.Author).WithMany().HasForeignKey(p => p.AuthorId).OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<ForumPostLike>().HasKey(l => new { l.PostId, l.UserId });
+            modelBuilder.Entity<ForumPostLike>().HasOne<ForumPost>().WithMany(p => p.Likes).HasForeignKey(l => l.PostId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<ForumPostLike>().HasOne<User>().WithMany().HasForeignKey(l => l.UserId).OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Friendship>().HasIndex(f => new { f.RequesterId, f.AddresseeId }).IsUnique();
+            modelBuilder.Entity<Friendship>().HasIndex(f => f.AddresseeId);
+            modelBuilder.Entity<Friendship>().Property(f => f.Status).HasMaxLength(16);
+            modelBuilder.Entity<Friendship>().HasOne(f => f.Requester).WithMany().HasForeignKey(f => f.RequesterId).OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<Friendship>().HasOne(f => f.Addressee).WithMany().HasForeignKey(f => f.AddresseeId).OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<DirectMessage>().Property(m => m.Body).HasMaxLength(2000);
+            modelBuilder.Entity<DirectMessage>().HasIndex(m => new { m.SenderId, m.RecipientId, m.CreatedAt });
+            modelBuilder.Entity<DirectMessage>().HasIndex(m => new { m.RecipientId, m.ReadAt });
+            modelBuilder.Entity<DirectMessage>().HasOne<User>().WithMany().HasForeignKey(m => m.SenderId).OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<DirectMessage>().HasOne<User>().WithMany().HasForeignKey(m => m.RecipientId).OnDelete(DeleteBehavior.NoAction);
 
             // NOT: Daha önce burada BCrypt.HashPassword(...) ile hash'lenmiş bir "admin" seed
             // kullanıcısı vardı, ancak BCrypt her çağrıldığında farklı bir salt/hash ürettiği

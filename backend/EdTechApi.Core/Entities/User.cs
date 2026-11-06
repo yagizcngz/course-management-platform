@@ -23,5 +23,11 @@ namespace EdTechApi.Core.Entities
 
         // Cüzdan bakiyesi (simüle; gerçek ödeme yok). Hareketler WalletTransactions'da.
         public decimal Balance { get; set; }
+
+        // Profilde öne çıkarılan rozet kimlikleri (virgülle, en fazla 5); boşsa kazanılan ilk 5 rozet gösterilir
+        public string? FeaturedBadges { get; set; }
+
+        // Hesap kapatıldığı an (Role = "Deleted"); saklama süresi bunun üzerinden sayılır
+        public DateTime? DeletedAt { get; set; }
     }
 }
