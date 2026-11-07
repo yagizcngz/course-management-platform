@@ -188,6 +188,7 @@ function CoursesCatalog() {
           <div className="mt-4">
             <CourseShowcase
               courses={scoped}
+              titleClassName="font-serif text-3xl"
               titleOf={(c) => label("courses", c.title)}
               categoryOf={(c) => label("categories", c.category)}
               imageOf={(c, i) => getCourseImage(c as unknown as CourseData, i)}

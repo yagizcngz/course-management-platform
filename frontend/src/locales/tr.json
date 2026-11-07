@@ -1940,7 +1940,8 @@
         "hint": "Son eklenenler"
       },
       "prev": "Önceki kurslar",
-      "next": "Diğer kurslar"
+      "next": "Diğer kurslar",
+      "title": "Öne çıkan kurslar"
     },
     "instructor": {
       "title": "Eğitmen paneli",

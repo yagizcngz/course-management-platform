@@ -2051,7 +2051,8 @@
         "hint": "Recently added"
       },
       "prev": "Previous courses",
-      "next": "More courses"
+      "next": "More courses",
+      "title": "Featured courses"
     },
     "instructor": {
       "title": "Instructor panel",

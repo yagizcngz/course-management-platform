@@ -40,7 +40,7 @@ export interface ShowcaseRow<T> {
 export function showcaseRows<T extends ShowcaseCourse>(
   courses: T[],
   stats: CourseStats[],
-  size = 8,
+  size = 20,
 ): ShowcaseRow<T>[] {
   const byId = new Map(stats.map((s) => [s.courseId, s]));
   const zero: CourseStats = {
