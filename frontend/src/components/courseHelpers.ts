@@ -1,4 +1,5 @@
-export const API_BASE = "http://localhost:5157";
+// canlı derlemede VITE_API_BASE verilir (ör. https://api.ekurs.example); yoksa yerel API. Node testlerinde env yok.
+export const API_BASE: string = import.meta.env?.VITE_API_BASE || "http://localhost:5157";
 
 // --- DİNAMİK KATEGORİ SİSTEMİ ---
 // Artık kategoriler backend'den dinamik olarak çekiliyor.
