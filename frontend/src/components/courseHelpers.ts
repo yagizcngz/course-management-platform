@@ -64,6 +64,9 @@ export interface CourseData {
   subCategory?: string | null;
   SubCategory?: string | null;
   level?: string | null;
+  /** When the course was added (the API sends it; the catalogue's "new" row uses it). */
+  createdAt?: string;
+  CreatedAt?: string;
   Level?: string | null;
 }
 

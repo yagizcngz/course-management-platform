@@ -1,4 +1,4 @@
-using EdTechApi.API.Helpers;
+﻿using EdTechApi.API.Helpers;
 using EdTechApi.Business.Interfaces;
 using EdTechApi.Core.Constants;
 using EdTechApi.Core.Entities;
@@ -55,6 +55,10 @@ namespace EdTechApi.API.Controllers
             var courses = await _courseService.GetPopularCoursesAsync(count);
             return Ok(courses);
         }
+
+        // Katalog vitrinleri için kurs başına kayıt sayıları (kimlik gerekmez; kişisel veri yok)
+        [HttpGet("stats")]
+        public async Task<IActionResult> GetStats() => Ok(await _courseService.GetCourseStatsAsync());
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)

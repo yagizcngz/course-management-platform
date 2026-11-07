@@ -3,10 +3,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "../components/PageHeader";
 import { Plus, X, Trash2, Filter } from "lucide-react";
 import { toast } from "sonner";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { CourseDetailModal } from "../components/CourseDetailModal";
-import { CategoryBanner } from "../components/CategoryBanner";
+import { CourseShowcase } from "../components/CourseShowcase";
 import { useNavigate } from "@tanstack/react-router";
 import {
   getCourseImage,
@@ -359,6 +359,18 @@ function CoursesPage() {
     },
   );
 
+  // curated rows over the selected category (or everything); a search shows only the ranked list
+  const showcaseCourses = useMemo(
+    () =>
+      dbCourses
+        .filter((c) => !selectedCategory || (c.category || c.Category) === selectedCategory)
+        .map((c) => ({ ...c, id: Number(c.id ?? c.Id), createdAt: c.createdAt ?? c.CreatedAt })),
+    [dbCourses, selectedCategory],
+  );
+  const showcaseOn = !isLoading && !searchTerm.trim() && !isEditMode;
+  const label = (kind: string, value: string) =>
+    i18n.exists(`dynamic.${kind}.${value}`) ? t(`dynamic.${kind}.${value}`) : value;
+
   const handleCategorySelect = (cat: string) => {
     const newCat = cat === selectedCategory ? "" : cat;
     setSelectedCategory(newCat);
@@ -449,13 +461,17 @@ function CoursesPage() {
           </div>
         )}
 
-        {selectedCategory && !isLoading && (
-          <CategoryBanner
-            key={selectedCategory}
-            category={selectedCategory}
-            courses={dbCourses.filter((c) => (c.category || c.Category) === selectedCategory)}
+        {showcaseOn && (
+          <CourseShowcase
+            courses={showcaseCourses}
+            titleOf={(c) => label("courses", c.title || c.Title || t("courses.unnamedCourse"))}
+            categoryOf={(c) => label("categories", c.category || c.Category || "")}
+            imageOf={(c, i) => getCourseImage(c, i)}
             onOpen={setSelectedCourse}
           />
+        )}
+        {showcaseOn && filteredCourses.length > 0 && (
+          <h2 className="font-bold mb-4">{t("showcase.allCourses")}</h2>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">

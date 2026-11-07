@@ -1844,6 +1844,32 @@
       "writeMessage": "Write a message…",
       "friendsOnly": "You can message this person once you are friends.",
       "noFeaturedBadges": "No badges featured yet."
+    },
+    "showcase": {
+      "allCourses": "All courses",
+      "added": "Added {{date}}",
+      "popular": {
+        "title": "Most popular",
+        "hint": "Most students overall",
+        "metric_one": "{{count}} student",
+        "metric_other": "{{count}} students"
+      },
+      "hottest": {
+        "title": "Hottest",
+        "hint": "Most joined in the last 30 days",
+        "metric_one": "{{count}} joined this month",
+        "metric_other": "{{count}} joined this month"
+      },
+      "trending": {
+        "title": "Trending",
+        "hint": "Rising fastest this week",
+        "metric_one": "+{{count}} this week",
+        "metric_other": "+{{count}} this week"
+      },
+      "new": {
+        "title": "New",
+        "hint": "Recently added"
+      }
     }
   }
 }

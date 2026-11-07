@@ -1,12 +1,36 @@
+/*
+ * STASHED, not in use. Until 2026-11-07 the logged-in catalogue (/katalog) drew this banner above
+ * the course grid whenever a category filter was on. It was taken out because a category with many
+ * courses crowds the scene (one peak, orbit, bar or page per course) and the three.js/canvas scene
+ * cost a lot of rendering next to the grid. The catalogue now shows the curated rows of
+ * components/CourseShowcase.tsx instead.
+ *
+ * How it works: KIND maps a category to a scene (map summits for Coğrafya, orbiting planets for
+ * Fen Bilimleri, a bar field for Yazılım/Matematik/Veri Bilimi/Ekonomi, a turning book for the
+ * rest). Each scene plots that category's courses; arrows or a click on a course call onOpen.
+ * three.js is imported lazily inside effects/three/useThreeScene.ts, so the bundle only grows when
+ * the banner is rendered.
+ *
+ * To bring it back, in routes/_authenticated.katalog.tsx above the course grid:
+ *   import { CategoryBanner } from "@/components/stashed/CategoryBanner";
+ *   {selectedCategory && !isLoading && (
+ *     <CategoryBanner
+ *       key={selectedCategory}
+ *       category={selectedCategory}
+ *       courses={dbCourses.filter((c) => (c.category || c.Category) === selectedCategory)}
+ *       onOpen={setSelectedCourse}
+ *     />
+ *   )}
+ */
 import { useCallback, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { CourseData } from "./courseHelpers";
-import { ContourScene, type Peak } from "./effects/three/ContourScene";
-import { FieldScene, type FieldRow } from "./effects/three/FieldScene";
-import { BookScene, useBookStrings, type BookPage } from "./effects/three/BookScene";
-import { SolarSystem } from "./effects/SolarSystem";
-import { price as formatPrice } from "./landing/catalog";
+import type { CourseData } from "../courseHelpers";
+import { ContourScene, type Peak } from "../effects/three/ContourScene";
+import { FieldScene, type FieldRow } from "../effects/three/FieldScene";
+import { BookScene, useBookStrings, type BookPage } from "../effects/three/BookScene";
+import { SolarSystem } from "../effects/SolarSystem";
+import { price as formatPrice } from "../landing/catalog";
 
 type Kind = "map" | "sky" | "field" | "book";
 

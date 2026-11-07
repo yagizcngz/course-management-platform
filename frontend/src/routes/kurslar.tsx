@@ -3,7 +3,8 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LayoutGrid, List, Search, X } from "lucide-react";
 import { GuestCourseModal, PageIntro, PublicPage } from "../components/PublicPage";
-import { Stagger, StaggerItem } from "../components/motion";
+import { CourseShowcase } from "../components/CourseShowcase";
+import { getCourseImage, type CourseData } from "../components/courseHelpers";
 import { CourseCard } from "../components/landing/VariantAtelier";
 import { courseRank, price } from "../components/landing/catalog";
 import { rankBy } from "@/lib/search";
@@ -125,16 +126,6 @@ function CoursesCatalog() {
     return [...m].sort((a, b) => b[1] - a[1]);
   }, [courses, search.category]);
   const filtered = !!(search.q || search.category || search.level || search.price);
-  // the list re-staggers when the filter changes, so new cards never stay hidden
-  const listKey = [
-    search.q,
-    search.category,
-    search.subCategory,
-    search.level,
-    search.price,
-    sort,
-    search.view,
-  ].join("|");
 
   const levelLabel = (level?: string | null) =>
     level ? t(`catalog.levels.${level}`, level) : t("catalog.allLevels");
@@ -336,13 +327,25 @@ function CoursesCatalog() {
           </p>
         )}
 
+        {/* curated rows over the filtered courses; a text search shows only the ranked list.
+            The old staggered grid is kept in components/stashed/StaggeredCourseGrid.tsx */}
+        {results && results.length > 0 && search.view !== "index" && !search.q && (
+          <div className="mt-10">
+            <CourseShowcase
+              courses={results}
+              titleOf={(c) => label("courses", c.title)}
+              categoryOf={(c) => label("categories", c.category)}
+              imageOf={(c, i) => getCourseImage(c as unknown as CourseData, i)}
+              onOpen={setSelected}
+            />
+            <h2 className="font-bold">{t("showcase.allCourses")}</h2>
+          </div>
+        )}
+
         {results && results.length > 0 && search.view !== "index" && (
-          <Stagger
-            key={listKey}
-            className="mt-10 grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4"
-          >
+          <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
             {results.map((course, i) => (
-              <StaggerItem key={course.id}>
+              <div key={course.id}>
                 <CourseCard
                   course={course}
                   index={i}
@@ -357,13 +360,13 @@ function CoursesCatalog() {
                     </span>
                   }
                 />
-              </StaggerItem>
+              </div>
             ))}
-          </Stagger>
+          </div>
         )}
 
         {results && results.length > 0 && search.view === "index" && (
-          <ol key={listKey} className="mt-10 border-t border-foreground/70">
+          <ol className="mt-10 border-t border-foreground/70">
             {results.map((course, i) => (
               <li key={course.id} className="border-b border-border">
                 <button

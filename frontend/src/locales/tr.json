@@ -1744,6 +1744,29 @@
       "writeMessage": "Bir mesaj yazın…",
       "friendsOnly": "Arkadaş olduğunuzda bu kişiye mesaj gönderebilirsiniz.",
       "noFeaturedBadges": "Henüz öne çıkan rozet yok."
+    },
+    "showcase": {
+      "allCourses": "Tüm kurslar",
+      "added": "{{date}} tarihinde eklendi",
+      "popular": {
+        "title": "En popüler",
+        "hint": "Toplamda en çok öğrenci",
+        "metric": "{{count}} öğrenci"
+      },
+      "hottest": {
+        "title": "En sıcak",
+        "hint": "Son 30 günde en çok katılınan",
+        "metric": "Bu ay {{count}} katılım"
+      },
+      "trending": {
+        "title": "Yükselenler",
+        "hint": "Bu hafta en hızlı yükselen",
+        "metric": "Bu hafta +{{count}}"
+      },
+      "new": {
+        "title": "Yeni",
+        "hint": "Son eklenenler"
+      }
     }
   }
 }

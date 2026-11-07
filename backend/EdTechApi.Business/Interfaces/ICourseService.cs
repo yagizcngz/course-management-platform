@@ -1,4 +1,4 @@
-using EdTechApi.Core.Entities;
+﻿using EdTechApi.Core.Entities;
 
 namespace EdTechApi.Business.Interfaces
 {
@@ -6,6 +6,8 @@ namespace EdTechApi.Business.Interfaces
     {
         Task<IEnumerable<Course>> GetAllCoursesAsync(string? search = null, string? category = null, bool? isFeatured = null);
         Task<IEnumerable<Course>> GetPopularCoursesAsync(int count);
+        // Katalog vitrini (en popüler, en sıcak, yükselen): kurs başına aktif kayıt sayıları
+        Task<List<EdTechApi.Business.Services.CourseStats>> GetCourseStatsAsync();
         Task<Course?> GetCourseByIdAsync(int id);
         Task AddCourseAsync(Course course);
         Task<bool> UpdateCourseAsync(int id, Course updatedCourse);

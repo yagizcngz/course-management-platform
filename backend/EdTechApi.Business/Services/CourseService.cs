@@ -1,4 +1,4 @@
-using EdTechApi.Business.Interfaces;
+﻿using EdTechApi.Business.Interfaces;
 using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
 using Microsoft.EntityFrameworkCore;
@@ -45,6 +45,19 @@ namespace EdTechApi.Business.Services
                 .AsNoTracking()
                 .OrderByDescending(c => c.Enrollments.Count)
                 .Take(count)
+                .ToListAsync();
+        }
+
+        public async Task<List<CourseStats>> GetCourseStatsAsync()
+        {
+            var now = DateTime.UtcNow;
+            DateTime d7 = now.AddDays(-7), d14 = now.AddDays(-14), d30 = now.AddDays(-30);
+            return await _context.Enrollments.AsNoTracking()
+                .GroupBy(e => e.CourseId)
+                .Select(g => new CourseStats(g.Key, g.Count(),
+                    g.Count(e => e.EnrollmentDate >= d7),
+                    g.Count(e => e.EnrollmentDate >= d14 && e.EnrollmentDate < d7),
+                    g.Count(e => e.EnrollmentDate >= d30)))
                 .ToListAsync();
         }
 
@@ -145,4 +158,7 @@ namespace EdTechApi.Business.Services
             }
         }
     }
+
+    // Aktif kayıtlar: toplam, son 7 gün, ondan önceki 7 gün ve son 30 gün
+    public record CourseStats(int CourseId, int Students, int Last7, int Prev7, int Last30);
 }
