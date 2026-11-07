@@ -32,6 +32,70 @@ namespace EdTechApi.API.Controllers
             return Ok(teachers);
         }
 
+        // --- Branş değişikliği talepleri: öğretmen branşını doğrudan değiştiremez, yönetici onaylar ---
+
+        [Authorize(Roles = "Teacher")]
+        [HttpGet("me/branch-request")]
+        public async Task<IActionResult> GetMyBranchRequest()
+        {
+            var teacherId = await OwnTeacherIdAsync();
+            if (teacherId == null) return NotFound("Öğretmen profili bulunamadı.");
+            var request = await _teacherService.GetLatestBranchRequestAsync(teacherId.Value);
+            return request == null ? NoContent() : Ok(request);
+        }
+
+        public record BranchChangeBody(string? Branch);
+
+        [Authorize(Roles = "Teacher")]
+        [HttpPost("me/branch-request")]
+        public async Task<IActionResult> RequestBranchChange([FromBody] BranchChangeBody body)
+        {
+            var teacherId = await OwnTeacherIdAsync();
+            if (teacherId == null) return NotFound("Öğretmen profili bulunamadı.");
+            return await Run(async () => Ok(await _teacherService.RequestBranchChangeAsync(teacherId.Value, body.Branch)));
+        }
+
+        [Authorize(Roles = "Teacher")]
+        [HttpDelete("me/branch-request")]
+        public async Task<IActionResult> CancelBranchRequest()
+        {
+            var teacherId = await OwnTeacherIdAsync();
+            if (teacherId == null) return NotFound("Öğretmen profili bulunamadı.");
+            await _teacherService.CancelBranchRequestAsync(teacherId.Value);
+            return NoContent();
+        }
+
+        [Authorize(Roles = RoleNames.Admins)]
+        [HttpGet("branch-requests")]
+        public async Task<IActionResult> GetBranchRequests([FromQuery] bool pendingOnly = false) =>
+            Ok(await _teacherService.GetBranchRequestsAsync(pendingOnly));
+
+        [Authorize(Roles = RoleNames.Admins)]
+        [HttpPost("branch-requests/{id}/approve")]
+        public Task<IActionResult> ApproveBranchRequest(int id) =>
+            Run(async () => { await _teacherService.ReviewBranchRequestAsync(id, true); return NoContent(); });
+
+        [Authorize(Roles = RoleNames.Admins)]
+        [HttpPost("branch-requests/{id}/reject")]
+        public Task<IActionResult> RejectBranchRequest(int id) =>
+            Run(async () => { await _teacherService.ReviewBranchRequestAsync(id, false); return NoContent(); });
+
+        // servisin kural hataları: yok -> 404, geçersiz girdi veya kural -> 400
+        private static async Task<IActionResult> Run(Func<Task<IActionResult>> action)
+        {
+            try { return await action(); }
+            catch (KeyNotFoundException ex) { return new NotFoundObjectResult(ex.Message); }
+            catch (ArgumentException ex) { return new BadRequestObjectResult(ex.Message); }
+            catch (InvalidOperationException ex) { return new BadRequestObjectResult(ex.Message); }
+        }
+
+        private Task<int?> OwnTeacherIdAsync()
+        {
+            var username = User.GetUsername();
+            return _context.Teachers.Where(t => t.User != null && t.User.Username == username)
+                .Select(t => (int?)t.Id).FirstOrDefaultAsync();
+        }
+
         // Misafirlerin de görebildiği eğitmen vitrini: e-posta, numara ve hesap bilgisi dönmez.
         // Profilini gizli yapan (IsProfilePublic=false) öğretmenin biyografisi ve fotoğrafı gösterilmez.
         [AllowAnonymous]

@@ -254,11 +254,12 @@ function RequestsPage() {
 
       <div className="p-4 md:p-8 animate-reveal max-w-5xl mx-auto w-full">
         <Tabs defaultValue="teaching" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
+          <TabsList className="grid h-auto w-full grid-cols-2 mb-8 sm:grid-cols-4">
             <TabsTrigger value="teaching">
               {t("requests.teachingRequests", "Ders Verme İstekleri")}
             </TabsTrigger>
             <TabsTrigger value="applications">{t("requests.applications")}</TabsTrigger>
+            <TabsTrigger value="branches">{t("requests.branchChanges")}</TabsTrigger>
             <TabsTrigger value="support">
               {t("requests.supportRequests", "Yardım Talepleri")}
             </TabsTrigger>
@@ -266,6 +267,10 @@ function RequestsPage() {
 
           <TabsContent value="applications">
             <InstructorApplications />
+          </TabsContent>
+
+          <TabsContent value="branches">
+            <BranchChangeRequests />
           </TabsContent>
 
           <TabsContent value="teaching">
@@ -617,6 +622,164 @@ function InstructorApplications() {
           </CardContent>
         </Card>
       ))}
+    </div>
+  );
+}
+
+interface BranchRequest {
+  id: number;
+  teacherId: number;
+  teacherName: string;
+  currentBranch: string | null;
+  requestedBranch: string;
+  status: "Pending" | "Approved" | "Rejected" | "Cancelled";
+  createdAt: string;
+  reviewedAt: string | null;
+}
+
+const splitBranches = (b: string | null) =>
+  (b ?? "")
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
+
+/**
+ * Teachers' branch changes wait here: approving writes the requested branches, rejecting keeps
+ * the current ones. Pending requests first, then the latest decisions.
+ */
+function BranchChangeRequests() {
+  const { t, i18n } = useTranslation();
+  const [items, setItems] = useState<BranchRequest[] | null>(null);
+  const [busy, setBusy] = useState<number | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/teachers/branch-requests`, {
+        headers: authHeaders(),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setItems(await res.json());
+    } catch {
+      setItems([]);
+      toast.error(t("common.loadFailed"));
+    }
+  }, [t]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const decide = async (id: number, action: "approve" | "reject") => {
+    setBusy(id);
+    try {
+      const res = await fetch(`${API_BASE}/api/teachers/branch-requests/${id}/${action}`, {
+        method: "POST",
+        headers: authHeaders(),
+      });
+      if (!res.ok) throw new Error(await readError(res, t("requests.serverError")));
+      toast.success(
+        t(action === "approve" ? "requests.branchApproved" : "requests.branchRejected"),
+      );
+      load();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const field = (b: string) =>
+    i18n.exists(`dynamic.categories.${b}`) ? t(`dynamic.categories.${b}`) : b;
+
+  if (items === null)
+    return <div className="p-8 text-center text-muted-foreground">{t("requests.loading")}</div>;
+  if (items.length === 0)
+    return (
+      <div className="p-8 text-center text-muted-foreground">{t("requests.noBranchChanges")}</div>
+    );
+
+  return (
+    <div className="grid gap-4">
+      {items.map((r) => {
+        const current = splitBranches(r.currentBranch);
+        const requested = splitBranches(r.requestedBranch);
+        const added = requested.filter((b) => !current.includes(b));
+        const removed = current.filter((b) => !requested.includes(b));
+        return (
+          <Card key={r.id}>
+            <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 space-y-2">
+                <div className="text-lg font-semibold">{r.teacherName}</div>
+                <div className="text-sm">
+                  <span className="text-muted-foreground">{t("requests.branchCurrent")}: </span>
+                  {current.length ? current.map(field).join(", ") : "—"}
+                </div>
+                <div className="text-sm">
+                  <span className="text-muted-foreground">{t("requests.branchRequested")}: </span>
+                  <span className="font-medium">{requested.map(field).join(", ")}</span>
+                </div>
+                <ul className="flex flex-wrap gap-1.5" aria-label={t("requests.branchDiff")}>
+                  {added.map((b) => (
+                    <li
+                      key={`+${b}`}
+                      className="rounded-full border border-success/40 bg-success/10 px-2.5 py-0.5 text-xs"
+                    >
+                      + {field(b)}
+                    </li>
+                  ))}
+                  {removed.map((b) => (
+                    <li
+                      key={`-${b}`}
+                      className="rounded-full border border-destructive/40 bg-destructive/10 px-2.5 py-0.5 text-xs line-through"
+                    >
+                      {field(b)}
+                    </li>
+                  ))}
+                </ul>
+                <div className="text-xs text-muted-foreground">
+                  {t("requests.dateLabel")} {formatDate(r.createdAt, i18n.language)}
+                  {r.reviewedAt &&
+                    ` · ${t("requests.reviewedOn", { date: formatDate(r.reviewedAt, i18n.language) })}`}
+                </div>
+              </div>
+              <div className="flex shrink-0 items-center gap-3">
+                {r.status === "Pending" ? (
+                  <>
+                    <Button
+                      size="sm"
+                      className="bg-success hover:bg-success/90"
+                      disabled={busy === r.id}
+                      onClick={() => decide(r.id, "approve")}
+                    >
+                      <Check className="mr-1 h-4 w-4" /> {t("requests.approve")}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      disabled={busy === r.id}
+                      onClick={() => decide(r.id, "reject")}
+                    >
+                      <X className="mr-1 h-4 w-4" /> {t("requests.reject")}
+                    </Button>
+                  </>
+                ) : (
+                  <Badge
+                    variant={
+                      r.status === "Approved"
+                        ? "default"
+                        : r.status === "Rejected"
+                          ? "destructive"
+                          : "secondary"
+                    }
+                  >
+                    {t(`requests.branchStatus.${r.status}`)}
+                  </Badge>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }

@@ -307,35 +307,7 @@ namespace EdTechApi.API.Controllers
                 teacher.FirstName = user.FirstName;
                 teacher.LastName = user.LastName;
 
-                if (request.Branch != null)
-                {
-                    var oldBranches = string.IsNullOrWhiteSpace(teacher.Branch) 
-                        ? new List<string>() 
-                        : teacher.Branch.Split(",").Select(b => b.Trim()).ToList();
-                    
-                    var newBranches = string.IsNullOrWhiteSpace(request.Branch)
-                        ? new List<string>()
-                        : request.Branch.Split(",").Select(b => b.Trim()).ToList();
-
-                    var removedBranches = oldBranches.Except(newBranches).ToList();
-                    
-                    if (removedBranches.Any())
-                    {
-                        var activeCoursesInRemovedBranches = await _context.Courses
-                            .Where(c => c.TeacherId == teacher.Id && removedBranches.Contains(c.Category))
-                            .Select(c => c.Category)
-                            .Distinct()
-                            .ToListAsync();
-
-                        if (activeCoursesInRemovedBranches.Any())
-                        {
-                            var branchesStr = string.Join(", ", activeCoursesInRemovedBranches);
-                            return BadRequest($"Şu branşta verdiğiniz kurslar var: {branchesStr}. Önce o kursları silmeli veya devretmelisiniz.");
-                        }
-                    }
-
-                    teacher.Branch = request.Branch;
-                }
+                // branş buradan değişmez: POST /api/teachers/me/branch-request yönetici onayına gönderir
             }
 
             await _context.SaveChangesAsync();
@@ -431,7 +403,6 @@ namespace EdTechApi.API.Controllers
         public string? ProfilePictureUrl { get; set; }
         public bool? IsProfilePublic { get; set; }
         public bool? ReceiveEmailNotifications { get; set; }
-        public string? Branch { get; set; }
     }
 
     public class FeaturedBadgesRequest

@@ -1,3 +1,4 @@
+import { BranchRequestPanel } from "@/components/BranchRequestPanel";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader, SectionHeader } from "../components/PageHeader";
 import { CheckCircle2, Edit2, UploadCloud } from "lucide-react";
@@ -253,7 +254,6 @@ function ProfilePage() {
           AboutMe: bio,
           ProfilePictureUrl: photoUrl,
           IsProfilePublic: isPublic,
-          Branch: isTeacherRole ? branch.join(", ") : undefined,
         }),
       });
 
@@ -298,7 +298,6 @@ function ProfilePage() {
             AboutMe: bio,
             ProfilePictureUrl: fullUrl,
             IsProfilePublic: isPublic,
-            Branch: isTeacherRole ? branch.join(", ") : undefined,
           }),
         });
 
@@ -536,33 +535,7 @@ function ProfilePage() {
                 <p className="text-xs text-muted-foreground mt-1 text-right">{bio.length}/200</p>
               </div>
 
-              {isTeacherRole && (
-                <div className="pt-2">
-                  <label className="text-sm font-medium">{t("profile.branchesLabel")}</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
-                    {categories.map((c) => (
-                      <label
-                        key={c}
-                        className="flex items-center gap-2 text-sm bg-background p-2 rounded-md cursor-pointer hover:bg-muted transition-colors"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={branch.includes(c)}
-                          onChange={(e) => {
-                            if (e.target.checked) setBranch([...branch, c]);
-                            else setBranch(branch.filter((b) => b !== c));
-                          }}
-                          className="rounded text-foreground focus:ring-foreground"
-                        />
-                        {i18n.exists(`dynamic.categories.${c}`) ? t(`dynamic.categories.${c}`) : c}
-                      </label>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {t("profile.branchesHelper")}
-                  </p>
-                </div>
-              )}
+              {isTeacherRole && <BranchRequestPanel current={branch} categories={categories} />}
 
               <div className="space-y-2 pt-2">
                 <label className="text-sm font-medium block">

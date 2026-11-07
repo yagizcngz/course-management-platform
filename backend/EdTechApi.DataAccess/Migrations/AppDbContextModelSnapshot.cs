@@ -49,6 +49,46 @@ namespace EdTechApi.DataAccess.Migrations
                     b.ToTable("Announcements");
                 });
 
+            modelBuilder.Entity("EdTechApi.Core.Entities.BranchChangeRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CurrentBranch")
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<string>("RequestedBranch")
+                        .IsRequired()
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<int>("TeacherId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeacherId");
+
+                    b.HasIndex("Status", "CreatedAt");
+
+                    b.ToTable("BranchChangeRequests");
+                });
+
             modelBuilder.Entity("EdTechApi.Core.Entities.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -823,6 +863,17 @@ namespace EdTechApi.DataAccess.Migrations
                     b.HasIndex("UserId", "CreatedAt");
 
                     b.ToTable("WalletTransactions");
+                });
+
+            modelBuilder.Entity("EdTechApi.Core.Entities.BranchChangeRequest", b =>
+                {
+                    b.HasOne("EdTechApi.Core.Entities.Teacher", "Teacher")
+                        .WithMany()
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Teacher");
                 });
 
             modelBuilder.Entity("EdTechApi.Core.Entities.Course", b =>

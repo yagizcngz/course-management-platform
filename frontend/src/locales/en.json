@@ -305,7 +305,7 @@
       "photoUrl": "Profile Picture URL",
       "branches": "Branches",
       "branchesLabel": "Your Branches",
-      "branchesHelper": "Select the branches you teach. You cannot remove a branch that has an active course.",
+      "branchesHelper": "Pick the disciplines you want to teach and send them for approval. An admin reviews the change; a discipline with an active course cannot be dropped.",
       "or": "or",
       "chooseFile": "Choose File",
       "noFileChosen": "No file chosen",
@@ -318,7 +318,19 @@
         "serverError": "Cannot connect to server.",
         "photoUploadFailed": "An error occurred while uploading photo."
       },
-      "photoAlt": "Profile photo"
+      "photoAlt": "Profile photo",
+      "branchRequest": {
+        "send": "Send for approval",
+        "update": "Update the request",
+        "withdraw": "Withdraw the request",
+        "sent": "Sent: an admin will review your branch change.",
+        "withdrawn": "The branch change request is withdrawn.",
+        "failed": "The branch change request could not be sent.",
+        "pending": "Waiting for an admin since {{date}}: {{branches}}. Your current branches stay until then.",
+        "approved": "Approved on {{date}}: {{branches}}.",
+        "rejected": "Rejected on {{date}}: {{branches}}. Your branches did not change.",
+        "inForce": "(current)"
+      }
     },
     "dynamic": {
       "categories": {
@@ -1063,7 +1075,21 @@
       "cancelConfirmTitle": "Withdraw this teaching request?",
       "cancelConfirmBody": "The request leaves the admin approval list. You can send it again later.",
       "approvedToast": "Request approved.",
-      "rejectedToast": "Request rejected."
+      "rejectedToast": "Request rejected.",
+      "branchChanges": "Branch changes",
+      "noBranchChanges": "No branch change requests.",
+      "branchCurrent": "Current",
+      "branchRequested": "Requested",
+      "branchDiff": "Added and removed branches",
+      "branchApproved": "Branch change approved.",
+      "branchRejected": "Branch change rejected.",
+      "reviewedOn": "answered {{date}}",
+      "branchStatus": {
+        "Pending": "Pending",
+        "Approved": "Approved",
+        "Rejected": "Rejected",
+        "Cancelled": "Withdrawn"
+      }
     },
     "backendErrors": {
       "emailInUse": "This email address is already in use.",
@@ -1161,7 +1187,9 @@
       "friendsOnlyMessages": "You can only message your friends.",
       "topicTooLong": "A topic can be at most {{count}} characters.",
       "rateOwnCourseOnly": "You can only rate a course you are enrolled in or have finished.",
-      "ratingRange": "A rating is between 1 and 5 stars."
+      "ratingRange": "A rating is between 1 and 5 stars.",
+      "branchUnchanged": "Those are already your disciplines.",
+      "requestAlreadyReviewed": "This request has already been answered."
     },
     "validation": {
       "required": "Please fill out this field."

@@ -43,9 +43,13 @@ const RULES: Rule[] = [
   [/^Geçersiz branş/i, "invalidBranch"],
   [/^Konu en fazla (\d+) karakter/i, "topicTooLong", (m) => ({ count: m[1] })],
 
-  // ratings
+  // ratings and branch change requests
   [/kursu puanlayabilirsiniz/i, "rateOwnCourseOnly"],
   [/Puan 1 ile 5 arasında/i, "ratingRange"],
+  [/zaten mevcut branşlarınız/i, "branchUnchanged"],
+  [/En az bir branş seçin/i, "branchRequired"],
+  [/^Talep bulunamadı/i, "requestNotFound"],
+  [/talep zaten sonuçlandırılmış/i, "requestAlreadyReviewed"],
   [/^Geçersiz seviye/i, "invalidLevel"],
 
   // auth and account

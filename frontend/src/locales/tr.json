@@ -305,7 +305,7 @@
       "photoUrl": "Profil Fotoğrafı URL",
       "branches": "Branşlar",
       "branchesLabel": "Branşlarınız",
-      "branchesHelper": "Ders verdiğiniz branşları seçin. Aktif kursunuz olan bir branşı çıkartamazsınız.",
+      "branchesHelper": "Ders vermek istediğiniz branşları seçip onaya gönderin. Değişikliği bir yönetici inceler; aktif kursu olan branş bırakılamaz.",
       "or": "veya",
       "chooseFile": "Dosya Seç",
       "noFileChosen": "Dosya seçilmedi",
@@ -318,7 +318,19 @@
         "serverError": "Sunucuya ulaşılamıyor.",
         "photoUploadFailed": "Fotoğraf yüklenirken bir hata oluştu."
       },
-      "photoAlt": "Profil fotoğrafı"
+      "photoAlt": "Profil fotoğrafı",
+      "branchRequest": {
+        "send": "Onaya gönder",
+        "update": "Talebi güncelle",
+        "withdraw": "Talebi geri çek",
+        "sent": "Gönderildi: branş değişikliğinizi bir yönetici inceleyecek.",
+        "withdrawn": "Branş değişikliği talebi geri çekildi.",
+        "failed": "Branş değişikliği talebi gönderilemedi.",
+        "pending": "{{date}} tarihinden beri yönetici onayı bekliyor: {{branches}}. O zamana kadar mevcut branşlarınız geçerli.",
+        "approved": "{{date}} tarihinde onaylandı: {{branches}}.",
+        "rejected": "{{date}} tarihinde reddedildi: {{branches}}. Branşlarınız değişmedi.",
+        "inForce": "(mevcut)"
+      }
     },
     "dynamic": {
       "categories": {
@@ -990,7 +1002,21 @@
       "cancelConfirmTitle": "Ders verme isteği geri alınsın mı?",
       "cancelConfirmBody": "İstek yöneticinin onay listesinden kalkar. Dilerseniz daha sonra yeniden gönderebilirsiniz.",
       "approvedToast": "İstek onaylandı.",
-      "rejectedToast": "İstek reddedildi."
+      "rejectedToast": "İstek reddedildi.",
+      "branchChanges": "Branş değişiklikleri",
+      "noBranchChanges": "Branş değişikliği talebi yok.",
+      "branchCurrent": "Mevcut",
+      "branchRequested": "İstenen",
+      "branchDiff": "Eklenen ve çıkarılan branşlar",
+      "branchApproved": "Branş değişikliği onaylandı.",
+      "branchRejected": "Branş değişikliği reddedildi.",
+      "reviewedOn": "{{date}} yanıtlandı",
+      "branchStatus": {
+        "Pending": "Bekliyor",
+        "Approved": "Onaylandı",
+        "Rejected": "Reddedildi",
+        "Cancelled": "Geri çekildi"
+      }
     },
     "backendErrors": {
       "emailInUse": "Bu e-posta adresi zaten kullanımda.",
@@ -1088,7 +1114,9 @@
       "friendsOnlyMessages": "Yalnızca arkadaşlarınıza mesaj gönderebilirsiniz.",
       "topicTooLong": "Konu en fazla {{count}} karakter olabilir.",
       "rateOwnCourseOnly": "Yalnızca kayıtlı olduğunuz veya bitirdiğiniz kursu puanlayabilirsiniz.",
-      "ratingRange": "Puan 1 ile 5 yıldız arasında olmalı."
+      "ratingRange": "Puan 1 ile 5 yıldız arasında olmalı.",
+      "branchUnchanged": "Seçtiğiniz branşlar zaten mevcut branşlarınız.",
+      "requestAlreadyReviewed": "Bu talep zaten sonuçlandırılmış."
     },
     "validation": {
       "required": "Lütfen bu alanı doldurun."

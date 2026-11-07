@@ -30,6 +30,7 @@ namespace EdTechApi.DataAccess.Context
         public DbSet<LessonCompletion> LessonCompletions { get; set; }
         public DbSet<CourseCompletion> CourseCompletions { get; set; }
         public DbSet<CourseRating> CourseRatings { get; set; }
+        public DbSet<BranchChangeRequest> BranchChangeRequests { get; set; }
         public DbSet<ForumThread> ForumThreads { get; set; }
         public DbSet<ForumPost> ForumPosts { get; set; }
         public DbSet<ForumPostLike> ForumPostLikes { get; set; }
@@ -98,6 +99,12 @@ namespace EdTechApi.DataAccess.Context
             modelBuilder.Entity<CourseRating>().HasOne<Student>().WithMany().HasForeignKey(r => r.StudentId).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<CourseRating>().HasOne<Course>().WithMany().HasForeignKey(r => r.CourseId).OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<CourseRating>().ToTable(t => t.HasCheckConstraint("CK_CourseRatings_Stars", "[Stars] BETWEEN 1 AND 5"));
+
+            modelBuilder.Entity<BranchChangeRequest>().Property(r => r.RequestedBranch).HasMaxLength(400);
+            modelBuilder.Entity<BranchChangeRequest>().Property(r => r.CurrentBranch).HasMaxLength(400);
+            modelBuilder.Entity<BranchChangeRequest>().Property(r => r.Status).HasMaxLength(16);
+            modelBuilder.Entity<BranchChangeRequest>().HasIndex(r => new { r.Status, r.CreatedAt });
+            modelBuilder.Entity<BranchChangeRequest>().HasOne(r => r.Teacher).WithMany().HasForeignKey(r => r.TeacherId).OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Course>()
                 .HasOne(c => c.Teacher)
