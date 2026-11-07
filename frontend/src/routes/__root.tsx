@@ -122,10 +122,26 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
   useEffect(() => {
     const saved = localStorage.getItem("i18nextLng");
-    if (saved && saved !== i18n.language) i18n.changeLanguage(saved);
-  }, []);
+    if (!saved || saved === i18n.language) return;
+    // Code-split route components can hydrate after this root effect; switching now would hydrate
+    // them in a language other than the server HTML's. Wait for their chunks, then for an idle
+    // browser (React has finished hydrating by then).
+    let off = false;
+    const apply = () => !off && i18n.changeLanguage(saved);
+    Promise.all(
+      router.state.matches.map((m) => router.loadRouteChunk(router.looseRoutesById[m.routeId])),
+    )
+      .catch(() => {})
+      .then(() =>
+        "requestIdleCallback" in window ? requestIdleCallback(apply) : setTimeout(apply, 50),
+      );
+    return () => {
+      off = true;
+    };
+  }, [router]);
 
   return (
     <QueryClientProvider client={queryClient}>
