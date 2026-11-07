@@ -7,7 +7,18 @@
 [![EF Core](https://img.shields.io/badge/Entity_Framework_Core-10.0-512BD4?logo=nuget&logoColor=white)](https://learn.microsoft.com/ef/core/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-A modern, role-based educational management and online course platform built with an **ASP.NET Core Web API** backend and a **React + TypeScript + TanStack** frontend. The platform provides end-to-end workflows for students, teachers, and system administrators, featuring real-time enrollment validation, teacher branch eligibility matching, support ticketing, analytics dashboards, and seamless bilingual (EN / TR) localization.
+A modern, role-based educational management and online course platform built with an **ASP.NET Core Web API** backend and a **React + TypeScript + TanStack** frontend. The platform provides end-to-end workflows for students, teachers, and system administrators, featuring real-time enrollment validation, teacher branch eligibility matching, a course wallet with refunds, support ticketing, analytics dashboards, a community forum and messages, and seamless bilingual (EN / TR) localization.
+
+---
+
+## 🖼️ Screenshots
+
+| | |
+|---|---|
+| ![Landing page with the 3D course book](.github/screenshots/landing.jpg) **Landing page:** featured courses in a 3D book | ![Course catalogue](.github/screenshots/catalog.jpg) **Catalogue:** search and filter all courses |
+| ![Student home with badges and recommended courses](.github/screenshots/student-dashboard.jpg) **Student home:** badges and recommendations | ![Lesson player with progress](.github/screenshots/course-player.jpg) **Lesson player:** watch-time based completion |
+| ![Wallet with purchases and refunds](.github/screenshots/wallet.jpg) **Wallet:** purchases, 7-day refunds, history | ![Community forum](.github/screenshots/community.jpg) **Community:** topic channels and threads |
+| ![Instructor analytics panel](.github/screenshots/instructor-panel.jpg) **Instructor panel:** per-course analytics | ![Admin reports](.github/screenshots/admin-reports.jpg) **Admin reports:** students, teachers, courses, enrollments |
 
 ---
 
@@ -30,7 +41,8 @@ A modern, role-based educational management and online course platform built wit
 
 #### 3. 🎓 Students
 * **Course Catalog & Search:** Explore featured, active, and upcoming courses with dynamic pricing and instructor details.
-* **One-Click Enrollment:** Real-time capacity checks and duplicate enrollment prevention.
+* **One-Click Enrollment:** Real-time capacity checks (safe under parallel joins) and duplicate enrollment prevention.
+* **Wallet:** Buy courses from a wallet balance; a purchase can be refunded once within 7 days, even after finishing the course. The instructor's share (`TEACHER_SHARE_PERCENT`, default 70%) is credited and reversed with it. Top-ups are simulated and only enabled outside Production.
 * **My Courses Dashboard:** Active course cards with instructor contacts and quick access.
 * **Support Ticket Tracking:** Dual-tab status tracker (Pending / Resolved) to view submitted inquiries and admin responses.
 * **Personal Profile Management:** Editable bio, personal details, and avatar image uploads.
@@ -51,11 +63,14 @@ A modern, role-based educational management and online course platform built wit
 * **Architecture:** N-Tier / Clean Architecture (`API`, `Business`, `Core`, `DataAccess`)
 * **ORM:** Entity Framework Core 10 (Code-First with Migrations)
 * **Database:** Microsoft SQL Server / LocalDB
-* **Authentication:** JWT (JSON Web Tokens) with custom claims (`Role`, `Username`, `NameIdentifier`)
+* **Authentication:** JWT whose subject is the immutable user id; every request re-checks the account, its role and a password stamp, so a closed account, a revoked role or a password change ends old tokens at once
 * **Security & Validation:**
   * FluentValidation with automatic pipeline validation
   * BCrypt.Net for secure password hashing
-  * CORS security policies and global exception middleware
+  * Email changes confirmed with a code sent to the new address; account deletion asks for the password
+  * Uploads checked by their content (file signatures), not just the extension
+  * Rate limits on sign-in, sign-up, account changes, community posts, uploads and the support form
+  * CORS security policies, security headers and global exception middleware
   * Soft-delete with EF Core Global Query Filters (`IsDeleted`, `IsDeletedByAdmin`)
 * **Services & Background Tasks:**
   * SMTP Email Service integration
@@ -101,6 +116,7 @@ course-management-platform/
 │   │   │   ├── _authenticated.yardim.tsx   # Help & Support ticket submission
 │   │   │   └── ...
 │   │   └── lib/                 # Utility functions & helpers
+│   ├── scripts/                 # Frontend tests and the i18n check
 │   └── package.json
 └── README.md
 ```
@@ -111,7 +127,7 @@ course-management-platform/
 
 ### Prerequisites
 * [.NET 10 SDK](https://dotnet.microsoft.com/download)
-* [Node.js (v18+)](https://nodejs.org/) & `npm`
+* [Node.js (v22+)](https://nodejs.org/) & `npm`
 * [SQL Server](https://www.microsoft.com/sql-server) or SQL Server Express / LocalDB
 
 ---
@@ -189,7 +205,9 @@ sqlcmd -S localhost\SQLEXPRESS -E -C -d EdTechDB -i database/seed-demo.sql
    ```bash
    npm run dev
    ```
-   *The client application will open at `http://localhost:8080` (or `http://localhost:5173`).*
+   *The client application will open at `http://localhost:8080`.*
+
+The frontend calls the API at `http://localhost:5157` by default; a build for another host sets `VITE_API_BASE` (see `frontend/.env.example`).
 
 ---
 
@@ -199,7 +217,7 @@ sqlcmd -S localhost\SQLEXPRESS -E -C -d EdTechDB -i database/seed-demo.sql
 * **Teacher (`Teacher`):** Created by an admin (`POST /api/auth/admin-create`) or by approving an application.
 * **Administrator (`Admin`):** The first one comes from `Seed:AdminUsername` / `Seed:AdminPassword` when no admin exists; after that only a signed-in admin can create another (Settings → System → Administrators). There are no registration codes.
 
-A token whose account was closed (or whose username changed) is rejected on every request. Closing an account removes its lesson progress, pending applications, friendships and likes at once; wallet history stays for the reports. `SoftDeleteCleanupService` permanently removes soft-deleted students, teachers and courses, and closed accounts without wallet history, after 30 days.
+Tokens identify the account by its id, so renaming an account cannot hand its sessions to whoever takes the old name. A token is rejected on every request once its account is closed, its role is revoked or its password changes. Closing an account removes its lesson progress, pending applications, friendships and likes at once; wallet history stays for the reports. `SoftDeleteCleanupService` permanently removes soft-deleted students, teachers and courses, and closed accounts without wallet history, after 30 days.
 
 ---
 
@@ -215,8 +233,8 @@ fails when a key is missing in one language, an English value is still Turkish, 
 
 ## ✅ Tests
 
-* Backend: `dotnet test backend/EdTechApi.Tests` (xUnit, in-memory SQLite: wallet, sign-up, roles, account closing and cleanup, forum, friends, messages, badges, video completion).
-* Frontend: `npm test` in `frontend` (Node's test runner: watch-progress rules and the book scene's no-collision layout), plus `npm run build`, `npm run lint` and `npm run i18n:check`.
+* Backend: `dotnet test backend/EdTechApi.Tests` (xUnit, in-memory SQLite: wallet, sign-up, roles, token identity, email change, uploads, account closing and cleanup, forum, friends, messages, badges, video completion).
+* Frontend: `npm test` in `frontend` (Node's test runner: watch-progress rules, course filters, search, badges and the book scene's no-collision layout), plus `npm run build`, `npm run lint` and `npm run i18n:check`.
 
 ---
 
