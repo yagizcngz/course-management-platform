@@ -12,6 +12,7 @@ import { Plus } from "lucide-react";
 import {
   fetchCategories,
   getCourseImage,
+  isTaughtBy,
   type CourseData,
   type TeacherLiteDto,
   type EnrollmentDto,
@@ -86,23 +87,10 @@ function TaughtCoursesPage() {
           }
         }
 
-        const myCourses = allCourses.filter((c: CourseData) => {
-          // If we know the teacher ID, it's the safest match
-          if (myTeacherId && (c.teacherId === myTeacherId || c.TeacherId === myTeacherId)) {
-            return true;
-          }
-
-          // Fallback to name matching
-          const instructorName = `${profile.firstName || ""} ${profile.lastName || ""}`.trim();
-          if (
-            instructorName &&
-            (c.instructor === instructorName || c.Instructor === instructorName)
-          ) {
-            return true;
-          }
-
-          return false;
-        });
+        const instructorName = `${profile.firstName || ""} ${profile.lastName || ""}`.trim();
+        const myCourses = allCourses.filter((c: CourseData) =>
+          isTaughtBy(c, myTeacherId, instructorName),
+        );
         setCourses(myCourses);
       }
 
@@ -133,17 +121,7 @@ function TaughtCoursesPage() {
       const profileRes = await fetch(`${API_BASE}/api/profile/me`, { headers: authHeaders() });
       const profile = await profileRes.json();
 
-      const teacherRes = await fetch(`${API_BASE}/api/teachers`, { headers: authHeaders() });
-      const teachers = await teacherRes.json();
-
-      const meTeacher = teachers.find(
-        (t: Record<string, unknown>) =>
-          t.userId === profile.id ||
-          t.UserId === profile.id ||
-          t.email === profile.email ||
-          t.Email === profile.email,
-      );
-
+      // the API sets TeacherId to the signed-in teacher's own profile
       const response = await fetch(`${API_BASE}/api/courses`, {
         method: "POST",
         headers: authHeaders(),
@@ -153,7 +131,6 @@ function TaughtCoursesPage() {
           SubCategory: newSubCategory || null,
           Level: newLevel || null,
           Instructor: `${profile.firstName ?? ""} ${profile.lastName ?? ""}`.trim(),
-          TeacherId: meTeacher ? meTeacher.id || meTeacher.Id : 0,
           MaxCapacity: Number(newCapacity) || 0,
           Price: Number(newPrice) || 0,
           Description: newDescription,

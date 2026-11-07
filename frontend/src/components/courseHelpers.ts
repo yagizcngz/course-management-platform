@@ -188,6 +188,12 @@ export type CourseStatus = "completed" | "inProgress" | "notStarted";
 export const courseStatus = (percent: number | undefined): CourseStatus =>
   (percent ?? 0) >= 100 ? "completed" : (percent ?? 0) > 0 ? "inProgress" : "notStarted";
 
+/** Whether a course is the teacher's: by teacher id, or by instructor name only while there is no teacher row. */
+export const isTaughtBy = (c: CourseData, teacherId: unknown, instructorName: string) =>
+  teacherId != null && teacherId !== ""
+    ? String(c.teacherId ?? c.TeacherId) === String(teacherId)
+    : !!instructorName && (c.instructor ?? c.Instructor) === instructorName;
+
 /** The student's enrollment in a course, whatever id casing the API sent. */
 export const findEnrollment = (list: EnrollmentDto[], courseId: unknown) =>
   courseId == null || courseId === ""
