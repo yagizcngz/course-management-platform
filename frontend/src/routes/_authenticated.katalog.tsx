@@ -503,6 +503,15 @@ function CoursesPage() {
                 <div
                   key={currentId || index}
                   onClick={() => setSelectedCourse(c)}
+                  // a div (it holds buttons), so keyboard users get Enter/Space like a button
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.target !== e.currentTarget || (e.key !== "Enter" && e.key !== " "))
+                      return;
+                    e.preventDefault();
+                    setSelectedCourse(c);
+                  }}
                   title={t("courses.viewDetails")}
                   // Seçim yapıldıysa karta ekstra çerçeve ve arka plan rengi ekliyoruz
                   className={`group bg-card border transition-colors rounded-md overflow-hidden shadow-sm flex flex-col cursor-pointer ${
