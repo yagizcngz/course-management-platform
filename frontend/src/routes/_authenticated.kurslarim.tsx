@@ -14,7 +14,8 @@ import { CourseProgressBar, CourseStatusPill } from "@/components/CourseProgress
 import { formatDate } from "@/lib/utils";
 import { authHeaders, readError } from "@/lib/auth";
 
-import { API_BASE, courseStatus } from "@/components/courseHelpers";
+import { API_BASE, courseRelation, courseStatus } from "@/components/courseHelpers";
+import { leaveCourse } from "@/components/useMyCourses";
 import { BadgeStrip, useBadges } from "@/components/Badges";
 export const Route = createFileRoute("/_authenticated/kurslarim")({
   component: MyCoursesPage,
@@ -229,26 +230,11 @@ function MyCoursesPage() {
           categories={categories}
           onSaved={handleCourseSaved}
           isStudent={true}
-          isEnrolled={true}
+          relation={courseRelation(selectedCourse.id ?? selectedCourse.Id, courses, [])}
           onLeave={async () => {
-            try {
-              const res = await fetch(
-                `${API_BASE}/api/enrollments/leave/${selectedCourse.id || selectedCourse.Id}`,
-                {
-                  method: "DELETE",
-                  headers: authHeaders(),
-                },
-              );
-              if (res.ok) {
-                toast.success(t("dashboard.alerts.leaveSuccess", "Kurstan başarıyla ayrıldınız."));
-                setSelectedCourse(null);
-                fetchMyCourses();
-              } else {
-                toast.error(await readError(res, t("dashboard.alerts.leaveError")));
-              }
-            } catch (err) {
-              console.error(err);
-              toast.error(t("dashboard.alerts.leaveErrorGeneric", "Bir hata oluştu."));
+            if (await leaveCourse(selectedCourse.id ?? selectedCourse.Id, t)) {
+              setSelectedCourse(null);
+              fetchMyCourses();
             }
           }}
         />

@@ -76,7 +76,8 @@ function CoursePage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
-  const [purchased, setPurchased] = useState(false);
+  // bought (not refunded) or finished earlier: rejoining is free and buying again is blocked
+  const [owned, setOwned] = useState(false);
   const [refundable, setRefundable] = useState(false);
   const [refundOpen, setRefundOpen] = useState(false);
   // genuine viewing of the open lesson's video; reset whenever another lesson opens
@@ -109,7 +110,7 @@ function CoursePage() {
       const wallet = await w.json();
       if (stale()) return;
       setBalance(wallet.balance);
-      setPurchased(wallet.purchasedCourseIds.includes(Number(id)));
+      setOwned(wallet.ownedCourseIds.includes(Number(id)));
       setRefundable(wallet.refundableCourseIds.includes(Number(id)));
     }
   };
@@ -127,8 +128,8 @@ function CoursePage() {
     if (!data) return;
     setBusy(true);
     try {
-      // Ücretsiz veya daha önce satın alınmış kurs: katıl; değilse satın al
-      const paid = data.course.price > 0 && !purchased;
+      // Ücretsiz veya sahip olunan kurs: katıl; değilse satın al
+      const paid = data.course.price > 0 && !owned;
       const url = paid
         ? `${API_BASE}/api/wallet/purchase/${id}`
         : `${API_BASE}/api/enrollments/join/${id}`;
@@ -226,7 +227,7 @@ function CoursePage() {
   const { course, lessons, hasAccess, canEdit, isEnrolled } = data;
   const active = lessons.find((l) => l.id === activeId) ?? null;
   const done = new Set(data.completedLessonIds ?? []);
-  const needsPurchase = course.price > 0 && !purchased;
+  const needsPurchase = course.price > 0 && !owned;
   const viewer = parseJwt(getToken() ?? "")?.sub ?? "";
   const tracked = isEnrolled && !!active?.videoUrl && hasAccess;
   const share = watch ? watchedShare(watch.state, watch.duration) : 0;
@@ -328,7 +329,9 @@ function CoursePage() {
                   >
                     {needsPurchase
                       ? t("lessons.buyFor", { price: formatTry(course.price) })
-                      : t("courseModal.joinCourse")}
+                      : owned
+                        ? t("courseModal.rejoinFree")
+                        : t("courseModal.joinCourse")}
                   </Button>
                 )}
               </CardContent>

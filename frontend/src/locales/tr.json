@@ -566,6 +566,8 @@
     },
     "courseModal": {
       "enrolled": "Kayıtlısınız",
+      "owned": "Sahipsiniz",
+      "rejoinFree": "Ücretsiz tekrar katıl",
       "joinCourse": "Kursa Katıl",
       "leaveCourse": "Kursu Bırak",
       "editCourse": "Düzenle",

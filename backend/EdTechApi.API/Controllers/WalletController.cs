@@ -29,10 +29,9 @@ namespace EdTechApi.API.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == User.GetUsername());
             if (user == null) return Unauthorized();
             var transactions = await _walletService.GetTransactionsAsync(user.Id);
-            var purchasedCourseIds = await _walletService.GetActivePurchaseCourseIdsAsync(user.Id);
             var ownedCourseIds = await _walletService.GetOwnedCourseIdsAsync(user.Id);
             var refundableCourseIds = await _walletService.GetRefundableCourseIdsAsync(user.Id);
-            return Ok(new { balance = user.Balance, transactions, purchasedCourseIds, ownedCourseIds, refundableCourseIds });
+            return Ok(new { balance = user.Balance, transactions, ownedCourseIds, refundableCourseIds });
         }
 
         [HttpPost("top-up")]

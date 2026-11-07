@@ -1,18 +1,20 @@
 import { CheckCircle2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
-import type { CourseStatus } from "./courseHelpers";
+import type { CourseRelation } from "./courseHelpers";
 
-const STATUS_LABEL: Record<CourseStatus, string> = {
+const STATUS_LABEL: Record<Exclude<CourseRelation, "none">, string> = {
   completed: "myCourses.completedBadge",
   inProgress: "dashboard.inProgress",
   notStarted: "myCourses.notStarted",
+  owned: "courseModal.owned",
 };
 
 /** The student's status on a course card's cover, the same on every page. */
-export function CourseStatusPill({ status }: { status: CourseStatus }) {
+export function CourseStatusPill({ status }: { status: CourseRelation }) {
   const { t } = useTranslation();
   const done = status === "completed";
+  if (status === "none") return null;
   return (
     <span
       className={cn(

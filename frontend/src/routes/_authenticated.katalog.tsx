@@ -13,8 +13,6 @@ import {
   getTeacherFullName,
   getTeachersInBranch,
   fetchCategories,
-  courseStatus,
-  findEnrollment,
   type CourseData,
   type EnrollmentDto,
   type TeacherLiteDto,
@@ -33,6 +31,7 @@ import { API_BASE } from "@/components/courseHelpers";
 import { CourseTaxonomyFields } from "@/components/CourseTaxonomyFields";
 import { CourseStatusPill } from "@/components/CourseProgressBar";
 import { rankBy, searchRank } from "@/lib/search";
+import { joinCourse, useMyCourses } from "@/components/useMyCourses";
 export const Route = createFileRoute("/_authenticated/katalog")({
   component: CoursesPage,
   validateSearch: (search: Record<string, unknown>) => ({
@@ -74,7 +73,7 @@ function CoursesPage() {
   // KURS DETAY MODALI İÇİN STATE'LER (düzenleme formu artık CourseDetailModal içinde)
   const [selectedCourse, setSelectedCourse] = useState<CourseData | null>(null);
   const [dbEnrollments, setDbEnrollments] = useState<EnrollmentDto[]>([]);
-  const [myCourses, setMyCourses] = useState<EnrollmentDto[]>([]);
+  const { relation } = useMyCourses();
   // Kurs düzenleme formundaki öğretmen seçim dropdown'ı ve "Eğitmen Profili" (foto+bio)
   // eşleştirmesi için /api/teachers'tan çekilen liste.
   const [dbTeachers, setDbTeachers] = useState<TeacherLiteDto[]>([]);
@@ -158,21 +157,9 @@ function CoursesPage() {
       setCategories(cats);
     };
 
-    const fetchMyCourses = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/enrollments/my-courses`, { headers });
-        if (res.ok) setMyCourses(await res.json());
-        else toast.error(t("common.loadFailed"));
-      } catch (error) {
-        console.error("Öğrenci kursları yüklenirken hata:", error);
-        toast.error(t("common.loadFailed"));
-      }
-    };
-
     fetchEnrollments();
     fetchTeachers();
     fetchCats();
-    fetchMyCourses();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch once on mount
   }, []);
 
@@ -277,26 +264,11 @@ function CoursesPage() {
     }
   };
 
+  // the enrolment counts in the open modal change too, so the full list is refetched
   const handleJoinCourse = async (courseId: number | string) => {
-    try {
-      const response = await fetch(`${API_BASE}/api/enrollments/join/${courseId}`, {
-        method: "POST",
-        headers: authHeaders(),
-      });
-
-      if (response.ok) {
-        showToast(t("dashboard.alerts.joinSuccess", "Kursa başarıyla katıldınız."), "success");
-        // Update myCourses
-        const myRes = await fetch(`${API_BASE}/api/enrollments/my-courses`, {
-          headers: authHeaders(),
-        });
-        if (myRes.ok) setMyCourses(await myRes.json());
-      } else {
-        showToast(await readError(response, t("dashboard.alerts.joinError")), "error");
-      }
-    } catch (error) {
-      showToast(t("courses.errors.serverError", "Sunucuya bağlanılamadı."), "error");
-    }
+    if (!(await joinCourse(courseId, t))) return;
+    const res = await fetch(`${API_BASE}/api/enrollments`, { headers: authHeaders() });
+    if (res.ok) setDbEnrollments(await res.json());
   };
 
   // YENİ: DÜZENLEME MODU VE SEÇİM FONKSİYONLARI
@@ -525,13 +497,7 @@ function CoursesPage() {
                 >
                   <div className="w-full aspect-video relative overflow-hidden bg-muted">
                     <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
-                    {(() => {
-                      // same rule as My Courses: the enrollment's progress decides the label
-                      const enrollment = isStudent && findEnrollment(myCourses, currentId);
-                      return enrollment ? (
-                        <CourseStatusPill status={courseStatus(enrollment.progressPercent)} />
-                      ) : null;
-                    })()}
+                    {isStudent && <CourseStatusPill status={relation(currentId)} />}
                   </div>
                   <div className="p-5 flex-1 flex flex-col">
                     <div className="flex justify-between items-start mb-3">
@@ -540,7 +506,10 @@ function CoursesPage() {
                           ? t(`dynamic.categories.${category}`)
                           : category}
                       </span>
-                      <span className="text-sm font-bold">{formatTry(Number(price), 0)}</span>
+                      {/* an enrolled or owned course is not for sale to this student */}
+                      {(!isStudent || relation(currentId) === "none") && (
+                        <span className="text-sm font-bold">{formatTry(Number(price), 0)}</span>
+                      )}
                     </div>
                     <h4 className="font-bold mb-4 line-clamp-2 flex-1">
                       {i18n.exists(`dynamic.courses.${title}`)
@@ -552,7 +521,7 @@ function CoursesPage() {
                       {isTeacherRole(currentUser.role) &&
                         myTeacherId &&
                         String(c.teacherId || c.TeacherId) !== String(myTeacherId) &&
-                        !findEnrollment(myCourses, currentId) && (
+                        relation(currentId) === "none" && (
                           <button
                             onClick={(e) =>
                               handleTeachCourseRequest(e, currentId as string | number)
@@ -597,7 +566,7 @@ function CoursesPage() {
           categories={categories}
           onSaved={handleCourseSaved}
           isStudent={isStudent}
-          isEnrolled={!!findEnrollment(myCourses, selectedCourse.id ?? selectedCourse.Id)}
+          relation={relation(selectedCourse.id ?? selectedCourse.Id)}
           onJoin={() => handleJoinCourse(selectedCourse.id || selectedCourse.Id || "")}
         />
       )}

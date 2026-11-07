@@ -1,4 +1,4 @@
-import { initialsOf, formatDate } from "@/lib/utils";
+import { initialsOf, formatDate, formatTry } from "@/lib/utils";
 import {
   X,
   CheckCircle2,
@@ -40,7 +40,9 @@ import {
   getTeacherFullName,
   getTeachersInBranch,
   getTeacherBranches,
+  isEnrolledIn,
   type CourseData,
+  type CourseRelation,
   type EnrollmentDto,
   type TeacherLiteDto,
 } from "./courseHelpers";
@@ -54,7 +56,8 @@ interface CourseDetailModalProps {
   categories: string[];
   onSaved: (updated: CourseData) => void;
   isStudent?: boolean;
-  isEnrolled?: boolean;
+  /** The viewer's standing on the course (`courseRelation`); decides buy, join, rejoin or watch. */
+  relation?: CourseRelation;
   onJoin?: () => void;
   onLeave?: () => void;
 }
@@ -68,7 +71,7 @@ export function CourseDetailModal({
   categories,
   onSaved,
   isStudent = false,
-  isEnrolled = false,
+  relation = "none",
   onJoin,
   onLeave,
 }: CourseDetailModalProps) {
@@ -131,6 +134,7 @@ export function CourseDetailModal({
   const price = course.price || course.Price || "0";
   const navigate = useNavigate();
   const openCoursePage = () => navigate({ to: "/kurs/$id", params: { id: String(courseId) } });
+  const needsPurchase = Number(price) > 0 && relation !== "owned";
   const teacherId = course.teacherId ?? course.TeacherId;
   const capacity = course.maxCapacity || course.MaxCapacity;
 
@@ -597,11 +601,13 @@ export function CourseDetailModal({
 
             {!isAdminRole &&
               !isTeacherOfThisCourse &&
-              (isEnrolled ? (
+              (isEnrolledIn(relation) ? (
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1.5 text-xs font-bold border border-accent text-accent rounded-md px-3 py-1.5 bg-accent/5">
                     <CheckCircle2 className="size-3.5" />
-                    {t("courseModal.enrolled", "Kayıtlısınız")}
+                    {relation === "completed"
+                      ? t("myCourses.completedBadge")
+                      : t("courseModal.enrolled", "Kayıtlısınız")}
                   </div>
                   <button
                     onClick={openCoursePage}
@@ -655,14 +661,16 @@ export function CourseDetailModal({
                 </div>
               ) : (
                 <div className="flex items-center gap-3">
-                  {/* Ücretli kurslar kurs sayfasında satın alınır */}
+                  {/* Ücretli kurslar kurs sayfasında satın alınır; sahip olunan kursa ücretsiz dönülür */}
                   <button
-                    onClick={Number(price) > 0 ? openCoursePage : onJoin}
+                    onClick={needsPurchase || !onJoin ? openCoursePage : onJoin}
                     className="flex items-center gap-1.5 text-xs font-bold bg-primary text-primary-foreground rounded-md px-4 py-1.5 hover:opacity-90 transition-opacity"
                   >
-                    {Number(price) > 0
-                      ? t("lessons.buyFor", { price: `₺${price}` })
-                      : t("courseModal.joinCourse", "Kursa Katıl")}
+                    {needsPurchase
+                      ? t("lessons.buyFor", { price: formatTry(Number(price)) })
+                      : relation === "owned"
+                        ? t("courseModal.rejoinFree")
+                        : t("courseModal.joinCourse", "Kursa Katıl")}
                   </button>
                   {isTeacherRole && !isEditing && hasMatchingBranch && (
                     <div onClick={(e) => e.stopPropagation()}>

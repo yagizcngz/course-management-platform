@@ -7,8 +7,6 @@ import {
   getCourseImage,
   getCourseEnrollments,
   fetchCategories,
-  courseStatus,
-  findEnrollment,
   type CourseData,
   type EnrollmentDto,
   type TeacherLiteDto,
@@ -27,6 +25,7 @@ import {
 } from "@/lib/auth";
 import { API_BASE } from "@/components/courseHelpers";
 import { BadgeStrip, useBadges } from "@/components/Badges";
+import { joinCourse, leaveCourse, useMyCourses } from "@/components/useMyCourses";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
@@ -88,7 +87,7 @@ function HomePage() {
   const [dbEnrollments, setDbEnrollments] = useState<EnrollmentData[]>([]);
 
   // Student Dashboard States
-  const [myCourses, setMyCourses] = useState<EnrollmentDto[]>([]);
+  const { relation } = useMyCourses();
   const [recommendedCourses, setRecommendedCourses] = useState<CourseData[]>([]);
 
   const [categories, setCategories] = useState<string[]>([]);
@@ -132,11 +131,7 @@ function HomePage() {
 
         // admins see neither section, and these endpoints are participant-only
         if (token && !isAdminRole(r)) {
-          const [myRes, recRes] = await Promise.all([
-            fetch(`${API_BASE}/api/enrollments/my-courses`, { headers }),
-            fetch(`${API_BASE}/api/courses/recommended`, { headers }),
-          ]);
-          if (myRes.ok) setMyCourses(await myRes.json());
+          const recRes = await fetch(`${API_BASE}/api/courses/recommended`, { headers });
           if (recRes.ok) setRecommendedCourses(await recRes.json());
         }
       } catch (err) {
@@ -174,56 +169,18 @@ function HomePage() {
     );
   };
 
-  const handleJoinCourse = async () => {
-    if (!selectedCourse) return;
-    const courseId = selectedCourse.id || selectedCourse.Id;
-    try {
-      const res = await fetch(`${API_BASE}/api/enrollments/join/${courseId}`, {
-        method: "POST",
-        headers: authHeaders(),
-      });
-      if (res.ok) {
-        toast.success(t("dashboard.alerts.joinSuccess"));
-        const myRes = await fetch(`${API_BASE}/api/enrollments/my-courses`, {
-          headers: authHeaders(),
-        });
-        if (myRes.ok) setMyCourses(await myRes.json());
-        const enrRes = await fetch(`${API_BASE}/api/enrollments`, {
-          headers: authHeaders(),
-        });
-        if (enrRes.ok) setDbEnrollments(await enrRes.json());
-      } else {
-        toast.error(await readError(res, t("dashboard.alerts.joinError")));
-      }
-    } catch (err) {
-      toast.error(t("dashboard.alerts.joinErrorGeneric"));
-    }
+  // enrolment counts on the cards change too, so the full list is refetched
+  const refreshEnrollments = async () => {
+    const res = await fetch(`${API_BASE}/api/enrollments`, { headers: authHeaders() });
+    if (res.ok) setDbEnrollments(await res.json());
   };
-
+  const handleJoinCourse = async () => {
+    if (selectedCourse && (await joinCourse(selectedCourse.id ?? selectedCourse.Id, t)))
+      await refreshEnrollments();
+  };
   const handleLeaveCourse = async () => {
-    if (!selectedCourse) return;
-    const courseId = selectedCourse.id || selectedCourse.Id;
-    try {
-      const res = await fetch(`${API_BASE}/api/enrollments/leave/${courseId}`, {
-        method: "DELETE",
-        headers: authHeaders(),
-      });
-      if (res.ok) {
-        toast.success(t("dashboard.alerts.leaveSuccess", "Kurstan başarıyla ayrıldınız."));
-        const myRes = await fetch(`${API_BASE}/api/enrollments/my-courses`, {
-          headers: authHeaders(),
-        });
-        if (myRes.ok) setMyCourses(await myRes.json());
-        const enrRes = await fetch(`${API_BASE}/api/enrollments`, {
-          headers: authHeaders(),
-        });
-        if (enrRes.ok) setDbEnrollments(await enrRes.json());
-      } else {
-        toast.error(await readError(res, t("dashboard.alerts.leaveError")));
-      }
-    } catch {
-      toast.error(t("dashboard.alerts.leaveErrorGeneric"));
-    }
+    if (selectedCourse && (await leaveCourse(selectedCourse.id ?? selectedCourse.Id, t)))
+      await refreshEnrollments();
   };
 
   const filteredCourses = dbCourses;
@@ -248,8 +205,9 @@ function HomePage() {
     .filter((group) => group.courses.length > 0);
 
   const renderCourseCard = (c: CourseData, index: number) => {
-    const enrollment = isStudent ? findEnrollment(myCourses, c.id ?? c.Id) : undefined;
-    const isEnrolled = !!enrollment;
+    const status = isStudent ? relation(c.id ?? c.Id) : "none";
+    // enrolled or owned: the price and head count are no longer what the student needs
+    const isEnrolled = status !== "none";
     const originalTitle = c.title || c.Title || t("dashboard.unnamedCourse");
     const originalCategory = c.category || c.Category || t("dashboard.general");
 
@@ -273,7 +231,7 @@ function HomePage() {
       >
         <div className="w-full aspect-video relative overflow-hidden bg-muted">
           <img src={getCourseImage(c, index)} alt={title} className="w-full h-full object-cover" />
-          {enrollment && <CourseStatusPill status={courseStatus(enrollment.progressPercent)} />}
+          <CourseStatusPill status={status} />
         </div>
         <div className="p-5">
           <div className="flex justify-between items-start mb-3">
@@ -399,7 +357,7 @@ function HomePage() {
           categories={categories}
           onSaved={handleCourseSaved}
           isStudent={isStudent}
-          isEnrolled={!!findEnrollment(myCourses, selectedCourse.id ?? selectedCourse.Id)}
+          relation={relation(selectedCourse.id ?? selectedCourse.Id)}
           onJoin={handleJoinCourse}
           onLeave={handleLeaveCourse}
         />

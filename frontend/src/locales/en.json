@@ -639,6 +639,8 @@
     },
     "courseModal": {
       "enrolled": "Enrolled",
+      "owned": "Owned",
+      "rejoinFree": "Rejoin for free",
       "joinCourse": "Join Course",
       "leaveCourse": "Leave Course",
       "teachCourse": "Teach",

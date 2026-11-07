@@ -190,3 +190,20 @@ export const findEnrollment = (list: EnrollmentDto[], courseId: unknown) =>
         (e) =>
           String(e.courseId ?? e.CourseId ?? e.course?.id ?? e.Course?.Id) === String(courseId),
       );
+
+/**
+ * A participant's standing on a course, the one rule every view reads: enrolled (by progress),
+ * "owned" (bought or finished earlier but not enrolled now: rejoining is free, buying again is
+ * blocked, as on the API) or "none".
+ */
+export type CourseRelation = CourseStatus | "owned" | "none";
+export const courseRelation = (
+  courseId: unknown,
+  myCourses: EnrollmentDto[],
+  ownedIds: number[],
+): CourseRelation => {
+  const enrollment = findEnrollment(myCourses, courseId);
+  if (enrollment) return courseStatus(enrollment.progressPercent);
+  return ownedIds.includes(Number(courseId)) ? "owned" : "none";
+};
+export const isEnrolledIn = (r: CourseRelation) => r !== "owned" && r !== "none";

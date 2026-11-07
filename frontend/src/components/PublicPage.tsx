@@ -5,6 +5,7 @@ import { PublicHeader } from "./PublicHeader";
 import { PublicFooter } from "./PublicFooter";
 import { Reveal, SplitHeadline } from "./motion";
 import type { CourseData, TeacherLiteDto } from "./courseHelpers";
+import { useMyCourses } from "./useMyCourses";
 import type { LandingCourse } from "./landing/shared";
 
 /** Header, main and footer of every public page; signed-in visitors get a dashboard link. */
@@ -59,6 +60,8 @@ export function GuestCourseModal({
   onClose: () => void;
 }) {
   const navigate = useNavigate();
+  // signed-in visitors see the same enrolled / owned state as inside the app
+  const { relation } = useMyCourses();
   if (!course) return null;
   return (
     <CourseDetailModal
@@ -70,7 +73,7 @@ export function GuestCourseModal({
       categories={[]}
       onSaved={onClose}
       isStudent={false}
-      isEnrolled={false}
+      relation={relation(course.id)}
       onJoin={() =>
         localStorage.getItem("jwt_token")
           ? navigate({ to: "/kurs/$id", params: { id: String(course.id) } })
