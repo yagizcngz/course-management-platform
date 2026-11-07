@@ -1,4 +1,4 @@
-# 🎓 Course Management Platform — Fullstack EdTech & Learning Management Platform
+# Course Management Platform — Fullstack EdTech & Learning Management Platform
 
 [![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
 [![React 19](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=black)](https://react.dev/)
@@ -9,9 +9,11 @@
 
 A modern, role-based educational management and online course platform built with an **ASP.NET Core Web API** backend and a **React + TypeScript + TanStack** frontend. The platform provides end-to-end workflows for students, teachers, and system administrators, featuring real-time enrollment validation, teacher branch eligibility matching, a course wallet with refunds, support ticketing, analytics dashboards, a community forum and messages, and seamless bilingual (EN / TR) localization.
 
+> **Live demo: [e-kurs-demo.yagizcngz.workers.dev](https://e-kurs-demo.yagizcngz.workers.dev)**. Open it as a [student](https://e-kurs-demo.yagizcngz.workers.dev/?demo=student), an [instructor](https://e-kurs-demo.yagizcngz.workers.dev/?demo=teacher) or an [admin](https://e-kurs-demo.yagizcngz.workers.dev/?demo=admin), or sign in with any password. The demo runs in the browser on a snapshot of sample data, so nothing you change is saved.
+
 ---
 
-## 🖼️ Screenshots
+## Screenshots
 
 | | |
 |---|---|
@@ -22,24 +24,24 @@ A modern, role-based educational management and online course platform built wit
 
 ---
 
-## 📸 Overview & Features
+## Overview & Features
 
-### 👤 Role-Based Portals & Capabilities
+### Role-Based Portals & Capabilities
 
-#### 1. 🛡️ System Administrator
+#### 1. System Administrator
 * **Dashboard & Financial Metrics:** Real-time summary cards for total students, teachers, active courses, and platform revenue.
 * **Teaching Request Approvals:** Review course assignment applications from teachers with verified branch compatibility.
 * **Student & Teacher Management:** Advanced data tables with inline search, multi-select batch deletion, and profile inspection modals.
 * **Support Ticket Center:** Multi-tab support inbox (Pending / Resolved) with in-app reply dispatching and soft-deletion controls.
 * **Audit & Reports:** Detailed enrollment logs and system announcements.
 
-#### 2. 👨‍🏫 Instructors (Teachers)
+#### 2. Instructors (Teachers)
 * **Taught Courses Portal:** Overview of active assigned courses, enrolled students, and classroom capacity.
 * **Course Teaching Applications:** Browse unassigned courses and submit teaching requests strictly validated against instructor certification branches.
 * **Direct Enrollment Tracking:** View attendee rosters per course with student numbers and enrollment dates.
 * **Support Requests:** Dedicated portal to submit technical or administrative questions directly to the admin desk.
 
-#### 3. 🎓 Students
+#### 3. Students
 * **Course Catalog & Search:** Explore featured, active, and upcoming courses with dynamic pricing and instructor details.
 * **One-Click Enrollment:** Real-time capacity checks (safe under parallel joins) and duplicate enrollment prevention.
 * **Wallet:** Buy courses from a wallet balance; a purchase can be refunded once within 7 days, even after finishing the course. The instructor's share (`TEACHER_SHARE_PERCENT`, default 70%) is credited and reversed with it. Top-ups are simulated and only enabled outside Production.
@@ -49,14 +51,14 @@ A modern, role-based educational management and online course platform built wit
 * **Genuine Lesson Completion:** Video lessons count only the seconds actually watched (skipping ahead is blocked until the lesson is done, playback above 2x does not count); 85% must be watched before a lesson completes, checked by the API too.
 * **Badges:** Earned badges with up to five pinned to the public profile.
 
-#### 4. 💬 Community (everyone)
+#### 4. Community (everyone)
 * **Topic Forum (`/topluluk`):** Six channels (software, maths, science, design, career, general). Guests read threads and open member profiles; members post, reply and like.
 * **Messages & Friends (`/mesajlar`):** Friend requests, one-to-one messages with unread counts, and quick links to the channels.
 * **Public Profile Cards:** Avatar, bio, role, featured badges, ongoing and completed courses (hidden when the profile is private; admins always see them in the student and teacher panels).
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Backend (`/backend`)
 * **Framework:** ASP.NET Core Web API (.NET 10)
@@ -88,7 +90,7 @@ A modern, role-based educational management and online course platform built wit
 
 ---
 
-## 📂 Project Architecture
+## Project Architecture
 
 ```
 course-management-platform/
@@ -123,7 +125,7 @@ course-management-platform/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 * [.NET 10 SDK](https://dotnet.microsoft.com/download)
@@ -211,7 +213,7 @@ The frontend calls the API at `http://localhost:5157` by default; a build for an
 
 ---
 
-## 🔐 Authentication & Roles
+## Authentication & Roles
 
 * **Student (`User`):** Public sign-up (`POST /api/auth/register`, e-mail code required) always creates a student. Choosing "instructor" adds a branch and bio and sends an application to the admins; the account stays a student until it is approved.
 * **Teacher (`Teacher`):** Created by an admin (`POST /api/auth/admin-create`) or by approving an application.
@@ -221,7 +223,7 @@ Tokens identify the account by its id, so renaming an account cannot hand its se
 
 ---
 
-## 🌐 Localization (i18n)
+## Localization (i18n)
 
 The application supports real-time language toggling between **English (EN)** and **Turkish (TR)** without page reloads. All labels, table headers, forms, dynamic course categories, and backend validation errors are mapped through centralized dictionary stores in `frontend/src/locales/` (API messages through `src/lib/errorTranslator.ts`).
 
@@ -231,20 +233,20 @@ npm run i18n:check
 
 fails when a key is missing in one language, an English value is still Turkish, a `t("key")` in the code has no entry, or an API error message has no translation rule. `npm run i18n:sync` first fills missing keys from `scripts/i18n-dictionary.json`.
 
-## ✅ Tests
+## Tests
 
 * Backend: `dotnet test backend/EdTechApi.Tests` (xUnit, in-memory SQLite: wallet, sign-up, roles, token identity, email change, uploads, account closing and cleanup, forum, friends, messages, badges, video completion).
 * Frontend: `npm test` in `frontend` (Node's test runner: watch-progress rules, course filters, search, badges and the book scene's no-collision layout), plus `npm run build`, `npm run lint` and `npm run i18n:check`.
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 **Yağız Cengiz**
 * GitHub: [@yagizcngz](https://github.com/yagizcngz)
