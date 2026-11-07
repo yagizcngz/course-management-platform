@@ -1,5 +1,8 @@
-import { pillButton } from "@/lib/utils";
+import { useState } from "react";
+import { Search } from "lucide-react";
+import { chip, pillButton } from "@/lib/utils";
 import { readError } from "@/lib/auth";
+import { searchRank } from "@/lib/search";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -16,8 +19,29 @@ export const Route = createFileRoute("/_authenticated/yardim")({
   component: HelpPage,
 });
 
+// question ids per topic; texts are help.faq.<id>.q / .a
+const FAQ = {
+  courses: ["enroll", "progress", "leave", "catalogRows"],
+  wallet: ["topUp", "refund", "refundClosed"],
+  badges: ["badgesHow", "badgesKeep", "badgesFeature"],
+  teaching: ["apply", "earnings", "analytics"],
+  account: ["credentials", "privacy", "emails", "motion"],
+} as const;
+type Topic = keyof typeof FAQ;
+const TOPICS = Object.keys(FAQ) as Topic[];
+
+// pages the answers point to most
+const QUICK_LINKS = [
+  ["/ayarlar", "help.links.settings"],
+  ["/cuzdan", "help.links.purchases"],
+  ["/basarimlar", "help.links.achievements"],
+  ["/yardim-taleplerim", "help.links.requests"],
+] as const;
+
 function HelpPage() {
   const { t } = useTranslation();
+  const [query, setQuery] = useState("");
+  const [topic, setTopic] = useState<Topic | null>(null);
 
   const handleContactSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -42,7 +66,7 @@ function HelpPage() {
       });
 
       if (res.ok) {
-        toast.success(t("help.successMessage", "Mesajınız başarıyla gönderildi."));
+        toast.success(t("help.successMessage"));
         form.reset();
       } else {
         toast.error(await readError(res, t("help.sendFailed")));
@@ -52,10 +76,14 @@ function HelpPage() {
     }
   };
 
-  const faq = [1, 2, 3, 4, 5].map((n) => ({
-    q: t(`help.questions.q${n}`),
-    a: t(`help.questions.a${n}`),
-  }));
+  // a search covers every topic; the topic chips narrow an empty search
+  const faq = TOPICS.flatMap((tp) =>
+    FAQ[tp].map((id) => ({ id, topic: tp, q: t(`help.faq.${id}.q`), a: t(`help.faq.${id}.a`) })),
+  )
+    .map((item) => ({ item, rank: searchRank(query, [item.q], [item.a]) }))
+    .filter(({ item, rank }) => rank > 0 && (query.trim() || !topic || item.topic === topic))
+    .sort((a, b) => b.rank - a.rank)
+    .map(({ item }) => item);
 
   return (
     <div className="flex min-w-0 w-full flex-col">
@@ -90,6 +118,16 @@ function HelpPage() {
                 {t("help.myRequests")}
               </Link>
             </div>
+            <nav
+              aria-label={t("help.links.title")}
+              className="flex flex-wrap gap-x-4 gap-y-1 text-sm"
+            >
+              {QUICK_LINKS.map(([to, key]) => (
+                <Link key={to} to={to} className="underline decoration-gold underline-offset-4">
+                  {t(key)}
+                </Link>
+              ))}
+            </nav>
           </div>
         </div>
       </section>
@@ -101,21 +139,65 @@ function HelpPage() {
           </h2>
           <p className="mt-4 max-w-sm text-muted-foreground">{t("help.faqDesc")}</p>
         </div>
-        <Accordion type="single" collapsible className="border-t border-border">
-          {faq.map((item, i) => (
-            <AccordionItem key={i} value={`q${i + 1}`} className="border-b border-border">
-              <AccordionTrigger className="gap-4 py-6 text-left hover:no-underline [&[data-state=open]>span:last-of-type]:text-gold">
-                <span className="w-8 shrink-0 font-mono text-xs tabular-nums text-muted-foreground">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span className="flex-1 font-serif text-xl leading-snug sm:text-2xl">{item.q}</span>
-              </AccordionTrigger>
-              <AccordionContent className="pb-6 pl-12 text-base leading-relaxed text-muted-foreground">
-                {item.a}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+        <div className="min-w-0 space-y-4">
+          <label className="relative block">
+            <span className="sr-only">{t("help.searchLabel")}</span>
+            <Search
+              aria-hidden="true"
+              className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            />
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t("help.searchPlaceholder")}
+              className="h-11 w-full rounded-full border border-border bg-background pl-9 pr-4 text-sm outline-none focus:border-gold"
+            />
+          </label>
+          <div role="group" aria-label={t("help.topicsLabel")} className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              aria-pressed={!topic}
+              onClick={() => setTopic(null)}
+              className={chip(!topic)}
+            >
+              {t("help.topics.all")}
+            </button>
+            {TOPICS.map((tp) => (
+              <button
+                key={tp}
+                type="button"
+                aria-pressed={topic === tp}
+                onClick={() => setTopic(topic === tp ? null : tp)}
+                className={chip(topic === tp)}
+              >
+                {t(`help.topics.${tp}`)}
+              </button>
+            ))}
+          </div>
+          {faq.length === 0 && (
+            <p role="status" className="py-6 text-sm text-muted-foreground">
+              {t("help.noResults")}
+            </p>
+          )}
+          <Accordion type="single" collapsible className="border-t border-border">
+            {faq.map((item, i) => (
+              <AccordionItem key={item.id} value={item.id} className="border-b border-border">
+                <AccordionTrigger className="gap-4 py-6 text-left hover:no-underline [&[data-state=open]>span:last-of-type]:text-gold">
+                  <span className="w-8 shrink-0 font-mono text-xs tabular-nums text-muted-foreground">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="flex-1 font-serif text-xl leading-snug sm:text-2xl">
+                    {item.q}
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent className="pb-6 pl-12 text-base leading-relaxed text-muted-foreground">
+                  {item.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
       </section>
 
       <section id="contact-section" className="scroll-mt-20 border-t border-border bg-card/40">
