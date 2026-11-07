@@ -22,6 +22,9 @@ import {
   MessageSquare,
   MessagesSquare,
   UserPlus,
+  Award,
+  LineChart,
+  LifeBuoy,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -54,25 +57,65 @@ interface ProfileMeDto {
 }
 
 // Tüm menü listesi (Henüz filtrelenmemiş hali)
+type MenuRole = "student" | "teacher" | "admin";
+const ALL: MenuRole[] = ["student", "teacher", "admin"];
+const LEARNERS: MenuRole[] = ["student", "teacher"];
+
+/** The side panel, in order; each item lists the roles that see it (teachers also learn). */
 const getMenuItems = (t: TFunction) => [
-  { title: t("sidebar.home"), url: "/dashboard", icon: LayoutDashboard },
-  { title: t("sidebar.myCourses"), url: "/kurslarim", icon: GraduationCap },
-  { title: t("sidebar.taughtCourses"), url: "/verdigim-kurslar", icon: BookOpen },
-  { title: t("sidebar.students"), url: "/ogrenciler", icon: Users },
-  { title: t("sidebar.teachers"), url: "/ogretmenler", icon: UserCog },
-  { title: t("sidebar.courses"), url: "/katalog", icon: BookOpen },
-  { title: t("sidebar.pendingRequests"), url: "/istekler", icon: CheckCircle },
-  { title: t("sidebar.enrollments"), url: "/kayitlar", icon: ClipboardList },
-  { title: t("sidebar.reports"), url: "/raporlar", icon: BarChart3 },
-  { title: t("sidebar.announcements"), url: "/duyurular", icon: Bell },
-  { title: t("sidebar.wallet"), url: "/cuzdan", icon: Wallet },
-  { title: t("sidebar.messages"), url: "/mesajlar", icon: MessageSquare },
-  { title: t("sidebar.community"), url: "/topluluk", icon: MessagesSquare },
+  { title: t("sidebar.home"), url: "/dashboard", icon: LayoutDashboard, roles: ALL },
+  { title: t("sidebar.myCourses"), url: "/kurslarim", icon: GraduationCap, roles: LEARNERS },
+  {
+    title: t("sidebar.taughtCourses"),
+    url: "/verdigim-kurslar",
+    icon: BookOpen,
+    roles: ["teacher"] as MenuRole[],
+  },
+  {
+    title: t("sidebar.instructorAnalytics"),
+    url: "/egitmen-paneli",
+    icon: LineChart,
+    roles: ["teacher"] as MenuRole[],
+  },
+  { title: t("sidebar.students"), url: "/ogrenciler", icon: Users, roles: ["admin"] as MenuRole[] },
+  {
+    title: t("sidebar.teachers"),
+    url: "/ogretmenler",
+    icon: UserCog,
+    roles: ["admin"] as MenuRole[],
+  },
+  { title: t("sidebar.courses"), url: "/katalog", icon: BookOpen, roles: ALL },
+  { title: t("sidebar.achievements"), url: "/basarimlar", icon: Award, roles: LEARNERS },
+  {
+    title: t("sidebar.pendingRequests"),
+    url: "/istekler",
+    icon: CheckCircle,
+    roles: ["admin"] as MenuRole[],
+  },
+  {
+    title: t("sidebar.enrollments"),
+    url: "/kayitlar",
+    icon: ClipboardList,
+    roles: ["admin"] as MenuRole[],
+  },
+  {
+    title: t("sidebar.reports"),
+    url: "/raporlar",
+    icon: BarChart3,
+    roles: ["admin"] as MenuRole[],
+  },
+  { title: t("sidebar.announcements"), url: "/duyurular", icon: Bell, roles: ALL },
+  // teachers keep their earnings here, students their purchases and refunds
+  { title: t("sidebar.wallet"), url: "/cuzdan", icon: Wallet, roles: LEARNERS },
+  { title: t("sidebar.messages"), url: "/mesajlar", icon: MessageSquare, roles: ALL },
+  { title: t("sidebar.community"), url: "/topluluk", icon: MessagesSquare, roles: ALL },
   {
     title: t("sidebar.mySupportRequests", "Yardım Taleplerim"),
     url: "/yardim-taleplerim",
     icon: HelpCircle,
+    roles: LEARNERS,
   },
+  { title: t("sidebar.helpCenter"), url: "/yardim", icon: LifeBuoy, roles: ALL },
 ];
 
 export function AppSidebar() {
@@ -269,42 +312,12 @@ export function AppSidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   useEffect(() => setMobileOpen(false), [location.pathname]);
 
-  const visibleMenuItems = getMenuItems(t).filter((item) => {
-    const role = currentUser.rawRole?.toLowerCase();
-
-    // Everyone sees Home, Announcements, Courses, Messages and Community
-    if (
-      item.url === "/dashboard" ||
-      item.url === "/duyurular" ||
-      item.url === "/katalog" ||
-      item.url === "/mesajlar" ||
-      item.url === "/topluluk"
-    ) {
-      return true;
-    }
-
-    if (isAdminRole(role)) {
-      // Admins don't teach courses usually, but they can see everything else
-      if (item.url === "/verdigim-kurslar") return false;
-      if (item.url === "/kurslarim") return false;
-      if (item.url === "/yardim-taleplerim") return false;
-      if (item.url === "/cuzdan") return false;
-      return true;
-    }
-
-    if (isTeacherRole(role)) {
-      if (item.url === "/verdigim-kurslar") return true;
-      if (item.url === "/kurslarim") return true;
-      if (item.url === "/yardim-taleplerim") return true;
-    }
-
-    // Default for user/student or unrecognized role
-    if (item.url === "/cuzdan") return true;
-    if (item.url === "/kurslarim") return true;
-    if (item.url === "/yardim-taleplerim") return true;
-
-    return false;
-  });
+  const menuRole: MenuRole = isAdminRole(currentUser.rawRole)
+    ? "admin"
+    : isTeacherRole(currentUser.rawRole)
+      ? "teacher"
+      : "student";
+  const visibleMenuItems = getMenuItems(t).filter((item) => item.roles.includes(menuRole));
 
   const content = (
     <>

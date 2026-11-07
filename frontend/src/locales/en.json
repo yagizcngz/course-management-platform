@@ -30,7 +30,8 @@
       "messages": "Messages",
       "community": "Community",
       "achievements": "Achievements",
-      "instructorAnalytics": "Instructor panel"
+      "instructorAnalytics": "Instructor panel",
+      "helpCenter": "Help centre"
     },
     "settings": {
       "title": "Settings",
