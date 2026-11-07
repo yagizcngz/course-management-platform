@@ -50,6 +50,7 @@ import { CourseTaxonomyFields } from "@/components/CourseTaxonomyFields";
 import { CourseStatusPill } from "@/components/CourseProgressBar";
 import { rankBy, searchRank } from "@/lib/search";
 import { joinCourse, useMyCourses } from "@/components/useMyCourses";
+import { useOptimisticSearch } from "@/components/useOptimisticSearch";
 export const Route = createFileRoute("/_authenticated/katalog")({
   component: CoursesPage,
   // scope, filters and sort live in the URL (q stays in the header's search box)
@@ -74,10 +75,10 @@ const self = (c: Row) => c;
 
 function CoursesPage() {
   const { t, i18n } = useTranslation();
-  const search = Route.useSearch();
   const navigate = useNavigate({ from: "/katalog" });
-  const set = (patch: Partial<CourseSearch>) =>
-    navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true, resetScroll: false });
+  const [search, set] = useOptimisticSearch(Route.useSearch(), (patch: Partial<CourseSearch>) =>
+    navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true, resetScroll: false }),
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const [dbCourses, setDbCourses] = useState<CourseData[]>([]);
   const [isLoading, setIsLoading] = useState(true);

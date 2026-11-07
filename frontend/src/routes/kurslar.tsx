@@ -25,6 +25,7 @@ import {
   type FacetCourse,
 } from "@/lib/courseFilters";
 import { usePublicCatalog } from "../components/landing/usePublicCatalog";
+import { useOptimisticSearch } from "../components/useOptimisticSearch";
 import type { LandingCourse } from "../components/landing/shared";
 
 interface CatalogSearch extends CourseSearch {
@@ -54,10 +55,10 @@ export const Route = createFileRoute("/kurslar")({
 
 function CoursesCatalog() {
   const { t } = useTranslation();
-  const search = Route.useSearch();
   const navigate = useNavigate({ from: "/kurslar" });
-  const set = (patch: Partial<CatalogSearch>) =>
-    navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true, resetScroll: false });
+  const [search, set] = useOptimisticSearch(Route.useSearch(), (patch: Partial<CatalogSearch>) =>
+    navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true, resetScroll: false }),
+  );
   const { courses, categories, teachers, label, describe, extra } = usePublicCatalog();
   const { byId: stats } = useCourseStats();
   const [selected, setSelected] = useState<LandingCourse | null>(null);
