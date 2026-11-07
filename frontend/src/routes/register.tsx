@@ -8,6 +8,7 @@ import { AuthShell, authButtonClass, authInputClass, authLabelClass } from "@/co
 import { CelestialScene } from "@/components/effects/three/CelestialScene";
 import { AlertCircle, ArrowRight, GraduationCap, Loader2, Presentation } from "lucide-react";
 import { motion } from "motion/react";
+import { useLater } from "@/hooks/useLater";
 import { SplitHeadline } from "@/components/motion";
 import { toast } from "sonner";
 
@@ -22,6 +23,7 @@ export const Route = createFileRoute("/register")({
 function RegisterPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate({ from: "/register" });
+  const later = useLater();
   const [categories, setCategories] = useState<string[]>([]);
 
   useEffect(() => {
@@ -101,7 +103,7 @@ function RegisterPage() {
         const data = await response.json().catch(() => null);
         if (data?.teacherApplication === "Pending") toast.success(t("register.applicationSent"));
         setRegistered(true);
-        setTimeout(() => navigate({ to: "/login" }), 900);
+        later(() => navigate({ to: "/login" }), 900);
       } else {
         // the email code stays valid after a failed attempt, so the user only fixes the field
         const raw = await readError(response, t("register.registerError"));

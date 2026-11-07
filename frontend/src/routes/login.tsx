@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { AlertCircle, ArrowRight, Eye, EyeOff, Loader2, Lock, User } from "lucide-react";
 import { motion } from "motion/react";
+import { useLater } from "@/hooks/useLater";
 
 import { API_BASE } from "@/components/courseHelpers";
 import { AuthShell, authButtonClass, authInputClass, authLabelClass } from "@/components/AuthShell";
@@ -87,6 +88,7 @@ const playSuccess = () => {
 function LoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate({ from: "/login" });
+  const later = useLater();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -125,9 +127,7 @@ function LoginPage() {
         playSuccess();
 
         // long enough for the seal to land before the dashboard opens
-        setTimeout(() => {
-          navigate({ to: "/dashboard" });
-        }, 1200);
+        later(() => navigate({ to: "/dashboard" }), 1200);
       } else {
         triggerError(t("login.invalidCredentials"));
       }
@@ -143,7 +143,7 @@ function LoginPage() {
     setFailures((n) => n + 1);
     setIsShaking(true);
     playError();
-    setTimeout(() => setIsShaking(false), 500);
+    later(() => setIsShaking(false), 500);
   };
 
   const filled = Number(!!username.trim()) + Number(!!password);
