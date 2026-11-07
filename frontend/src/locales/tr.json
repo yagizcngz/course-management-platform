@@ -1826,7 +1826,9 @@
       "new": {
         "title": "Yeni",
         "hint": "Son eklenenler"
-      }
+      },
+      "prev": "Önceki kurslar",
+      "next": "Diğer kurslar"
     },
     "instructor": {
       "title": "Eğitmen paneli",

@@ -1931,7 +1931,9 @@
       "new": {
         "title": "New",
         "hint": "Recently added"
-      }
+      },
+      "prev": "Previous courses",
+      "next": "More courses"
     },
     "instructor": {
       "title": "Instructor panel",
