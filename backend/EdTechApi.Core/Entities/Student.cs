@@ -13,8 +13,7 @@ namespace EdTechApi.Core.Entities
 
         // Bu öğrenci kaydının hangi giriş hesabına (User) ait olduğunu belirtir.
         // Nullable, çünkü admin panelinden eklenen bir öğrencinin henüz bir giriş
-        // hesabı (User) olmayabilir; kullanıcı ilk kez /profil sayfasını açtığında
-        // ad-soyad eşleşmesiyle otomatik bağlanır (bkz. StudentService.GetStudentByUsernameAsync).
+        // hesabı (User) olmayabilir.
         public int? UserId { get; set; }
         public User? User { get; set; }
 

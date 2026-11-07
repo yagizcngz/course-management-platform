@@ -73,48 +73,6 @@ namespace EdTechApi.Business.Services
                 .ToListAsync();
         }
 
-        public async Task<Student?> GetStudentByUsernameAsync(string username)
-        {
-            if (string.IsNullOrWhiteSpace(username)) return null;
-
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-            if (user == null) return null;
-
-            // 1) Önce kalıcı ve güvenilir olan UserId FK üzerinden dene
-            var linkedStudent = await _context.Students.FirstOrDefaultAsync(s => s.UserId == user.Id);
-            if (linkedStudent != null)
-            {
-                return linkedStudent;
-            }
-
-            // 2) Henüz bağlanmamış eski kayıtlar için ad-soyad eşleştirmesine düş
-            //    (Enrollment eşleştirmesinde kullanılan mantıkla aynı). Bir eşleşme
-            //    bulunursa kaydı kalıcı olarak bu kullanıcıya bağlıyoruz, böylece bir
-            //    sonraki seferde doğrudan UserId ile bulunur.
-            var normalized = username.Trim().ToLower();
-            var students = await _context.Students.ToListAsync();
-            var matched = students.FirstOrDefault(s =>
-                $"{s.FirstName} {s.LastName}".Trim().ToLower() == normalized);
-
-            if (matched != null)
-            {
-                matched.UserId = user.Id;
-                await _context.SaveChangesAsync();
-            }
-
-            return matched;
-        }
-
-        public async Task<bool> UpdateStudentProfileAsync(string username, string? aboutMe, string? profilePictureUrl)
-        {
-            var student = await GetStudentByUsernameAsync(username);
-            if (student == null) return false;
-
-            student.AboutMe = aboutMe;
-            student.ProfilePictureUrl = profilePictureUrl;
-            await _context.SaveChangesAsync();
-            return true;
-        }
             public async Task<bool> UpdateStudentAsync(int id, Student updatedStudent)
 {
     var student = await _context.Students.FindAsync(id);
