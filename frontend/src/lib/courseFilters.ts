@@ -33,14 +33,14 @@ export interface FacetCourse {
   createdAt?: string | null;
 }
 
-/** Navigation scope: the header and the curated rows follow it. */
+/** Navigation scope: the page header follows it. */
 export interface CourseScope {
   category?: string;
   subCategory?: string;
   topic?: string;
 }
 
-/** Refinements that apply to the "All courses" list only. */
+/** Refinements of the "All courses" list. */
 export interface CourseFilters {
   level?: Level;
   price?: PriceBand;
@@ -98,12 +98,20 @@ export function inScope(c: FacetCourse, s: CourseScope) {
   );
 }
 
-type FilterKey = keyof CourseFilters;
+/** Every facet of the "All courses" list: the scope and the refinements. */
+export type CourseQuery = CourseScope & CourseFilters;
+export type FilterKey = keyof CourseQuery;
 
-/** Whether a course passes every filter except `skip` (used for each facet's own counts). */
-export function passes(c: FacetCourse, stats: StatsById, f: CourseFilters, skip?: FilterKey) {
+/**
+ * Whether a course passes every facet except `skip` (used for each facet's own counts). Scope and
+ * refinements go through the same check, so the order they were picked in never changes a result.
+ */
+export function passes(c: FacetCourse, stats: StatsById, f: CourseQuery, skip?: FilterKey) {
   const s = stats.get(c.id);
   return (
+    (skip === "category" || !f.category || c.category === f.category) &&
+    (skip === "subCategory" || !f.subCategory || c.subCategory === f.subCategory) &&
+    (skip === "topic" || !f.topic || c.topic === f.topic) &&
     (skip === "level" || !f.level || c.level === f.level) &&
     (skip === "price" || inPriceBand(Number(c.price) || 0, f.price)) &&
     (skip === "duration" || !f.duration || durationBand(s?.durationSeconds ?? 0) === f.duration) &&
@@ -117,7 +125,7 @@ export function filterCourses<T>(
   items: readonly T[],
   of: (item: T) => FacetCourse,
   stats: StatsById,
-  f: CourseFilters,
+  f: CourseQuery,
 ): T[] {
   return items.filter((item) => passes(of(item), stats, f));
 }
@@ -127,7 +135,7 @@ export function facetCounts<T>(
   items: readonly T[],
   of: (item: T) => FacetCourse,
   stats: StatsById,
-  f: CourseFilters,
+  f: CourseQuery,
   key: FilterKey,
 ): Map<string, number> {
   const counts = new Map<string, number>();
@@ -137,6 +145,15 @@ export function facetCounts<T>(
     if (!passes(c, stats, f, key)) continue;
     const s = stats.get(c.id);
     switch (key) {
+      case "category":
+        add(c.category);
+        break;
+      case "subCategory":
+        if (c.subCategory) add(c.subCategory);
+        break;
+      case "topic":
+        if (c.topic) add(c.topic);
+        break;
       case "level":
         if (c.level) add(c.level);
         break;
@@ -192,14 +209,20 @@ export function sortCourses<T>(
   return [...items].sort(cmp[sort]);
 }
 
-/** Topics in scope, most courses first; a topic needs a category or sub-category to mean much. */
-export function topicCounts<T>(items: readonly T[], of: (item: T) => FacetCourse) {
+/**
+ * Values of one field, most courses first. Facets list their options in this order, taken before
+ * the refinements, so picking a filter changes the counts but never reorders the options.
+ */
+export function valuesByCount<T>(
+  items: readonly T[],
+  value: (item: T) => string | null | undefined,
+) {
   const m = new Map<string, number>();
   for (const item of items) {
-    const topic = of(item).topic;
-    if (topic) m.set(topic, (m.get(topic) ?? 0) + 1);
+    const v = value(item);
+    if (v) m.set(v, (m.get(v) ?? 0) + 1);
   }
-  return [...m].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "tr"));
+  return [...m].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "tr")).map(([v]) => v);
 }
 
 // --- URL search params shared by both catalogues ---
@@ -231,14 +254,23 @@ export function parseCourseSearch(s: Record<string, unknown>): CourseSearch {
   };
 }
 
-/** Number of active refinements (scope below the category counts too). */
+/** Number of active facets, the category included. */
 export const activeFilterCount = (s: CourseSearch) =>
-  [s.subCategory, s.topic, s.level, s.price, s.duration, s.rating, s.language, s.subtitle].filter(
-    (v) => v !== undefined,
-  ).length;
+  [
+    s.category,
+    s.subCategory,
+    s.topic,
+    s.level,
+    s.price,
+    s.duration,
+    s.rating,
+    s.language,
+    s.subtitle,
+  ].filter((v) => v !== undefined).length;
 
-/** The patch that clears every refinement but keeps the category and sort. */
+/** The patch that clears every facet but keeps the text search and sort. */
 export const clearedFilters: Partial<CourseSearch> = {
+  category: undefined,
   subCategory: undefined,
   topic: undefined,
   level: undefined,

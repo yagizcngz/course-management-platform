@@ -45,7 +45,7 @@ export function usePublicCatalog() {
   }, []);
 
   const label = useCallback(
-    (kind: "categories" | "courses" | "subCategories", value: string) =>
+    (kind: "categories" | "courses" | "subCategories" | "topics", value: string) =>
       i18n.exists(`dynamic.${kind}.${value}`) ? t(`dynamic.${kind}.${value}`) : value,
     [i18n, t],
   );

@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import type { CourseScope, CourseSearch } from "@/lib/courseFilters";
 
-type Label = (kind: "categories" | "subCategories", value: string) => string;
+type Label = (kind: "categories" | "subCategories" | "topics", value: string) => string;
 
 /**
  * Title, lead and breadcrumb of a catalogue for the scope the visitor picked: the whole
@@ -33,12 +33,13 @@ export function useCatalogHeading(
     : category
       ? label("categories", category)
       : "";
+  const topicName = topic ? label("topics", topic) : "";
   const heading = topic
     ? {
-        title: t("catalog.header.topicTitle", { topic }),
+        title: t("catalog.header.topicTitle", { topic: topicName }),
         lead: where
-          ? t("catalog.header.topicLeadIn", { topic, where })
-          : t("catalog.header.topicLead", { topic }),
+          ? t("catalog.header.topicLeadIn", { topic: topicName, where })
+          : t("catalog.header.topicLead", { topic: topicName }),
       }
     : subCategory
       ? {

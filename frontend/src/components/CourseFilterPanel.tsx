@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown } from "lucide-react";
 import {
@@ -8,10 +8,11 @@ import {
   PRICE_BANDS,
   RATINGS,
   facetCounts,
-  topicCounts,
+  valuesByCount,
   type CourseFilters,
   type CourseSearch,
   type FacetCourse,
+  type FilterKey,
   type StatsById,
 } from "@/lib/courseFilters";
 import { Stars } from "./StarRating";
@@ -19,45 +20,65 @@ import { Stars } from "./StarRating";
 const self = (c: FacetCourse) => c;
 
 /**
- * The facet column of the "All courses" list: sub-field and topic (which also move the page's
- * header and curated rows), then rating, length, level, price, language and subtitles. Each
- * option shows how many courses it would leave with the other choices kept.
+ * The facet column of the "All courses" list: category, sub-field and topic (which also set the
+ * page's header), then rating, length, level, price, language and subtitles. Each option shows how
+ * many courses it would leave with every other choice kept, whatever order they were picked in.
  */
 export function CourseFilterPanel({
   search,
   set,
-  inCategory,
-  inScope,
+  courses,
+  categories,
   stats,
-  subCategoryLabel,
+  label,
 }: {
   search: CourseSearch;
   set: (patch: Partial<CourseSearch>) => void;
-  /** Courses of the chosen category (or all), for the sub-field and topic options. */
-  inCategory: FacetCourse[];
-  /** Courses of the chosen category, sub-field and topic, for the other facets. */
-  inScope: FacetCourse[];
+  /** Every course of the catalogue; the panel applies the scope and filters itself. */
+  courses: FacetCourse[];
+  /** Category names in display order; categories without courses are left out. */
+  categories: string[];
   stats: StatsById;
-  subCategoryLabel: (value: string) => string;
+  label: (kind: "categories" | "subCategories" | "topics", value: string) => string;
 }) {
   const { t, i18n } = useTranslation();
-  const counts = (key: keyof CourseFilters) => facetCounts(inScope, self, stats, search, key);
+  const counts = (key: FilterKey) => facetCounts(courses, self, stats, search, key);
 
-  const subCounts = useMemo(() => {
-    const m = new Map<string, number>();
-    for (const c of inCategory)
-      if (c.subCategory) m.set(c.subCategory, (m.get(c.subCategory) ?? 0) + 1);
-    return [...m].sort((a, b) => b[1] - a[1]);
-  }, [inCategory]);
-  const topics = useMemo(
+  // option order comes from the scope above each facet, not from the counts, so picking a
+  // filter changes the numbers but never reshuffles the list under the pointer
+  const categoryOptions = useMemo(() => {
+    const present = valuesByCount(courses, (c) => c.category);
+    return [
+      ...categories.filter((c) => present.includes(c)),
+      ...present.filter((c) => !categories.includes(c)),
+    ];
+  }, [courses, categories]);
+  const subOptions = useMemo(
     () =>
-      topicCounts(
-        inCategory.filter((c) => !search.subCategory || c.subCategory === search.subCategory),
-        self,
+      search.category
+        ? valuesByCount(
+            courses.filter((c) => c.category === search.category),
+            (c) => c.subCategory,
+          )
+        : [],
+    [courses, search.category],
+  );
+  const topicOptions = useMemo(
+    () =>
+      valuesByCount(
+        courses.filter(
+          (c) =>
+            (!search.category || c.category === search.category) &&
+            (!search.subCategory || c.subCategory === search.subCategory),
+        ),
+        (c) => c.topic,
       ),
-    [inCategory, search.subCategory],
+    [courses, search.category, search.subCategory],
   );
 
+  const category = counts("category");
+  const sub = counts("subCategory");
+  const topic = counts("topic");
   const rating = counts("rating");
   const duration = counts("duration");
   const level = counts("level");
@@ -71,25 +92,41 @@ export function CourseFilterPanel({
 
   return (
     <div className="divide-y divide-border border-y border-border">
-      {search.category && subCounts.length > 0 && (
-        <Facet
-          title={t("catalog.facets.subCategory")}
-          name="subCategory"
-          value={search.subCategory}
-          // a new sub-field may not hold the chosen topic
-          onPick={(v) => set({ subCategory: v, topic: undefined })}
-          options={subCounts.map(([v, n]) => ({ value: v, label: subCategoryLabel(v), count: n }))}
-        />
-      )}
-      {topics.length > 0 && (
-        <Facet
-          title={t("catalog.facets.topic")}
-          name="topic"
-          value={search.topic}
-          onPick={(v) => set({ topic: v })}
-          options={topics.map(([v, n]) => ({ value: v, label: v, count: n }))}
-        />
-      )}
+      <Facet
+        title={t("catalog.facets.category")}
+        name="category"
+        value={search.category}
+        // a new category holds none of the old sub-field or topic
+        onPick={(v) => set({ category: v, subCategory: undefined, topic: undefined })}
+        options={categoryOptions.map((v) => ({
+          value: v,
+          label: label("categories", v),
+          count: category.get(v) ?? 0,
+        }))}
+      />
+      <Facet
+        title={t("catalog.facets.subCategory")}
+        name="subCategory"
+        value={search.subCategory}
+        // a new sub-field may not hold the chosen topic
+        onPick={(v) => set({ subCategory: v, topic: undefined })}
+        options={subOptions.map((v) => ({
+          value: v,
+          label: label("subCategories", v),
+          count: sub.get(v) ?? 0,
+        }))}
+      />
+      <Facet
+        title={t("catalog.facets.topic")}
+        name="topic"
+        value={search.topic}
+        onPick={(v) => set({ topic: v })}
+        options={topicOptions.map((v) => ({
+          value: v,
+          label: label("topics", v),
+          count: topic.get(v) ?? 0,
+        }))}
+      />
       <Facet
         title={t("catalog.facets.rating")}
         name="rating"
@@ -174,6 +211,9 @@ interface Option {
   count: number;
 }
 
+/** Long lists (categories, topics) show this many options until "Show all". */
+const LIMIT = 8;
+
 /** One collapsible group of radio options; "Any" clears it. */
 function Facet({
   title,
@@ -189,7 +229,12 @@ function Facet({
   options: Option[];
 }) {
   const { t } = useTranslation();
+  const [all, setAll] = useState(false);
   if (options.length === 0) return null;
+  const long = options.length > LIMIT;
+  // a checked option past the limit stays visible
+  const shown =
+    long && !all ? options.filter((o, i) => i < LIMIT || o.value === (value ?? "")) : options;
   return (
     <details open className="group py-3">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-2 py-1 text-sm font-semibold [&::-webkit-details-marker]:hidden">
@@ -201,35 +246,45 @@ function Facet({
       </summary>
       <fieldset className="mt-2 min-w-0 space-y-1">
         <legend className="sr-only">{title}</legend>
-        {[{ value: "", label: t("catalog.facets.any"), count: -1 } as Option, ...options].map(
-          (o) => {
-            const checked = (value ?? "") === o.value;
-            const empty = o.count === 0 && !checked;
-            return (
-              <label
-                key={o.value || "any"}
-                className={`flex cursor-pointer items-start gap-2.5 rounded-md px-1.5 py-1 text-sm transition-colors hover:bg-secondary ${
-                  empty ? "opacity-45" : ""
-                }`}
-              >
-                <input
-                  type="radio"
-                  name={name}
-                  checked={checked}
-                  disabled={empty}
-                  aria-label={o.text}
-                  onChange={() => onPick(o.value || undefined)}
-                  className="mt-1 size-3.5 shrink-0 accent-[var(--color-primary)]"
-                />
-                <span className="min-w-0 flex-1 break-words">{o.label}</span>
-                {o.count >= 0 && (
-                  <span className="mt-0.5 font-mono text-[11px] tabular-nums text-muted-foreground">
-                    {o.count}
-                  </span>
-                )}
-              </label>
-            );
-          },
+        {[{ value: "", label: t("catalog.facets.any"), count: -1 } as Option, ...shown].map((o) => {
+          const checked = (value ?? "") === o.value;
+          const empty = o.count === 0 && !checked;
+          return (
+            <label
+              key={o.value || "any"}
+              className={`flex cursor-pointer items-start gap-2.5 rounded-md px-1.5 py-1 text-sm transition-colors hover:bg-secondary ${
+                empty ? "opacity-45" : ""
+              }`}
+            >
+              <input
+                type="radio"
+                name={name}
+                checked={checked}
+                disabled={empty}
+                aria-label={o.text}
+                onChange={() => onPick(o.value || undefined)}
+                className="mt-1 size-3.5 shrink-0 accent-[var(--color-primary)]"
+              />
+              <span className="min-w-0 flex-1 break-words">{o.label}</span>
+              {o.count >= 0 && (
+                <span className="mt-0.5 font-mono text-[11px] tabular-nums text-muted-foreground">
+                  {o.count}
+                </span>
+              )}
+            </label>
+          );
+        })}
+        {long && (
+          <button
+            type="button"
+            aria-expanded={all}
+            onClick={() => setAll((v) => !v)}
+            className="px-1.5 py-1 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+          >
+            {all
+              ? t("catalog.facets.showLess")
+              : t("catalog.facets.showAll", { count: options.length })}
+          </button>
         )}
       </fieldset>
     </details>

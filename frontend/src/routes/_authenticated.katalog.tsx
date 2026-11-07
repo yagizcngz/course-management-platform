@@ -374,14 +374,10 @@ function CoursesPage() {
   const label = (kind: string, value: string) =>
     i18n.exists(`dynamic.${kind}.${value}`) ? t(`dynamic.${kind}.${value}`) : value;
   const rows = useMemo(() => dbCourses.map(toRow), [dbCourses]);
-  const inCategory = useMemo(
-    () => rows.filter((c) => !search.category || c.category === search.category),
-    [rows, search.category],
-  );
-  // the header and the curated rows follow the scope; filters and sort touch "All courses" only
-  const scoped = useMemo(() => inCategory.filter((c) => inScope(c, search)), [inCategory, search]);
+  // the header follows the scope; the curated rankings rank the whole catalogue
+  const scoped = useMemo(() => rows.filter((c) => inScope(c, search)), [rows, search]);
   const filteredCourses = useMemo(() => {
-    const ranked = rankBy(filterCourses(scoped, self, stats, search), (c) => {
+    const ranked = rankBy(filterCourses(rows, self, stats, search), (c) => {
       const title = c.title || c.Title || "";
       return searchRank(
         searchTerm,
@@ -402,7 +398,7 @@ function CoursesPage() {
       label("courses", c.title || c.Title || ""),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- both/label only read t, which i18n.language covers
-  }, [scoped, stats, search, searchTerm, i18n.language]);
+  }, [rows, stats, search, searchTerm, i18n.language]);
 
   const showcaseOn = !isLoading && !searchTerm.trim() && !isEditMode;
   const heading = useCatalogHeading(search, label, {
@@ -469,31 +465,9 @@ function CoursesPage() {
           <CatalogMeta courses={scoped} stats={stats} />
         </header>
 
-        {/* categories */}
-        {categories.length > 0 && (
-          <nav aria-label={t("catalog.categoryFilter")} className="mb-8">
-            <ul className="flex flex-wrap gap-2">
-              {["", ...categories].map((cat) => (
-                <li key={cat || "all"}>
-                  <button
-                    type="button"
-                    aria-pressed={(search.category ?? "") === cat}
-                    onClick={() =>
-                      set({ category: cat || undefined, subCategory: undefined, topic: undefined })
-                    }
-                    className={chip((search.category ?? "") === cat)}
-                  >
-                    {cat ? label("categories", cat) : t("courses.allCategories", "Tumu")}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )}
-
         {showcaseOn && (
           <CourseShowcase
-            courses={scoped}
+            courses={rows}
             titleOf={(c) => label("courses", c.title || c.Title || t("courses.unnamedCourse"))}
             categoryOf={(c) => label("categories", c.category)}
             imageOf={(c, i) => getCourseImage(c, i)}
@@ -560,10 +534,10 @@ function CoursesPage() {
             <CourseFilterPanel
               search={search}
               set={set}
-              inCategory={inCategory}
-              inScope={scoped}
+              courses={rows}
+              categories={categories}
               stats={stats}
-              subCategoryLabel={(v) => label("subCategories", v)}
+              label={label}
             />
           </aside>
           <div className="grid min-w-0 grid-cols-1 content-start gap-6 sm:grid-cols-2 xl:grid-cols-3">

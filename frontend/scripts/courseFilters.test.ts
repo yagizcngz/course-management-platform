@@ -108,3 +108,39 @@ test("scope and URL parsing", () => {
     },
   );
 });
+
+test("facet counts do not depend on the order filters were picked in", () => {
+  const list = [
+    course(10, { topic: "Python" }),
+    course(11, { topic: "Python" }),
+    course(12, { topic: "React" }),
+    course(13, { topic: "React", category: "Müzik" }),
+  ];
+  const durations = statsById([
+    stat(10, { durationSeconds: 2 * 3600 }),
+    stat(11, { durationSeconds: 1800 }),
+    stat(12, { durationSeconds: 2 * 3600 }),
+    stat(13, { durationSeconds: 2 * 3600 }),
+  ]);
+  const query = { duration: "1to3" as const, topic: "Python" };
+  // the topic counts honour the duration, and the duration counts honour the topic
+  const topics = facetCounts(list, self, durations, query, "topic");
+  assert.deepEqual(
+    [...topics],
+    [
+      ["Python", 1],
+      ["React", 2],
+    ],
+  );
+  assert.equal(facetCounts(list, self, durations, query, "duration").get("1to3"), 1);
+  assert.deepEqual(ids(filterCourses(list, self, durations, query)), [10]);
+  // the same pick in the other order gives the same list
+  const reversed = { topic: "Python", duration: "1to3" as const };
+  assert.deepEqual(
+    filterCourses(list, self, durations, reversed),
+    filterCourses(list, self, durations, query),
+  );
+  // a category scopes the others' counts
+  const inMusic = facetCounts(list, self, durations, { category: "Müzik" }, "topic");
+  assert.deepEqual([...inMusic], [["React", 1]]);
+});

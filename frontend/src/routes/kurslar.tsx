@@ -56,6 +56,8 @@ function CoursesCatalog() {
   const { t } = useTranslation();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: "/kurslar" });
+  const set = (patch: Partial<CatalogSearch>) =>
+    navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true, resetScroll: false });
   const { courses, categories, teachers, label, describe, extra } = usePublicCatalog();
   const { byId: stats } = useCourseStats();
   const [selected, setSelected] = useState<LandingCourse | null>(null);
@@ -63,40 +65,23 @@ function CoursesCatalog() {
   // typed text stays local so the field keeps spaces and focus; the trimmed value goes to the URL
   const [query, setQuery] = useState(search.q ?? "");
 
-  const set = (patch: Partial<CatalogSearch>) =>
-    navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true, resetScroll: false });
-
-  const inCategory = useMemo(
-    () => (courses ?? []).filter((c) => !search.category || c.category === search.category),
-    [courses, search.category],
-  );
-  // the header and the curated rows follow the scope; filters and sort touch "All courses" only
+  // the header follows the scope; the curated rankings rank the whole catalogue
   const scoped = useMemo(
-    () => inCategory.filter((c) => inScope(self(c), search)),
-    [inCategory, search],
+    () => (courses ?? []).filter((c) => inScope(self(c), search)),
+    [courses, search],
   );
 
   const results = useMemo(() => {
     if (!courses) return null;
     const title = (c: LandingCourse) => label("courses", c.title);
     // best matches first; with no query every course ranks the same and the API order stays
-    const ranked = rankBy(filterCourses(scoped, self, stats, search), (c) =>
+    const ranked = rankBy(filterCourses(courses, self, stats, search), (c) =>
       courseRank(c, search.q ?? "", label, extra(c)),
     );
     // a search keeps its relevance order until a sort is picked
     if (search.q && !search.sort) return ranked;
     return sortCourses(ranked, self, stats, search.sort ?? "popular", title);
-  }, [courses, scoped, stats, search, label, extra]);
-
-  const counts = useMemo(() => {
-    const m = new Map<string, number>();
-    for (const c of courses ?? []) m.set(c.category, (m.get(c.category) ?? 0) + 1);
-    return m;
-  }, [courses]);
-  const categoryNames = [
-    ...categories.filter((c) => counts.has(c)),
-    ...[...counts.keys()].filter((c) => !categories.includes(c)),
-  ];
+  }, [courses, stats, search, label, extra]);
 
   const heading = useCatalogHeading(search, label, {
     title: t("catalog.title"),
@@ -149,45 +134,13 @@ function CoursesCatalog() {
       </PageIntro>
 
       <div className="mx-auto w-full max-w-7xl px-4 pb-24 sm:px-6">
-        {/* disciplines */}
-        <nav
-          aria-label={t("catalog.categoryFilter")}
-          className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0 lg:overflow-visible"
-        >
-          <ul className="flex gap-2 py-6 max-lg:min-w-max lg:flex-wrap">
-            {[null, ...categoryNames].map((name) => {
-              const on = (search.category ?? null) === name;
-              return (
-                <li key={name ?? "all"}>
-                  <button
-                    type="button"
-                    aria-pressed={on}
-                    onClick={() =>
-                      set({ category: name ?? undefined, subCategory: undefined, topic: undefined })
-                    }
-                    className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
-                      on
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border text-muted-foreground hover:border-gold hover:text-foreground"
-                    }`}
-                  >
-                    {name ? label("categories", name) : t("catalog.allCategories")}
-                    <span className="ml-2 font-mono text-[11px] tabular-nums opacity-70">
-                      {name ? counts.get(name) : (courses?.length ?? "")}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-
-        {/* curated rows over the scope; a text search shows only the ranked list.
+        {/* curated rankings over the whole catalogue, untouched by the filters below; a text
+            search shows only the ranked list.
             The old staggered grid is kept in components/stashed/StaggeredCourseGrid.tsx */}
-        {scoped.length > 0 && search.view !== "index" && !search.q && (
-          <div className="mt-4">
+        {courses && courses.length > 0 && search.view !== "index" && !search.q && (
+          <div className="mt-10">
             <CourseShowcase
-              courses={scoped}
+              courses={courses}
               titleClassName="font-serif text-3xl"
               titleOf={(c) => label("courses", c.title)}
               categoryOf={(c) => label("categories", c.category)}
@@ -292,10 +245,10 @@ function CoursesCatalog() {
             <CourseFilterPanel
               search={search}
               set={set}
-              inCategory={inCategory}
-              inScope={scoped}
+              courses={courses ?? []}
+              categories={categories}
               stats={stats}
-              subCategoryLabel={(v) => label("subCategories", v)}
+              label={label}
             />
           </aside>
 
