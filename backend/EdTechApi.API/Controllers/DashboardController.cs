@@ -1,4 +1,7 @@
+using EdTechApi.API.Helpers;
+using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,6 +31,21 @@ namespace EdTechApi.API.Controllers
                 TotalTeachers = totalTeachers,
                 TotalCourses = totalCourses
             });
+        }
+
+        // GET: api/dashboard/pending-requests — yöneticinin bekleyen işleri; kenar çubuğu rozeti ve İstekler sekmeleri bunu okur.
+        // Sayımlar İstekler sayfasındaki listelerle aynı kayıtları görür (silinmiş kurs/öğretmen ve yöneticinin sildiği istekler hariç).
+        [HttpGet("pending-requests")]
+        [Authorize(Roles = RoleNames.Admins)]
+        public async Task<IActionResult> GetPendingRequests()
+        {
+            var teaching = await _context.TeachingRequests.CountAsync(r =>
+                r.Status == "Pending" && !r.IsDeletedByAdmin && !r.Course.IsDeleted && !r.Teacher.IsDeleted);
+            var applications = await _context.TeacherApplications.CountAsync(a => a.Status == "Pending");
+            var branches = await _context.BranchChangeRequests.CountAsync(r => r.Status == BranchRequestStatus.Pending);
+            var support = await _context.SupportRequests.CountAsync(r => !r.IsResolved && !r.IsDeletedByAdmin);
+
+            return Ok(new { teaching, applications, branches, support, total = teaching + applications + branches + support });
         }
     }
 }
