@@ -117,7 +117,7 @@ namespace EdTechApi.API.Helpers
                 // alt kategori boşsa veya artık kategorisine ait değilse seed'dekiyle doldurulur; geçerli seçim korunur
                 if (BranchOptions.NormalizeSubCategory(c.Category, c.SubCategory) == null)
                     c.SubCategory = SubCategoryOf.TryGetValue(s.Title, out var sub) ? sub : null;
-                if (c.Topic == null) c.Topic = TopicOf(s.Title);
+                if (c.Topic == null) c.Topic = TopicByTitle.TryGetValue(s.Title, out var topic) ? topic : TopicOf(s.Title);
                 // dil ve altyazı bir kez yazılır: her seed kursunun altyazısı olduğundan boş altyazı "hiç ayarlanmamış" demektir
                 if (c.SubtitleLanguages == null)
                 {
@@ -143,15 +143,33 @@ namespace EdTechApi.API.Helpers
                         l.IsDeleted = false;
                         l.DeletedAt = null;
                     }
-                    // ders uzunluğu 6-28 dakika; katalogdaki süre süzgeci için (gerçek ölçüm varsa korunur)
-                    l.DurationSeconds ??= (6 + (i * 37 + j * 53) % 23) * 60;
+                    // katalogdaki süre süzgeci için ders uzunluğu; gerçek ölçüm korunur. Eski formülün değeri (hepsi 6-28 dk,
+                    // kursların neredeyse tamamı "1-3 saat" bandına düşüyordu) seed'in yazdığı bilindiği için yenisiyle değişir.
+                    if (l.DurationSeconds is null || l.DurationSeconds == (6 + (i * 37 + j * 53) % 23) * 60)
+                        l.DurationSeconds = LessonMinutes(i, j) * 60;
                 }
             }
             db.SaveChanges();
 
-            SeedStudentsAndEnrollments(db, seeded, users);
+            SeedStudentsAndEnrollments(db, seeded, users, Students, 0,
+                (i, k) => TimeSpan.FromDays(3 + (i * 31 + k * 47) % 170) + TimeSpan.FromHours((i + k) % 9), _ => 0, stride: 13);
+            // son haftaların hareketi: her öğrencinin iki kaydı son 6 günde, biri 8-27 gün önce. "En sıcak" (30 gün) ve
+            // "Yükselen" (bu hafta / geçen hafta) sıralamaları bu kayıtlarla 20'şer kurs doldurur.
+            SeedStudentsAndEnrollments(db, seeded, users, RecentStudents, Students.Length,
+                (i, k) => k < 2 ? TimeSpan.FromDays((i + k * 3) % 6) + TimeSpan.FromHours(1 + i % 20) : TimeSpan.FromDays(8 + (i * 5 + k) % 20),
+                _ => 3, stride: 7);
             FillMissingTeacherBios(db);
         }
+
+        // Kurs başına ders uzunluğu bandı: kısa (5-12 dk), orta (15-35 dk), uzun (45-75 dk) ve çok uzun (80-110 dk) dersler;
+        // toplam video süreleri 1 saatin altından 6 saatin üstüne kadar dağılır.
+        private static int LessonMinutes(int course, int lesson) => (course % 8) switch
+        {
+            0 or 1 => 5 + (course * 7 + lesson * 3) % 8,
+            2 or 3 or 4 => 15 + (course * 37 + lesson * 53) % 21,
+            5 or 6 => 45 + (course * 11 + lesson * 17) % 31,
+            _ => 80 + (course * 13 + lesson * 7) % 31,
+        };
 
         // "merhaba" gibi test metinleri: boş, başlıkla aynı veya cümle kuramayacak kadar kısa açıklamalar
         private static bool IsPlaceholder(string? description, string title) =>
@@ -163,15 +181,19 @@ namespace EdTechApi.API.Helpers
         // Demo öğrenciler: her biri 2-5 kursa kayıtlı. Ücretli kayıtlar WalletService'teki gibi cüzdan hareketiyle
         // (yükleme, satın alma, öğretmen payı) gelir; birkaç öğrenci de bir kursu alıp iade etmiştir. Raporlar ve
         // cüzdan sayfaları bu hareketlerden beslenir.
-        private static void SeedStudentsAndEnrollments(AppDbContext db, List<Course> courses, List<User> users)
+        // `offset` ayrı öğrenci listelerinin kurs seçimlerini ve notlarını çeşitlendirir; `ago` kaydın ne kadar önce yapıldığını,
+        // `count` öğrencinin kaç kursa yazılacağını verir (0 ise 2-5 arası deterministik).
+        private static void SeedStudentsAndEnrollments(AppDbContext db, List<Course> courses, List<User> users, SeedStudent[] list,
+            int offset, Func<int, int, TimeSpan> ago, Func<int, int> count, int stride)
         {
             var now = DateTime.UtcNow;
             var existing = db.Students.IgnoreQueryFilters().ToList();
             var students = new List<Student>();
-            for (var i = 0; i < Students.Length; i++)
+            for (var i = 0; i < list.Length; i++)
             {
-                var s = Students[i];
-                var joined = now.AddDays(-(180 + i * 37 % 180));
+                var s = list[i];
+                var n = offset + i;
+                var joined = now.AddDays(-(180 + n * 37 % 180));
                 var st = existing.FirstOrDefault(x => string.Equals(x.Email, s.Email, StringComparison.OrdinalIgnoreCase));
                 if (st == null)
                 {
@@ -197,7 +219,8 @@ namespace EdTechApi.API.Helpers
             for (var i = 0; i < students.Count; i++)
             {
                 var st = students[i];
-                var picks = PickCourses(i, 2 + i * 3 % 4, courses.Count);
+                var n = offset + i;
+                var picks = PickCourses(n, count(i) > 0 ? count(i) : 2 + n * 3 % 4, courses.Count, stride);
                 var target = picks.Select(n => courses[n].Id).ToHashSet();
                 // eski seed öğrencileri 15-25 kursa yazıyordu: hedef dışındaki etkin kayıtları kaldırılır
                 foreach (var e in enrollments.Where(e => e.StudentId == st.Id && !e.IsDeleted && !target.Contains(e.CourseId)).ToList())
@@ -214,18 +237,18 @@ namespace EdTechApi.API.Helpers
                         || taken.GetValueOrDefault(course.Id) >= course.MaxCapacity) continue;
                     var e = new Enrollment
                     {
-                        CourseId = course.Id, StudentId = st.Id, Grade = 55 + (i * 13 + k * 7) % 45,
-                        EnrollmentDate = now.AddDays(-(3 + (i * 31 + k * 47) % 170)).AddHours(-((i + k) % 9))
+                        CourseId = course.Id, StudentId = st.Id, Grade = 55 + (n * 13 + k * 7) % 45,
+                        EnrollmentDate = now - ago(i, k)
                     };
                     db.Enrollments.Add(e);
                     enrollments.Add(e);
                     taken[course.Id] = taken.GetValueOrDefault(course.Id) + 1;
                 }
                 // her yedinci öğrenci bir kursu satın alıp iki gün içinde iade etmiş
-                if (i % 7 == 3)
+                if (n % 7 == 3)
                 {
-                    var other = courses.Where(c => c.Price > 0 && !target.Contains(c.Id)).ElementAtOrDefault(i * 5 % 40);
-                    if (other != null) refunded.Add((st, other, now.AddDays(-(20 + i * 9 % 140))));
+                    var other = courses.Where(c => c.Price > 0 && !target.Contains(c.Id)).ElementAtOrDefault(n * 5 % 40);
+                    if (other != null) refunded.Add((st, other, now.AddDays(-(20 + n * 9 % 140))));
                 }
             }
             db.SaveChanges();
@@ -248,7 +271,9 @@ namespace EdTechApi.API.Helpers
                 for (var k = 0; k < own.Count; k++)
                 {
                     if ((i + k) % 5 == 4) continue;
+                    // yeni kayıtların puanı geleceğe düşmez
                     var at = own[k].EnrollmentDate.AddDays(1 + (i + k) % 6);
+                    if (at > DateTime.UtcNow) at = DateTime.UtcNow;
                     db.CourseRatings.Add(new CourseRating
                     {
                         StudentId = students[i].Id, CourseId = own[k].CourseId, Stars = stars[(i * 3 + k * 7) % stars.Length],
@@ -271,6 +296,50 @@ namespace EdTechApi.API.Helpers
             new("SolidWorks", "SolidWorks"), new("Ableton", "Ableton Live"), new("IELTS", "IELTS"),
             new("TYT", "YKS"), new("YKS", "YKS"), new("LGS", "LGS"), new("KVKK", "KVKK"),
         ];
+
+        // Anahtar kelimeyle konusu çıkmayan seed kursları; bir konu birden çok kursta ve alanda geçer (ör. YKS, KPSS)
+        private static readonly Dictionary<string, string> TopicByTitle = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Veri Yapıları"] = "Algoritmalar", ["Algoritmalar"] = "Algoritmalar", ["Siber Güvenlik ve Ağ Temelleri"] = "Siber Güvenlik",
+            ["Matematik"] = "YKS", ["Temel Matematik"] = "YKS", ["Matematik Geometri"] = "YKS",
+            ["Ayrık Matematik"] = "Üniversite Matematiği", ["Kalkülüs ve Analiz"] = "Üniversite Matematiği",
+            ["Lineer Cebir"] = "Üniversite Matematiği", ["Olasılık ve İstatistik"] = "İstatistik",
+            ["Fizik"] = "YKS", ["Kimya"] = "YKS", ["Biyoloji"] = "YKS", ["Astronomiye Giriş"] = "Astronomi",
+            ["Genetik ve Moleküler Biyoloji"] = "Genetik",
+            ["Fiziki Coğrafya"] = "Fiziki Coğrafya", ["Jeomorfoloji"] = "Fiziki Coğrafya", ["Türkiye Coğrafyası"] = "KPSS",
+            ["Harita Bilgisi ve CBS"] = "CBS", ["Coğrafya"] = "YKS", ["Jeopolitik ve Beşeri Coğrafya"] = "Jeopolitik",
+            ["Tarih"] = "YKS", ["Cumhuriyet Tarihi"] = "KPSS", ["Sosyolojiye Giriş"] = "Sosyoloji",
+            ["Kent Sosyolojisi ve Saha Araştırması"] = "Sosyoloji",
+            ["Siyaset Bilimi ve Uluslararası İlişkilere Giriş"] = "Uluslararası İlişkiler",
+            ["Hukukun Temel Kavramları ve Anayasa Bilgisi"] = "KPSS",
+            ["İngilizce A1-A2"] = "A1-A2", ["Almanca A1"] = "A1-A2", ["İspanyolca A1"] = "A1-A2", ["İngilizce"] = "B1-B2",
+            ["UI/UX Tasarımın Temelleri"] = "UI/UX", ["Grafik Tasarım ve Tipografi"] = "Tipografi",
+            ["Marka Kimliği ve Logo Tasarımı"] = "Marka Tasarımı",
+            ["Karakalem ve Desen"] = "Çizim", ["Suluboya Atölyesi"] = "Çizim", ["Sanat Tarihine Giriş"] = "Sanat Tarihi",
+            ["Rönesans'tan Modernizme Sanat Tarihi"] = "Sanat Tarihi", ["Seramik ve Heykel Atölyesi"] = "Seramik",
+            ["Piyano Eğitimi"] = "Enstrüman", ["Gitar Eğitimi"] = "Enstrüman", ["Müzik Teorisi ve Kulak Eğitimi"] = "Müzik Teorisi",
+            ["Armoni ve Beste Atölyesi"] = "Müzik Teorisi",
+            ["Beden Eğitimi"] = "Antrenman", ["Fonksiyonel Antrenman"] = "Antrenman", ["Yoga ve Mobilite"] = "Mobilite",
+            ["Hareket Bilimi ve Sakatlıktan Korunma"] = "Mobilite", ["Sporcu Beslenmesi ve Performans"] = "Beslenme",
+            ["Etkili Çalışma Teknikleri"] = "Verimli Çalışma", ["Hızlı Okuma ve Not Alma Teknikleri"] = "Verimli Çalışma",
+            ["Topluluk Önünde Konuşma"] = "İletişim", ["Diksiyon ve Etkili Hitabet"] = "İletişim",
+            ["Araştırma Yöntemleri ve Bilimsel Etik"] = "Araştırma Yöntemleri",
+            ["Araştırma Yöntemleri ve Deney Tasarımı"] = "Araştırma Yöntemleri",
+            ["Makine Öğrenmesine Giriş"] = "Makine Öğrenmesi", ["Derin Öğrenme ve Sinir Ağları"] = "Makine Öğrenmesi",
+            ["Veri Görselleştirme ve Hikâye Anlatımı"] = "Veri Görselleştirme", ["Büyük Veri ve Veri Mühendisliği"] = "Veri Mühendisliği",
+            ["Mikroekonomiye Giriş"] = "Ekonomi Teorisi", ["Makroekonomi ve Para Politikası"] = "Ekonomi Teorisi",
+            ["Kişisel Finans ve Yatırım"] = "Yatırım", ["Muhasebenin Temelleri"] = "Muhasebe", ["Girişimcilik ve İş Stratejisi"] = "Girişimcilik",
+            ["Türk Edebiyatına Giriş"] = "Türk Edebiyatı", ["Cumhuriyet Dönemi Türk Edebiyatı"] = "Türk Edebiyatı",
+            ["Felsefeye Giriş"] = "Felsefe", ["Mantık ve Eleştirel Düşünme"] = "Felsefe", ["Etik ve Estetiğe Giriş"] = "Felsefe",
+            ["Dünya Edebiyatından Klasikler"] = "Dünya Edebiyatı",
+            ["Dijital Fotoğrafçılığın Temelleri"] = "Fotoğraf", ["Mobil Fotoğrafçılık ve Video Kurgu"] = "Fotoğraf",
+            ["Sinema Dili ve Film Analizi"] = "Film Analizi", ["Kısa Film Yapımı"] = "Film Yapımı",
+            ["Türkçe Dil Bilgisi ve Yazım Kuralları"] = "Dil Bilgisi", ["Akademik Türkçe ve Kompozisyon"] = "Akademik Yazım",
+            ["Osmanlı Türkçesi ve Metin Okumaları"] = "Osmanlı Türkçesi",
+            ["Psikolojiye Giriş"] = "Psikoloji", ["Gelişim Psikolojisi"] = "Psikoloji", ["Bilişsel Bilime Giriş"] = "Bilişsel Bilim",
+            ["Anayasa Hukukuna Giriş"] = "Anayasa Hukuku", ["İdare Hukuku ve Kamu Yönetimi"] = "KPSS",
+            ["Borçlar ve Ticaret Hukukunun Temelleri"] = "Ticaret Hukuku", ["Temel Elektronik ve Devre Analizi"] = "Elektronik",
+        };
 
         // Dil kursları hedef dilde anlatılır; geri kalanı Türkçe
         private static readonly Dictionary<string, string> LanguageOf = new(StringComparer.OrdinalIgnoreCase)
@@ -352,13 +421,14 @@ namespace EdTechApi.API.Helpers
             db.SaveChanges();
         }
 
-        // Bir öğrencinin seed kursları: katalog sırasına göre deterministik ve tekrarsız
-        private static List<int> PickCourses(int student, int count, int total)
+        // Bir öğrencinin seed kursları: katalog sırasına göre deterministik ve tekrarsız. İlk grubun adımı 13, 104 kursu böldüğü için
+        // seçimler az kursta toplanır; değiştirmek o öğrencilerin mevcut kayıtlarını sildirir, bu yüzden yeni grup 104 ile aralarında asal olan 7 adımını kullanır.
+        private static List<int> PickCourses(int student, int count, int total, int stride)
         {
             var picks = new List<int>();
             for (var k = 0; picks.Count < Math.Min(count, total) && k < total * 2; k++)
             {
-                var n = (student * 13 + k * 29) % total;
+                var n = (student * stride + k * 29) % total;
                 if (!picks.Contains(n)) picks.Add(n);
             }
             return picks;
@@ -801,6 +871,26 @@ namespace EdTechApi.API.Helpers
             new("selin.avci" + StudentDomain, "Selin", "Avcı"), new("tuna.bozkurt" + StudentDomain, "Tuna", "Bozkurt"),
             new("umut.cakir" + StudentDomain, "Umut", "Çakır"), new("yaren.polat" + StudentDomain, "Yaren", "Polat"),
             new("yusuf.demirci" + StudentDomain, "Yusuf", "Demirci"), new("zehra.kaya" + StudentDomain, "Zehra", "Kaya"),
+        };
+
+        // Son haftalarda kaydolan öğrenciler (bkz. SeedCatalog)
+        private static readonly SeedStudent[] RecentStudents =
+        {
+            new("asli.tan" + StudentDomain, "Aslı", "Tan"), new("baris.oral" + StudentDomain, "Barış", "Oral"),
+            new("cansu.eren" + StudentDomain, "Cansu", "Eren"), new("deniz.sezer" + StudentDomain, "Deniz", "Sezer"),
+            new("ece.gurel" + StudentDomain, "Ece", "Gürel"), new("ferhat.ates" + StudentDomain, "Ferhat", "Ateş"),
+            new("gizem.ozkan" + StudentDomain, "Gizem", "Özkan"), new("halil.bulut" + StudentDomain, "Halil", "Bulut"),
+            new("irem.coskun" + StudentDomain, "İrem", "Coşkun"), new("kerem.yavuz" + StudentDomain, "Kerem", "Yavuz"),
+            new("leyla.sen" + StudentDomain, "Leyla", "Şen"), new("murat.aksoy" + StudentDomain, "Murat", "Aksoy"),
+            new("nil.karaca" + StudentDomain, "Nil", "Karaca"), new("onur.toprak" + StudentDomain, "Onur", "Toprak"),
+            new("pinar.kaplan" + StudentDomain, "Pınar", "Kaplan"), new("riza.uysal" + StudentDomain, "Rıza", "Uysal"),
+            new("sena.bilgin" + StudentDomain, "Sena", "Bilgin"), new("tolga.eker" + StudentDomain, "Tolga", "Eker"),
+            new("ufuk.sonmez" + StudentDomain, "Ufuk", "Sönmez"), new("vildan.ergin" + StudentDomain, "Vildan", "Ergin"),
+            new("yigit.cinar" + StudentDomain, "Yiğit", "Çınar"), new("zeynep.unal" + StudentDomain, "Zeynep", "Ünal"),
+            new("alp.kocak" + StudentDomain, "Alp", "Koçak"), new("beril.tas" + StudentDomain, "Beril", "Taş"),
+            new("cem.gok" + StudentDomain, "Cem", "Gök"), new("duru.ozer" + StudentDomain, "Duru", "Özer"),
+            new("eren.yalcin" + StudentDomain, "Eren", "Yalçın"), new("feyza.akin" + StudentDomain, "Feyza", "Akın"),
+            new("goktug.sari" + StudentDomain, "Göktuğ", "Sarı"), new("hilal.durmaz" + StudentDomain, "Hilal", "Durmaz"),
         };
 
         private static readonly SeedCourse[] Courses =
