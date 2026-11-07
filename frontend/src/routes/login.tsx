@@ -16,11 +16,14 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
-// development only: frontend/.env.development.local sets the seeded demo password
-// (Seed:DemoPassword); production builds never show the pills
-const DEMO_PASSWORD: string | undefined = import.meta.env.DEV
-  ? import.meta.env.VITE_DEMO_PASSWORD
-  : undefined;
+// development: frontend/.env.development.local sets the seeded demo password (Seed:DemoPassword);
+// the static demo build accepts any password. Other production builds never show the pills.
+const DEMO_PASSWORD: string | undefined =
+  import.meta.env.VITE_DEMO === "true"
+    ? "demo"
+    : import.meta.env.DEV
+      ? import.meta.env.VITE_DEMO_PASSWORD
+      : undefined;
 const DEMO_ACCOUNTS = [
   { username: "demo_student", label: "login.demo.student" },
   { username: "demo_teacher", label: "login.demo.teacher" },

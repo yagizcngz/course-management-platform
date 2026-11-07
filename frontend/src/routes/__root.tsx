@@ -17,6 +17,7 @@ import { getReduceMotion, REDUCE_MOTION_CHANGED } from "@/lib/motionPref";
 import appCss from "../styles.css?url";
 import i18n from "../i18n";
 import { Toaster } from "sonner";
+import { DemoBanner } from "@/demo/DemoBanner";
 
 function NotFoundComponent() {
   const { t } = useTranslation();
@@ -160,6 +161,7 @@ function RootComponent() {
         <Outlet />
       </MotionConfig>
       <Toaster richColors position="top-right" />
+      <DemoBanner />
     </QueryClientProvider>
   );
 }

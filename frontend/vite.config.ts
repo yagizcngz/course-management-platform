@@ -4,7 +4,9 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import { nitro } from "nitro/vite";
 import viteReact from "@vitejs/plugin-react";
 
-export default defineConfig(({ command }) => ({
+export default defineConfig(({ command, mode }) => ({
+  // `vite build --mode demo`: the static demo, no API server (src/demo)
+  define: mode === "demo" ? { "import.meta.env.VITE_DEMO": JSON.stringify("true") } : {},
   server: { host: "::", port: 8080 },
   css: { transformer: "lightningcss" },
   resolve: {

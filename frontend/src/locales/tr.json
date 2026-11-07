@@ -1175,7 +1175,8 @@
       "nameTooLong": "Ad ve soyad en fazla {{count}} karakter olabilir.",
       "courseTitleTooLong": "Kurs başlığı en fazla {{count}} karakter olabilir.",
       "courseDescriptionTooLong": "Kurs açıklaması en fazla {{count}} karakter olabilir.",
-      "invalidUrl": "Geçersiz bağlantı. https:// ile başlayan bir adres girin veya dosya yükleyin."
+      "invalidUrl": "Geçersiz bağlantı. https:// ile başlayan bir adres girin veya dosya yükleyin.",
+      "demoReadOnly": "Bu bir demo: bu değişiklik kaydedilmez."
     },
     "validation": {
       "required": "Lütfen bu alanı doldurun."
@@ -2092,6 +2093,12 @@
       "removed": "Puanınız kaldırıldı.",
       "saveFailed": "Puan kaydedilemedi.",
       "count": "{{count}} puan"
+    },
+    "demoBanner": {
+      "title": "Canlı demo.",
+      "text": "Veriler bir anlık görüntüdür ve hiçbir şey sunucuya gitmez: değişiklikleriniz sayfa yenilenince sıfırlanır. Öğrenci, eğitmen veya yönetici olarak herhangi bir şifreyle giriş yapın.",
+      "source": "Kaynak kod",
+      "close": "Kapat"
     }
   }
 }
