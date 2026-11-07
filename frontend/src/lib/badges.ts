@@ -6,6 +6,10 @@ export interface AchievementStats {
     completedLessons: number;
     /** Distinct UTC days (yyyy-mm-dd) with at least one finished lesson, for the streak badges. */
     lessonDays?: string[];
+    /** Known video length of every finished lesson, in seconds. */
+    watchedSeconds?: number;
+    /** Courses the student gave a star rating. */
+    ratingsGiven?: number;
     courses: {
       courseId: number;
       category: string;
@@ -17,6 +21,8 @@ export interface AchievementStats {
       completedAt: string | null;
       /** Sent by the public profile endpoint. */
       title?: string;
+      /** Beginner, Intermediate or Advanced; null for all levels or a deleted course. */
+      level?: string | null;
     }[];
   } | null;
   teaching: {
@@ -30,6 +36,12 @@ export interface AchievementStats {
     sales?: number;
     /** Times a student finished one of the teacher's courses. */
     graduates?: number;
+    /** Star ratings students gave the teacher's courses. */
+    ratingsReceived?: number;
+    /** Courses averaging 4.5 stars or more over at least 5 ratings. */
+    topRatedCourses?: number;
+    /** Video length of all lessons the teacher published, in seconds. */
+    contentSeconds?: number;
   } | null;
   /**
    * Community activity: when each discussion the user started was opened, when they first replied
@@ -62,7 +74,12 @@ export type BadgeKind =
   | "streak"
   | "sprint"
   | "helpful"
-  | "sales";
+  | "sales"
+  | "hours"
+  | "summit"
+  | "critic"
+  | "acclaim"
+  | "star";
 
 export interface Badge {
   id: string;
@@ -81,6 +98,7 @@ export const badgeState = (b: Badge) =>
   b.earned ? "earned" : b.current > 0 ? "progress" : ("locked" as const);
 
 const DAY = 86_400_000;
+const HOUR = 3600;
 
 /** The n-th earliest date (1-based), or undefined when there are fewer. */
 const nth = (dates: string[], n: number) => [...dates].sort()[n - 1];
@@ -111,12 +129,14 @@ type Rule = readonly [string, BadgeKind, Rarity, number];
 const ENROLLED: Rule[] = [
   ["explorer", "explorer", "common", 3],
   ["avidLearner", "explorer", "uncommon", 10],
+  ["collector", "explorer", "rare", 25],
 ];
 const LESSONS: Rule[] = [
   ["firstLesson", "spark", "common", 1],
   ["scholar", "scholar", "uncommon", 15],
   ["devoted", "scholar", "rare", 50],
   ["sage", "scholar", "epic", 150],
+  ["erudite", "scholar", "legendary", 300],
 ];
 const COMPLETED: Rule[] = [
   ["graduate", "graduate", "uncommon", 1],
@@ -125,6 +145,7 @@ const COMPLETED: Rule[] = [
   ["lifelong", "trophy", "legendary", 25],
 ];
 const FIELDS: Rule[] = [
+  ["curious", "polymath", "uncommon", 2],
   ["polymath", "polymath", "rare", 3],
   ["renaissance", "polymath", "legendary", 5],
 ];
@@ -137,6 +158,24 @@ const STREAK: Rule[] = [
   ["steady", "streak", "common", 3],
   ["consistent", "streak", "rare", 7],
   ["unstoppable", "streak", "epic", 30],
+  ["marathoner", "streak", "legendary", 100],
+];
+// hours of video in finished lessons
+const HOURS_WATCHED: Rule[] = [
+  ["firstHour", "hours", "common", 1],
+  ["bingeLearner", "hours", "uncommon", 10],
+  ["deepDiver", "hours", "rare", 50],
+  ["timeless", "hours", "epic", 200],
+];
+// finished courses marked Advanced
+const ADVANCED: Rule[] = [
+  ["summit", "summit", "rare", 1],
+  ["peakSeeker", "summit", "epic", 5],
+];
+const RATINGS_GIVEN: Rule[] = [
+  ["firstReview", "critic", "common", 1],
+  ["critic", "critic", "uncommon", 5],
+  ["tastemaker", "critic", "rare", 15],
 ];
 const SPRINT: Rule[] = [
   ["sprinter", "sprint", "uncommon", 1],
@@ -147,6 +186,7 @@ const COURSES: Rule[] = [
   ["firstChapter", "author", "common", 1],
   ["curator", "author", "rare", 5],
   ["prolific", "author", "epic", 10],
+  ["institution", "author", "legendary", 25],
 ];
 const STUDENTS: Rule[] = [
   ["firstStudent", "mentor", "common", 1],
@@ -160,6 +200,7 @@ const LESSONS_TAUGHT: Rule[] = [
 ];
 const SALES: Rule[] = [
   ["firstSale", "sales", "common", 1],
+  ["risingSeller", "sales", "uncommon", 10],
   ["bestseller", "sales", "rare", 25],
   ["blockbuster", "sales", "legendary", 100],
 ];
@@ -167,8 +208,29 @@ const GRADUATES: Rule[] = [
   ["firstGraduate", "graduate", "uncommon", 1],
   ["graduateMaker", "graduate", "rare", 10],
   ["almaMater", "graduate", "epic", 50],
+  ["legacy", "graduate", "legendary", 200],
 ];
-const TEACHING_FIELDS: Rule[] = [["versatile", "polymath", "rare", 3]];
+const TEACHING_FIELDS: Rule[] = [
+  ["versatile", "polymath", "rare", 3],
+  ["allRounder", "polymath", "epic", 5],
+];
+const RATINGS_RECEIVED: Rule[] = [
+  ["firstRating", "acclaim", "common", 1],
+  ["wellReviewed", "acclaim", "uncommon", 10],
+  ["acclaimed", "acclaim", "rare", 50],
+  ["celebrated", "acclaim", "epic", 200],
+];
+// courses averaging 4.5+ stars over at least 5 ratings
+const TOP_RATED: Rule[] = [
+  ["topRated", "star", "rare", 1],
+  ["starInstructor", "star", "legendary", 3],
+];
+// hours of video published
+const CONTENT_HOURS: Rule[] = [
+  ["firstReel", "hours", "common", 1],
+  ["broadcaster", "hours", "rare", 10],
+  ["library", "hours", "epic", 50],
+];
 const DAYS: Rule[] = [
   ["senior", "senior", "rare", 180],
   ["veteran", "senior", "epic", 365],
@@ -302,6 +364,20 @@ export function buildBadges(stats: AchievementStats, t: TFunction, label: (cat: 
       (_, count) => t("badges.sprinter.criteria", { count, days: SPRINT_DAYS }),
       (n) => nth(sprints, n),
     );
+
+    ladder(HOURS_WATCHED, Math.floor((l.watchedSeconds ?? 0) / HOUR), (_, count) =>
+      t("badges.firstHour.criteria", { count }),
+    );
+    const advanced = done.filter((c) => c.level === "Advanced").map((c) => c.completedAt!);
+    ladder(
+      ADVANCED,
+      advanced.length,
+      (_, count) => t("badges.summit.criteria", { count }),
+      (n) => nth(advanced, n),
+    );
+    ladder(RATINGS_GIVEN, l.ratingsGiven ?? 0, (_, count) =>
+      t("badges.firstReview.criteria", { count }),
+    );
   }
 
   if (te) {
@@ -316,6 +392,15 @@ export function buildBadges(stats: AchievementStats, t: TFunction, label: (cat: 
     );
     ladder(TEACHING_FIELDS, te.fields ?? 0, (_, count) =>
       t("badges.versatile.criteria", { count }),
+    );
+    ladder(RATINGS_RECEIVED, te.ratingsReceived ?? 0, (_, count) =>
+      t("badges.firstRating.criteria", { count }),
+    );
+    ladder(TOP_RATED, te.topRatedCourses ?? 0, (_, count) =>
+      t("badges.topRated.criteria", { count }),
+    );
+    ladder(CONTENT_HOURS, Math.floor((te.contentSeconds ?? 0) / HOUR), (_, count) =>
+      t("badges.firstReel.criteria", { count }),
     );
     ladder(
       DAYS,

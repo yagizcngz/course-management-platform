@@ -1223,7 +1223,7 @@
         "q2": "Satın aldığım bir kursu iade edebilir miyim?",
         "a2": "Evet. Satın almadan sonraki 7 gün içinde, kursu bitirmiş olsanız da, kurs sayfasındaki veya cüzdanınızdaki Satın almalar ve iadeler bölümündeki \"İade et\" bağlantısıyla ücretin tamamı cüzdanınıza geri yüklenir. Kursa erişiminiz kapanır, kursu bitirerek kazandığınız rozetler kalır. Her kurs bir kez iade edilebilir; 7 gün dolduktan sonra iade yapılamaz.",
         "q3": "Kurs ilerlemem ve rozetlerim nasıl hesaplanıyor?",
-        "a3": "Bir dersi kurs sayfasındaki \"Dersi Tamamla\" düğmesiyle ya da videosunu sonuna kadar izleyerek bitirirsiniz. Kursun ilerleme çubuğu bitirdiğiniz derslerin oranını (%0-100) gösterir; tüm dersler bitince kurs \"Tamamlanan Kurslar\" bölümüne geçer. Tamamladığınız kurslar ve dersler profilinizdeki rozetleri açar: ilk mezuniyet, bir alanda uzmanlık, farklı alanlarda kurs ve toplam ders sayısı gibi.",
+        "a3": "Bir ders \"Dersi Tamamla\" düğmesiyle ya da videosunun en az %85'ini gerçekten izleyerek biter. Kursun ilerleme çubuğu bitirdiğiniz derslerin oranını gösterir; tüm dersler bitince kurs kalıcı olarak bitmiş sayılır. Bitirdiğiniz kurslar ve dersler, izlediğiniz saatler, ileri seviye kurslar, art arda günler, hızlı bitirmeler, puanladığınız kurslar ve topluluk etkinliğiniz profilinizdeki rozetleri açar; eğitmenler rozetlerini kurs, öğrenci, satış, mezun, aldıkları puan ve yayımladıkları videodan kazanır.",
         "q4": "Eğitmen olmak için nasıl başvururum?",
         "a4": "Kayıt olurken eğitmen başvurusunu işaretleyin, alanınızı seçip kendinizi anlatan kısa bir özgeçmiş yazın. Başvurunuzu bir yönetici inceler; onaylandığında eğitmen olarak oturum açarsınız. Yöneticiler eğitmen hesabını doğrudan da açabilir.",
         "q5": "Kullanıcı adımı, e-postamı veya şifremi nasıl değiştiririm?",
@@ -1724,6 +1724,90 @@
       "versatile": {
         "title": "Çok Yönlü Eğitmen",
         "criteria": "{{count}} farklı alanda kurs ver."
+      },
+      "collector": {
+        "title": "Koleksiyoncu"
+      },
+      "erudite": {
+        "title": "Âlim"
+      },
+      "curious": {
+        "title": "Meraklı"
+      },
+      "marathoner": {
+        "title": "Maratoncu"
+      },
+      "firstHour": {
+        "title": "İlk Saat",
+        "criteria": "{{count}} saat ders videosu izle (bitirilen dersler sayılır)."
+      },
+      "bingeLearner": {
+        "title": "Durmadan Öğrenen"
+      },
+      "deepDiver": {
+        "title": "Derinlere Dalan"
+      },
+      "timeless": {
+        "title": "Zamansız"
+      },
+      "summit": {
+        "title": "Zirve",
+        "criteria": "{{count}} ileri seviye kurs bitir."
+      },
+      "peakSeeker": {
+        "title": "Zirve Avcısı"
+      },
+      "firstReview": {
+        "title": "İlk Değerlendirme",
+        "criteria": "Katıldığın veya bitirdiğin {{count}} kursu puanla."
+      },
+      "critic": {
+        "title": "Eleştirmen"
+      },
+      "tastemaker": {
+        "title": "Zevk Rehberi"
+      },
+      "institution": {
+        "title": "Kurum"
+      },
+      "risingSeller": {
+        "title": "Yükselen Satıcı"
+      },
+      "legacy": {
+        "title": "Miras"
+      },
+      "allRounder": {
+        "title": "Çok Yönlü Usta"
+      },
+      "firstRating": {
+        "title": "İlk Puan",
+        "criteria": "Kurslarından {{count}} yıldız puanı al."
+      },
+      "wellReviewed": {
+        "title": "Beğenilen"
+      },
+      "acclaimed": {
+        "title": "Takdir Gören"
+      },
+      "celebrated": {
+        "title": "Ünlü"
+      },
+      "topRated": {
+        "title": "En Yüksek Puanlı",
+        "criteria": "En az 5 puanla ortalaması 4,5 ve üzeri olan {{count}} kursun olsun."
+      },
+      "starInstructor": {
+        "title": "Yıldız Eğitmen"
+      },
+      "firstReel": {
+        "title": "İlk Makara",
+        "criteria": "{{count}} saat ders videosu yayımla."
+      },
+      "broadcaster": {
+        "title": "Yayıncı"
+      },
+      "library": {
+        "title": "Yaşayan Kütüphane"
       }
     },
     "errorPage": {

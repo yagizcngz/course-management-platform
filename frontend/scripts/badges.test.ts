@@ -21,8 +21,8 @@ const course = (courseId: number, category: string, completedAt: string | null) 
 // community ladders every participant has: 2 discussion, 3 joined, 4 friend, 3 like badges
 const SOCIAL = 12;
 // learner and teacher ladders; both roles have the same total
-const LEARNER = 19;
-const TEACHER = 19;
+const LEARNER = 32;
+const TEACHER = 32;
 
 test("a new student sees every learner badge, locked, with a generic specialist pair", () => {
   const badges = buildBadges(
@@ -230,4 +230,54 @@ test("teacher sales, graduates and fields ladders read the teaching stats", () =
   assert.equal(get("graduateMaker").current, 4);
   assert.equal(get("versatile").earned, true);
   assert.equal(get("helpful").earned, true);
+  assert.equal(get("risingSeller").earned, true);
+});
+
+test("rating, hours and advanced ladders read the new counts", () => {
+  const learner = buildBadges(
+    {
+      learning: {
+        completedLessons: 4,
+        watchedSeconds: 11 * 3600 + 59,
+        ratingsGiven: 5,
+        courses: [
+          { ...course(1, "Yazılım", "2026-03-01"), level: "Advanced" },
+          { ...course(2, "Yazılım", null), level: "Advanced" },
+        ],
+      },
+      teaching: null,
+    },
+    t,
+    String,
+  );
+  const l = (id: string) => learner.find((b) => b.id === id)!;
+  assert.equal(l("bingeLearner").earned, true);
+  assert.equal(l("deepDiver").current, 11);
+  assert.equal(l("critic").earned, true);
+  // only the finished advanced course counts, dated by its completion
+  assert.equal(l("summit").earnedAt, "2026-03-01");
+  assert.equal(l("peakSeeker").current, 1);
+
+  const teacher = buildBadges(
+    {
+      learning: null,
+      teaching: {
+        joinedAt: new Date().toISOString(),
+        courses: 1,
+        students: 1,
+        lessons: 1,
+        ratingsReceived: 12,
+        topRatedCourses: 1,
+        contentSeconds: 3599,
+      },
+    },
+    t,
+    String,
+  );
+  const te = (id: string) => teacher.find((b) => b.id === id)!;
+  assert.equal(te("wellReviewed").earned, true);
+  assert.equal(te("topRated").earned, true);
+  assert.equal(te("starInstructor").current, 1);
+  // 59 minutes is not an hour yet
+  assert.equal(te("firstReel").earned, false);
 });

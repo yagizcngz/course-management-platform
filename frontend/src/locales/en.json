@@ -1302,7 +1302,7 @@
         "q2": "Can I get a refund for a course I bought?",
         "a2": "Yes. Within 7 days of buying, the \"Refund\" link on the course page or under Purchases & refunds in your wallet returns the full price to your wallet, even if you have already finished the course. Access to the course closes, but the badges you earned by finishing it stay. Each course can be refunded once; after 7 days a refund is no longer possible.",
         "q3": "How are my course progress and badges calculated?",
-        "a3": "You finish a lesson with the \"Mark Complete\" button on the course page or by watching its video to the end. The course progress bar shows the share of finished lessons (0-100%); once every lesson is done the course moves to \"Completed Courses\". Completed courses and lessons unlock the badges on your profile: your first graduation, a specialism in one field, courses across different fields and your total lesson count.",
+        "a3": "A lesson is finished with its \"Mark Complete\" button or by really watching at least 85% of its video. The course progress bar shows the share of finished lessons; once every lesson is done the course counts as finished for good. Finished courses, lessons, hours watched, Advanced courses, day streaks, quick finishes, the courses you rate and your community activity unlock the badges on your profile; instructors earn theirs from courses, students, sales, graduates, ratings and published video.",
         "q4": "How do I apply to become an instructor?",
         "a4": "Tick the instructor application when you sign up, pick your field and write a short biography. An admin reviews the application; once it is approved you sign in as an instructor. Admins can also create instructor accounts directly.",
         "q5": "How do I change my username, email or password?",
@@ -1818,6 +1818,96 @@
       "versatile": {
         "title": "Versatile Instructor",
         "criteria": "Teach courses in {{count}} different fields."
+      },
+      "collector": {
+        "title": "Collector"
+      },
+      "erudite": {
+        "title": "Erudite"
+      },
+      "curious": {
+        "title": "Curious Mind"
+      },
+      "marathoner": {
+        "title": "Marathoner"
+      },
+      "firstHour": {
+        "title": "First Hour",
+        "criteria_one": "Watch an hour of lesson video (finished lessons count).",
+        "criteria_other": "Watch {{count}} hours of lesson video (finished lessons count)."
+      },
+      "bingeLearner": {
+        "title": "Binge Learner"
+      },
+      "deepDiver": {
+        "title": "Deep Diver"
+      },
+      "timeless": {
+        "title": "Timeless"
+      },
+      "summit": {
+        "title": "Summit",
+        "criteria_one": "Finish an Advanced course.",
+        "criteria_other": "Finish {{count}} Advanced courses."
+      },
+      "peakSeeker": {
+        "title": "Peak Seeker"
+      },
+      "firstReview": {
+        "title": "First Review",
+        "criteria_one": "Rate a course you joined or finished.",
+        "criteria_other": "Rate {{count}} courses you joined or finished."
+      },
+      "critic": {
+        "title": "Critic"
+      },
+      "tastemaker": {
+        "title": "Tastemaker"
+      },
+      "institution": {
+        "title": "Institution"
+      },
+      "risingSeller": {
+        "title": "Rising Seller"
+      },
+      "legacy": {
+        "title": "Legacy"
+      },
+      "allRounder": {
+        "title": "All-Rounder"
+      },
+      "firstRating": {
+        "title": "First Rating",
+        "criteria_one": "Get a star rating on one of your courses.",
+        "criteria_other": "Get {{count}} star ratings on your courses."
+      },
+      "wellReviewed": {
+        "title": "Well Reviewed"
+      },
+      "acclaimed": {
+        "title": "Acclaimed"
+      },
+      "celebrated": {
+        "title": "Celebrated"
+      },
+      "topRated": {
+        "title": "Top Rated",
+        "criteria_one": "Have a course averaging 4.5 stars or more over at least 5 ratings.",
+        "criteria_other": "Have {{count}} courses averaging 4.5 stars or more over at least 5 ratings each."
+      },
+      "starInstructor": {
+        "title": "Star Instructor"
+      },
+      "firstReel": {
+        "title": "First Reel",
+        "criteria_one": "Publish an hour of lesson video.",
+        "criteria_other": "Publish {{count}} hours of lesson video."
+      },
+      "broadcaster": {
+        "title": "Broadcaster"
+      },
+      "library": {
+        "title": "Living Library"
       }
     },
     "errorPage": {

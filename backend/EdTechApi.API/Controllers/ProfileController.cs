@@ -129,7 +129,7 @@ namespace EdTechApi.API.Controllers
             string.IsNullOrEmpty(value) ? new() : value.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
 
         private record LearningCourse(int CourseId, string Category, string Title, string? ImageUrl, int Percent,
-            DateTime? StartedAt, DateTime? CompletedAt);
+            DateTime? StartedAt, DateTime? CompletedAt, string? Level = null);
 
         // Rozetlerin ham verisi. Bitirilen kurslar kalıcı bitirme kaydından (CourseCompletion) gelir: kurstan ayrılmak,
         // iade, sonradan eklenen ders veya kursun silinmesi bitişi düşürmez; aynı kursu yeniden bitirmek bir kez sayılır.
@@ -138,7 +138,7 @@ namespace EdTechApi.API.Controllers
             if (studentId == null) return null;
             var sid = studentId.Value;
             var enrolled = await _context.Enrollments.AsNoTracking().Where(e => e.StudentId == sid)
-                .Select(e => new { e.CourseId, e.Course.Category, e.Course.Title, e.Course.ImageUrl }).ToListAsync();
+                .Select(e => new { e.CourseId, e.Course.Category, e.Course.Title, e.Course.ImageUrl, e.Course.Level }).ToListAsync();
             var completions = (await _enrollmentService.GetCompletionsAsync(sid)).ToDictionary(c => c.CourseId);
             var progress = await _enrollmentService.GetProgressAsync(sid, enrolled.Select(c => c.CourseId).ToList());
             var lessonTimes = await _context.LessonCompletions.Where(c => c.StudentId == sid && c.Lesson != null)
@@ -147,19 +147,24 @@ namespace EdTechApi.API.Controllers
             var startedAt = lessonTimes.GroupBy(x => x.CourseId).ToDictionary(g => g.Key, g => g.Min(x => x.CompletedAt));
             DateTime? Started(int id) => startedAt.TryGetValue(id, out var at) ? at : null;
             var leftIds = completions.Keys.Except(enrolled.Select(e => e.CourseId)).ToList();
-            var images = await _context.Courses.AsNoTracking().Where(c => leftIds.Contains(c.Id))
-                .ToDictionaryAsync(c => c.Id, c => c.ImageUrl);
+            var left = await _context.Courses.AsNoTracking().Where(c => leftIds.Contains(c.Id))
+                .ToDictionaryAsync(c => c.Id, c => new { c.ImageUrl, c.Level });
 
             var courses = enrolled.Select(e => new LearningCourse(e.CourseId, e.Category, e.Title, e.ImageUrl,
                     progress[e.CourseId].Percent, Started(e.CourseId),
-                    completions.GetValueOrDefault(e.CourseId)?.CompletedAt))
+                    completions.GetValueOrDefault(e.CourseId)?.CompletedAt, e.Level))
                 .Concat(leftIds.Select(id => completions[id]).Select(c => new LearningCourse(c.CourseId, c.Category, c.Title,
-                    images.GetValueOrDefault(c.CourseId), 100, Started(c.CourseId), c.CompletedAt)));
+                    left.GetValueOrDefault(c.CourseId)?.ImageUrl, 100, Started(c.CourseId), c.CompletedAt,
+                    left.GetValueOrDefault(c.CourseId)?.Level)));
             return new
             {
                 completedLessons = await _context.LessonCompletions.CountAsync(c => c.StudentId == sid),
                 // seri rozetleri için ders bitirilen günler (UTC)
                 lessonDays = lessonTimes.Select(x => x.CompletedAt.ToString("yyyy-MM-dd")).Distinct().Order().ToList(),
+                // izlenen video süresi: bitirilen derslerin bilinen uzunlukları
+                watchedSeconds = await _context.LessonCompletions.Where(c => c.StudentId == sid && c.Lesson != null)
+                    .SumAsync(c => c.Lesson!.DurationSeconds ?? 0),
+                ratingsGiven = await _context.CourseRatings.CountAsync(r => r.StudentId == sid),
                 courses
             };
         }
@@ -194,7 +199,15 @@ namespace EdTechApi.API.Controllers
                 // iade edilen satışlar düşülür (her iade bir pay geri alımı yazar)
                 Sales = await _context.WalletTransactions.CountAsync(t => t.UserId == userId && t.Type == "Earning")
                         - await _context.WalletTransactions.CountAsync(t => t.UserId == userId && t.Type == "EarningReversal"),
-                Graduates = await _context.CourseCompletions.CountAsync(c => courseIds.Contains(c.CourseId))
+                Graduates = await _context.CourseCompletions.CountAsync(c => courseIds.Contains(c.CourseId)),
+                RatingsReceived = await _context.CourseRatings.CountAsync(r => courseIds.Contains(r.CourseId)),
+                // en az 5 puanla ortalaması 4,5 ve üzeri olan kurslar
+                TopRatedCourses = await _context.CourseRatings.Where(r => courseIds.Contains(r.CourseId))
+                    .GroupBy(r => r.CourseId)
+                    .Select(g => new { Count = g.Count(), Average = g.Average(r => (double)r.Stars) })
+                    .CountAsync(x => x.Count >= 5 && x.Average >= 4.5),
+                // yayımlanan video süresi
+                ContentSeconds = await _context.Lessons.Where(l => courseIds.Contains(l.CourseId)).SumAsync(l => l.DurationSeconds ?? 0)
             };
         }
 
