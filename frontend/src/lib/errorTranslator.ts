@@ -161,6 +161,7 @@ const RULES: Rule[] = [
   [/Sadece jpg, png, gif veya webp/i, "imageTypeOnly"],
   [/Sadece mp4 veya webm/i, "videoTypeOnly"],
   [/Beklenmeyen bir hata/i, "unexpected"],
+  [/Smtp yapılandırılmamış/i, "unexpected"], // the exception middleware sends the generic error instead
 ];
 
 /** The API's error message in the UI language; unknown messages come back unchanged. */

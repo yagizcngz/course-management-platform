@@ -4,16 +4,19 @@ using System.Net.Mail;
 using System.Threading.Tasks;
 using EdTechApi.Business.Interfaces;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace EdTechApi.Business.Services
 {
     public class EmailService : IEmailService
     {
         private readonly IConfiguration _configuration;
+        private readonly IHostEnvironment _env;
 
-        public EmailService(IConfiguration configuration)
+        public EmailService(IConfiguration configuration, IHostEnvironment env)
         {
             _configuration = configuration;
+            _env = env;
         }
 
         public async Task SendEmailAsync(string toEmail, string subject, string body)
@@ -29,6 +32,9 @@ namespace EdTechApi.Business.Services
                 || password.StartsWith("YOUR_") || password == "BURAYA_UYGULAMA_SIFRESI_GELECEK" || email == "your-email@gmail.com";
             if (notConfigured)
             {
+                // canlıda doğrulama kodları günlüğe düşmez ve "gönderildi" denmez: gönderim açıkça başarısız olur
+                if (!_env.IsDevelopment())
+                    throw new InvalidOperationException("Smtp yapılandırılmamış; e-posta gönderilemiyor.");
                 Console.WriteLine($"[SIMULATED EMAIL] To: {toEmail}\nSubject: {subject}\nBody: {body}");
                 return; // Simulate success
             }
