@@ -133,6 +133,11 @@ namespace EdTechApi.API.Controllers
             if (studentId == null) return null;
             var courses = await _context.Enrollments.AsNoTracking().Where(e => e.StudentId == studentId)
                 .Select(e => new { e.CourseId, e.Course.Category, e.Course.Title, e.Course.ImageUrl }).ToListAsync();
+            // kurstan ayrılmak bitirilmiş kursu (ve rozetlerini) silmez: ilerleme öğrenciye bağlı
+            var left = (await _enrollmentService.GetCompletedCourseIdsAsync(studentId.Value))
+                .Except(courses.Select(c => c.CourseId)).ToList();
+            courses.AddRange(await _context.Courses.AsNoTracking().Where(c => left.Contains(c.Id))
+                .Select(c => new { CourseId = c.Id, c.Category, c.Title, c.ImageUrl }).ToListAsync());
             var progress = await _enrollmentService.GetProgressAsync(studentId.Value, courses.Select(c => c.CourseId).ToList());
             return new
             {
