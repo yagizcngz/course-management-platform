@@ -1965,7 +1965,7 @@
     },
     "instructor": {
       "title": "Instructor panel",
-      "intro": "How each of your courses is doing: who is studying it now, who finished it, what sold and what was refunded.",
+      "intro": "How each of your courses is doing: who is studying it, how far each student has got, who finished, how it is rated, what sold and what was refunded.",
       "empty": "You do not teach a course yet. Start from",
       "lessons_one": "{{count}} lesson",
       "lessons_other": "{{count}} lessons",
@@ -1979,7 +1979,59 @@
         "sales": "Sales",
         "refunds": "Refunds",
         "refundRate": "Refund rate",
-        "earned": "Earnings"
+        "earned": "Earnings",
+        "everEnrolled": "All enrolments",
+        "averageProgress": "Average progress"
+      },
+      "eyebrow": "Teaching",
+      "summary": "Summary of all your courses",
+      "kpi": {
+        "students": "Current students",
+        "joined_one": "{{count}} joined in 30 days",
+        "joined_other": "{{count}} joined in 30 days",
+        "enrolments": "Enrolments",
+        "enrolmentsHint": "Everyone who ever joined",
+        "graduates": "Graduates",
+        "completionRate": "{{percent}} completion rate",
+        "progress": "Average progress",
+        "progressHint": "Lessons finished by current students",
+        "rating": "Average rating",
+        "refundRate": "{{percent}} refunded",
+        "earnedHint": "Your share after refunds"
+      },
+      "courses_one": "{{count}} course",
+      "courses_other": "{{count}} courses",
+      "meter": {
+        "completion": "Completion",
+        "progress": "Average progress"
+      },
+      "cardLine": "{{students}} studying · {{graduates}} finished",
+      "hours": "{{value}} h of video",
+      "stages": "Where your students are",
+      "stage": {
+        "notStarted": "Not started",
+        "started": "Under half",
+        "halfway": "Half or more",
+        "finished": "Finished"
+      },
+      "filter": {
+        "all": "All",
+        "progress": "In progress",
+        "finished": "Finished"
+      },
+      "roster": {
+        "title_one": "{{count}} student",
+        "title_other": "{{count}} students",
+        "show": "Show students",
+        "empty": "No student here yet.",
+        "student": "Student",
+        "status": "Status",
+        "progress": "Progress",
+        "enrolled": "Joined",
+        "lastActivity": "Last lesson",
+        "left": "left the course",
+        "progressOf": "Progress of {{name}}",
+        "lessonsDone": "{{done}} of {{total}} lessons"
       }
     },
     "languages": {
@@ -2001,7 +2053,9 @@
       "remove": "Remove my rating",
       "saved": "Thanks, your rating is saved.",
       "removed": "Your rating is removed.",
-      "saveFailed": "The rating could not be saved."
+      "saveFailed": "The rating could not be saved.",
+      "count_one": "{{count}} rating",
+      "count_other": "{{count}} ratings"
     }
   }
 }

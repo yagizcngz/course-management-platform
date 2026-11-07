@@ -110,6 +110,17 @@ namespace EdTechApi.API.Controllers
             return rows == null ? NotFound() : Ok(rows);
         }
 
+        // Eğitmen panelinde bir kursun öğrenci listesi ve ilerlemeleri (yalnızca kendi kursu)
+        [Authorize(Roles = "Teacher")]
+        [HttpGet("me/analytics/{courseId}/students")]
+        public async Task<IActionResult> GetMyCourseStudents(int courseId)
+        {
+            var userId = await _context.Users.Where(u => u.Username == User.GetUsername()).Select(u => (int?)u.Id).FirstOrDefaultAsync();
+            if (userId == null) return Unauthorized();
+            var rows = await _teacherService.GetCourseStudentsForUserAsync(userId.Value, courseId);
+            return rows == null ? NotFound("Kurs bulunamadı.") : Ok(rows);
+        }
+
         [HttpGet("public")]
         public async Task<IActionResult> GetPublic()
         {

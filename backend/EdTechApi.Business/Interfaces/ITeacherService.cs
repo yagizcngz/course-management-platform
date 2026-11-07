@@ -23,5 +23,7 @@ namespace EdTechApi.Business.Interfaces
 
         // Eğitmen paneli: giriş yapan eğitmenin kursları için öğrenci, mezun, satış, iade ve kazanç; eğitmen değilse null
         Task<List<EdTechApi.Business.Services.CourseAnalytics>?> GetAnalyticsForUserAsync(int userId);
+        // Eğitmen paneli: bir kursun öğrencileri ve ilerlemesi; kurs bu eğitmenin değilse null
+        Task<List<EdTechApi.Business.Services.CourseStudentProgress>?> GetCourseStudentsForUserAsync(int userId, int courseId);
     }
 }

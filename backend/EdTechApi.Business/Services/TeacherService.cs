@@ -203,7 +203,16 @@ namespace EdTechApi.Business.Services
                 .GroupBy(c => c.CourseId).Select(g => new { g.Key, Count = g.Count() })
                 .ToDictionaryAsync(x => x.Key, x => x.Count);
             var lessons = await _context.Lessons.Where(l => ids.Contains(l.CourseId))
-                .GroupBy(l => l.CourseId).Select(g => new { g.Key, Count = g.Count() })
+                .GroupBy(l => l.CourseId).Select(g => new { g.Key, Count = g.Count(), Seconds = g.Sum(l => l.DurationSeconds ?? 0) })
+                .ToDictionaryAsync(x => x.Key);
+            var ratings = await _context.CourseRatings.Where(r => ids.Contains(r.CourseId))
+                .GroupBy(r => r.CourseId).Select(g => new { g.Key, Sum = g.Sum(r => r.Stars), Count = g.Count() })
+                .ToDictionaryAsync(x => x.Key);
+            // aktif öğrencilerin ortalama ilerlemesi: bitirilen ders / toplam ders
+            var done = await _context.LessonCompletions
+                .Where(lc => lc.Lesson != null && ids.Contains(lc.Lesson.CourseId)
+                             && _context.Enrollments.Any(e => e.StudentId == lc.StudentId && e.CourseId == lc.Lesson.CourseId))
+                .GroupBy(lc => lc.Lesson!.CourseId).Select(g => new { g.Key, Count = g.Count() })
                 .ToDictionaryAsync(x => x.Key, x => x.Count);
             // satış ve iade kursun kendisine ait (kurs sonradan başka eğitmene geçmiş olabilir); kazanç bu eğitmenin payı:
             // satışta Earning, iadede EarningReversal (eksi tutar)
@@ -225,10 +234,57 @@ namespace EdTechApi.Business.Services
                 a?.Recent ?? 0,
                 ever.GetValueOrDefault(c.Id),
                 graduates.GetValueOrDefault(c.Id),
-                lessons.GetValueOrDefault(c.Id),
+                lessons.TryGetValue(c.Id, out var l) ? l.Count : 0,
                 sales.TryGetValue(c.Id, out var m) ? m.Sales : 0,
                 m?.Refunds ?? 0,
-                earned.GetValueOrDefault(c.Id))).OrderByDescending(x => x.Students).ToList();
+                earned.GetValueOrDefault(c.Id),
+                ratings.TryGetValue(c.Id, out var r) ? Math.Round((double)r.Sum / r.Count, 2) : 0,
+                r?.Count ?? 0,
+                l?.Seconds ?? 0,
+                // ortalama ilerleme (%): aktif öğrencilerin bitirdiği ders payı
+                a == null || l == null || l.Count == 0 ? 0
+                    : (int)Math.Round(100.0 * Math.Min(done.GetValueOrDefault(c.Id), a.Count * l.Count) / (a.Count * l.Count))))
+                .OrderByDescending(x => x.Students).ToList();
+        }
+
+        // Kursun öğrencileri ve ilerlemesi: etkin kaydı olanlar ile kurstan ayrılmış olsa da bitirenler.
+        // Kurs bu eğitmenin değilse null.
+        public async Task<List<CourseStudentProgress>?> GetCourseStudentsForUserAsync(int userId, int courseId)
+        {
+            var owns = await _context.Courses.AnyAsync(c => c.Id == courseId && c.Teacher != null && c.Teacher.UserId == userId);
+            if (!owns) return null;
+
+            var lessonIds = await _context.Lessons.Where(l => l.CourseId == courseId).Select(l => l.Id).ToListAsync();
+            var enrolled = await _context.Enrollments.AsNoTracking().Where(e => e.CourseId == courseId)
+                .Select(e => new { e.StudentId, e.EnrollmentDate }).ToListAsync();
+            var completions = await _context.CourseCompletions.AsNoTracking().Where(c => c.CourseId == courseId)
+                .ToDictionaryAsync(c => c.StudentId, c => c.CompletedAt);
+            var studentIds = enrolled.Select(e => e.StudentId).Union(completions.Keys).ToList();
+            var students = await _context.Students.IgnoreQueryFilters().AsNoTracking().Where(s => studentIds.Contains(s.Id))
+                .Select(s => new { s.Id, s.FirstName, s.LastName, s.StudentNumber, s.ProfilePictureUrl, s.UserId })
+                .ToDictionaryAsync(s => s.Id);
+            var progress = await _context.LessonCompletions.AsNoTracking()
+                .Where(lc => studentIds.Contains(lc.StudentId) && lessonIds.Contains(lc.LessonId))
+                .GroupBy(lc => lc.StudentId)
+                .Select(g => new { g.Key, Done = g.Count(), Last = g.Max(lc => lc.CompletedAt) })
+                .ToDictionaryAsync(x => x.Key);
+
+            return studentIds.Where(students.ContainsKey).Select(id =>
+            {
+                var s = students[id];
+                var joined = enrolled.FirstOrDefault(e => e.StudentId == id);
+                var p = progress.GetValueOrDefault(id);
+                var finishedAt = completions.TryGetValue(id, out var at) ? at : (DateTime?)null;
+                var doneCount = p?.Done ?? 0;
+                // bitiren %100 sayılır: sonradan eklenen ders mezuniyeti geri almaz
+                var percent = finishedAt != null ? 100
+                    : lessonIds.Count == 0 ? 0 : (int)Math.Round(100.0 * doneCount / lessonIds.Count);
+                return new CourseStudentProgress(id, s.UserId, $"{s.FirstName} {s.LastName}".Trim(), s.StudentNumber,
+                    s.ProfilePictureUrl, joined?.EnrollmentDate, doneCount, lessonIds.Count, percent, finishedAt,
+                    p?.Last, joined != null);
+            })
+            .OrderByDescending(x => x.CompletedAt != null).ThenByDescending(x => x.Percent).ThenBy(x => x.Name)
+            .ToList();
         }
     }
 
@@ -237,5 +293,12 @@ namespace EdTechApi.Business.Services
 
     // Eğitmen panelindeki bir kurs satırı. EverEnrolled ayrılan/iade edenleri de sayar; Earned iadeler düşülmüş paydır.
     public record CourseAnalytics(int CourseId, string Title, string Category, decimal Price, int Students, int JoinedLast30,
-        int EverEnrolled, int Graduates, int Lessons, int Sales, int Refunds, decimal Earned);
+        int EverEnrolled, int Graduates, int Lessons, int Sales, int Refunds, decimal Earned,
+        double RatingAverage, int RatingCount, int DurationSeconds, int AverageProgress);
+
+    // Eğitmen panelinde bir öğrencinin kurstaki durumu. Active: etkin kaydı var (yoksa bitirip ayrılmış);
+    // CompletedAt bitirdiği an (kalıcı), LastActivity son bitirdiği dersin zamanı.
+    public record CourseStudentProgress(int StudentId, int? UserId, string Name, string StudentNumber, string? ProfilePictureUrl,
+        DateTime? EnrolledAt, int CompletedLessons, int TotalLessons, int Percent, DateTime? CompletedAt,
+        DateTime? LastActivity, bool Active);
 }

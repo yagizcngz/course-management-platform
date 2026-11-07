@@ -1860,7 +1860,7 @@
     },
     "instructor": {
       "title": "Eğitmen paneli",
-      "intro": "Kurslarınızın her birinin durumu: şu an kimin çalıştığı, kimin bitirdiği, ne satıldığı ve ne iade edildiği.",
+      "intro": "Kurslarınızın durumu: kim çalışıyor, her öğrenci nereye kadar geldi, kim bitirdi, puanı ne, ne satıldı ve ne iade edildi.",
       "empty": "Henüz verdiğiniz bir kurs yok. Başlamak için:",
       "lessons": "{{count}} ders",
       "notes": "Bitirme oranı = mezunlar ÷ kursa hiç kaydolmuş herkes (ayrılanlar dahil). İade oranı = iadeler ÷ satışlar. Kazanç, iadeler düşülmüş payınızdır.",
@@ -1873,7 +1873,56 @@
         "sales": "Satışlar",
         "refunds": "İadeler",
         "refundRate": "İade oranı",
-        "earned": "Kazanç"
+        "earned": "Kazanç",
+        "everEnrolled": "Tüm kayıtlar",
+        "averageProgress": "Ortalama ilerleme"
+      },
+      "eyebrow": "Eğitmenlik",
+      "summary": "Bütün kurslarınızın özeti",
+      "kpi": {
+        "students": "Şu anki öğrenciler",
+        "joined": "30 günde {{count}} katılım",
+        "enrolments": "Kayıtlar",
+        "enrolmentsHint": "Şimdiye kadar katılan herkes",
+        "graduates": "Mezunlar",
+        "completionRate": "{{percent}} bitirme oranı",
+        "progress": "Ortalama ilerleme",
+        "progressHint": "Şu anki öğrencilerin bitirdiği dersler",
+        "rating": "Ortalama puan",
+        "refundRate": "{{percent}} iade",
+        "earnedHint": "İadeler düşülmüş payınız"
+      },
+      "courses": "{{count}} kurs",
+      "meter": {
+        "completion": "Bitirme",
+        "progress": "Ortalama ilerleme"
+      },
+      "cardLine": "{{students}} öğrenci çalışıyor · {{graduates}} bitirdi",
+      "hours": "{{value}} saat video",
+      "stages": "Öğrencileriniz nerede",
+      "stage": {
+        "notStarted": "Başlamadı",
+        "started": "Yarıdan az",
+        "halfway": "Yarı ve üzeri",
+        "finished": "Bitirdi"
+      },
+      "filter": {
+        "all": "Tümü",
+        "progress": "Devam eden",
+        "finished": "Bitiren"
+      },
+      "roster": {
+        "title": "{{count}} öğrenci",
+        "show": "Öğrencileri göster",
+        "empty": "Burada henüz öğrenci yok.",
+        "student": "Öğrenci",
+        "status": "Durum",
+        "progress": "İlerleme",
+        "enrolled": "Katıldı",
+        "lastActivity": "Son ders",
+        "left": "kurstan ayrıldı",
+        "progressOf": "{{name}} ilerlemesi",
+        "lessonsDone": "{{total}} dersin {{done}} tanesi"
       }
     },
     "languages": {
@@ -1894,7 +1943,8 @@
       "remove": "Puanımı kaldır",
       "saved": "Teşekkürler, puanınız kaydedildi.",
       "removed": "Puanınız kaldırıldı.",
-      "saveFailed": "Puan kaydedilemedi."
+      "saveFailed": "Puan kaydedilemedi.",
+      "count": "{{count}} puan"
     }
   }
 }
