@@ -34,6 +34,8 @@ function WalletPage() {
   const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
   const [purchases, setPurchases] = useState<ActivePurchase[]>([]);
   const [refundDays, setRefundDays] = useState(7);
+  // all-time totals from the API (the history lists only the latest 100 entries)
+  const [totals, setTotals] = useState({ spent: 0, earned: 0 });
   const [amount, setAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [loadError, setLoadError] = useState(false);
@@ -48,6 +50,7 @@ function WalletPage() {
       setTransactions(data.transactions);
       setPurchases(data.purchases ?? []);
       setRefundDays(data.refundWindowDays ?? 7);
+      setTotals({ spent: data.spent ?? 0, earned: data.earned ?? 0 });
       setLoadError(false);
     } catch {
       setLoadError(true);
@@ -101,15 +104,9 @@ function WalletPage() {
     }
   };
 
-  const earnings = transactions
-    .filter((x) => x.type === "Earning" || x.type === "EarningReversal")
-    .reduce((s, x) => s + x.amount, 0);
-  // Satın alma negatif, iade pozitif; net harcama (Math.abs: -0 gösterilmesin)
-  const spent = Math.abs(
-    transactions
-      .filter((x) => x.type === "Purchase" || x.type === "Refund")
-      .reduce((s, x) => s + x.amount, 0),
-  );
+  // Math.abs: never show -0
+  const spent = Math.abs(totals.spent);
+  const earnings = totals.earned;
 
   return (
     <>

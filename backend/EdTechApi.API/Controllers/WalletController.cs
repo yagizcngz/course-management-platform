@@ -33,9 +33,13 @@ namespace EdTechApi.API.Controllers
             var ownedCourseIds = await _walletService.GetOwnedCourseIdsAsync(user.Id);
             var purchases = await _walletService.GetActivePurchasesAsync(user.Id);
             var refundableCourseIds = purchases.Where(p => p.Refundable).Select(p => p.CourseId).ToList();
+            // toplamlar bütün geçmişten (liste son 100 hareketle sınırlı): net harcama ve iadeler düşülmüş eğitmen kazancı
+            var mine = _context.WalletTransactions.Where(t => t.UserId == user.Id);
+            var spent = -await mine.Where(t => t.Type == "Purchase" || t.Type == "Refund").SumAsync(t => t.Amount);
+            var earned = await mine.Where(t => t.Type == "Earning" || t.Type == "EarningReversal").SumAsync(t => t.Amount);
             return Ok(new
             {
-                balance = user.Balance, transactions, ownedCourseIds, refundableCourseIds, purchases,
+                balance = user.Balance, transactions, ownedCourseIds, refundableCourseIds, purchases, spent, earned,
                 refundWindowDays = (int)WalletService.RefundWindow.TotalDays
             });
         }
