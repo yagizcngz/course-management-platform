@@ -86,6 +86,54 @@ namespace EdTechApi.Tests
             Assert.False(await demoted.AttachCurrentUserAsync(_db));
         }
 
+        private sealed class CapturingEmail : IEmailService
+        {
+            public readonly List<(string To, string Body)> Sent = new();
+            public Task SendEmailAsync(string toEmail, string subject, string body) { Sent.Add((toEmail, body)); return Task.CompletedTask; }
+        }
+
+        [Fact]
+        public async Task Email_changes_only_with_the_code_sent_to_the_new_address()
+        {
+            _db.Users.Single(u => u.Id == _ali.Id).Password = BCrypt.Net.BCrypt.HashPassword("secret-pass");
+            _db.SaveChanges();
+            var mail = new CapturingEmail();
+            var profile = new ProfileController(null!, null!, _db, new EnrollmentService(_db), new MemoryCache(new MemoryCacheOptions()), mail)
+                { ControllerContext = As("ali") };
+
+            Assert.IsType<BadRequestObjectResult>(await profile.SendEmailChangeCode(new EmailChangeCodeRequest { NewEmail = "new@test", CurrentPassword = "wrong" }));
+            Assert.IsType<BadRequestObjectResult>(await profile.SendEmailChangeCode(new EmailChangeCodeRequest { NewEmail = "ayse@test", CurrentPassword = "secret-pass" }));
+            Assert.IsType<OkObjectResult>(await profile.SendEmailChangeCode(new EmailChangeCodeRequest { NewEmail = "new@test", CurrentPassword = "secret-pass" }));
+            var code = System.Text.RegularExpressions.Regex.Match(mail.Sent.Single(m => m.To == "new@test").Body, @"\d{6}").Value;
+
+            // the code is bound to the address it was sent to
+            Assert.IsType<BadRequestObjectResult>(await profile.ChangeEmail(new ChangeEmailRequest { NewEmail = "other@test", VerificationCode = code }));
+            Assert.Equal("ali@test", _db.Users.Single(u => u.Id == _ali.Id).Email);
+            Assert.IsType<OkObjectResult>(await profile.ChangeEmail(new ChangeEmailRequest { NewEmail = "new@test", VerificationCode = code }));
+            Assert.Equal("new@test", _db.Users.Single(u => u.Id == _ali.Id).Email);
+            Assert.Equal("new@test", _db.Students.Single(s => s.UserId == _ali.Id).Email);
+            Assert.Contains(mail.Sent, m => m.To == "ali@test"); // the old address is told
+            // single use
+            Assert.IsType<BadRequestObjectResult>(await profile.ChangeEmail(new ChangeEmailRequest { NewEmail = "new@test", VerificationCode = code }));
+        }
+
+        [Fact]
+        public async Task Email_change_code_dies_after_five_wrong_tries()
+        {
+            _db.Users.Single(u => u.Id == _ali.Id).Password = BCrypt.Net.BCrypt.HashPassword("secret-pass");
+            _db.SaveChanges();
+            var mail = new CapturingEmail();
+            var profile = new ProfileController(null!, null!, _db, new EnrollmentService(_db), new MemoryCache(new MemoryCacheOptions()), mail)
+                { ControllerContext = As("ali") };
+            await profile.SendEmailChangeCode(new EmailChangeCodeRequest { NewEmail = "new@test", CurrentPassword = "secret-pass" });
+            var code = System.Text.RegularExpressions.Regex.Match(mail.Sent.Single().Body, @"\d{6}").Value;
+            var wrong = code == "000000" ? "111111" : "000000";
+            for (var i = 0; i < ProfileController.MaxEmailCodeAttempts; i++)
+                await profile.ChangeEmail(new ChangeEmailRequest { NewEmail = "new@test", VerificationCode = wrong });
+            Assert.IsType<BadRequestObjectResult>(await profile.ChangeEmail(new ChangeEmailRequest { NewEmail = "new@test", VerificationCode = code }));
+            Assert.Equal("ali@test", _db.Users.Single(u => u.Id == _ali.Id).Email);
+        }
+
         private sealed class NoEmail : IEmailService
         {
             public Task SendEmailAsync(string toEmail, string subject, string body) => Task.CompletedTask;
@@ -162,7 +210,7 @@ namespace EdTechApi.Tests
         [Fact]
         public async Task At_most_five_badges_can_be_featured()
         {
-            var profile = new ProfileController(null!, null!, _db, new EnrollmentService(_db)) { ControllerContext = As("ali") };
+            var profile = new ProfileController(null!, null!, _db, new EnrollmentService(_db), new MemoryCache(new MemoryCacheOptions()), new NoEmail()) { ControllerContext = As("ali") };
             Assert.IsType<BadRequestObjectResult>(await profile.UpdateFeaturedBadges(new FeaturedBadgesRequest
             {
                 BadgeIds = new() { "a", "b", "c", "d", "e", "f" }

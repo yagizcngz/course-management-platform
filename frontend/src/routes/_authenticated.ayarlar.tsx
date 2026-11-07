@@ -82,6 +82,10 @@ function SettingsPage() {
   // Account State
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  // e-posta değişikliği: önce mevcut şifreyle yeni adrese kod gönderilir, sonra kodla onaylanır
+  const [emailPassword, setEmailPassword] = useState("");
+  const [emailCode, setEmailCode] = useState("");
+  const [emailCodeSent, setEmailCodeSent] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
@@ -201,19 +205,27 @@ function SettingsPage() {
     e.preventDefault();
     setIsSaving(true);
     try {
-      const token = localStorage.getItem("jwt_token");
-      const res = await fetch(`${API_BASE}/api/profile/change-email`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ newEmail: email }),
-      });
-      if (res.ok) {
-        showToast("success", t("settings.success"));
-      } else {
+      const res = emailCodeSent
+        ? await fetch(`${API_BASE}/api/profile/change-email`, {
+            method: "PUT",
+            headers: authHeaders(),
+            body: JSON.stringify({ newEmail: email, verificationCode: emailCode }),
+          })
+        : await fetch(`${API_BASE}/api/profile/change-email/send-code`, {
+            method: "POST",
+            headers: authHeaders(),
+            body: JSON.stringify({ newEmail: email, currentPassword: emailPassword }),
+          });
+      if (!res.ok) {
         showToast("error", await readError(res, t("settings.errors.emailFailed")));
+      } else if (emailCodeSent) {
+        showToast("success", t("settings.success"));
+        setEmailCodeSent(false);
+        setEmailCode("");
+      } else {
+        showToast("success", t("settings.account.emailCodeSent"));
+        setEmailCodeSent(true);
+        setEmailPassword("");
       }
     } catch {
       showToast("error", t("courses.errors.serverError"));
@@ -458,18 +470,50 @@ function SettingsPage() {
                 <label htmlFor="set-email" className="text-sm font-medium">
                   {t("settings.account.email")}
                 </label>
+                <input
+                  id="set-email"
+                  type="email"
+                  required
+                  className={field}
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setEmailCodeSent(false);
+                  }}
+                />
                 <div className="flex gap-2">
-                  <input
-                    id="set-email"
-                    type="email"
-                    className={field}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
+                  {emailCodeSent ? (
+                    <input
+                      aria-label={t("register.verificationCode")}
+                      placeholder={t("register.verificationCode")}
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      required
+                      className={field}
+                      value={emailCode}
+                      onChange={(e) => setEmailCode(e.target.value.trim())}
+                    />
+                  ) : (
+                    <input
+                      type="password"
+                      aria-label={t("settings.account.currentPassword")}
+                      placeholder={t("settings.account.currentPassword")}
+                      autoComplete="current-password"
+                      required
+                      className={field}
+                      value={emailPassword}
+                      onChange={(e) => setEmailPassword(e.target.value)}
+                    />
+                  )}
                   <button type="submit" disabled={isSaving} className={pillButton.outline}>
-                    {t("settings.account.updateEmail")}
+                    {emailCodeSent ? t("settings.account.updateEmail") : t("register.sendCode")}
                   </button>
                 </div>
+                {emailCodeSent && (
+                  <p className="text-xs text-muted-foreground">
+                    {t("settings.account.emailCodeSent")}
+                  </p>
+                )}
               </form>
             </Panel>
 

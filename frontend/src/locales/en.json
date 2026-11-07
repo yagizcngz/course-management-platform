@@ -61,7 +61,8 @@
         "usernameHint": "After changing your username you will be asked to sign in again.",
         "profileTitle": "Profile details",
         "profileDesc": "Your name, photo, about text and featured badges are edited on your profile page.",
-        "openProfile": "Open my profile"
+        "openProfile": "Open my profile",
+        "emailCodeSent": "We sent a 6-digit code to the new address. Enter it to confirm the change."
       },
       "profile": {
         "title": "Profile Settings",

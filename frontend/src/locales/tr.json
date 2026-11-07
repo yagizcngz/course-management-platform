@@ -61,7 +61,8 @@
         "usernameHint": "Kullanıcı adını değiştirince yeniden giriş yapmanız istenir.",
         "profileTitle": "Profil bilgileri",
         "profileDesc": "Adınız, fotoğrafınız, hakkınızda yazısı ve öne çıkan rozetleriniz profil sayfanızda düzenlenir.",
-        "openProfile": "Profilimi aç"
+        "openProfile": "Profilimi aç",
+        "emailCodeSent": "Yeni adrese 6 haneli bir kod gönderdik. Değişikliği onaylamak için kodu girin."
       },
       "profile": {
         "title": "Profil Ayarları",

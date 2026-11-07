@@ -5,7 +5,9 @@ using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
@@ -20,13 +22,18 @@ namespace EdTechApi.API.Controllers
         private readonly ITeacherService _teacherService;
         private readonly AppDbContext _context;
         private readonly IEnrollmentService _enrollmentService;
+        private readonly IMemoryCache _cache;
+        private readonly IEmailService _emailService;
 
-        public ProfileController(IStudentService studentService, ITeacherService teacherService, AppDbContext context, IEnrollmentService enrollmentService)
+        public ProfileController(IStudentService studentService, ITeacherService teacherService, AppDbContext context,
+            IEnrollmentService enrollmentService, IMemoryCache cache, IEmailService emailService)
         {
             _studentService = studentService;
             _teacherService = teacherService;
             _context = context;
             _enrollmentService = enrollmentService;
+            _cache = cache;
+            _emailService = emailService;
         }
 
         // Rozetler için ham sayılar (öğrenme ve öğretme); rozet kuralları arayüzde, lib/badges.ts
@@ -350,32 +357,90 @@ namespace EdTechApi.API.Controllers
             return Ok(new { message = "Şifreniz başarıyla değiştirildi." });
         }
 
+        public const int MaxEmailCodeAttempts = 5;
+        private static readonly TimeSpan EmailCodeLifetime = TimeSpan.FromMinutes(10);
+        private record PendingEmailChange(string Email, string Code);
+        private static string EmailChangeKey(int userId) => $"email-change:{userId}";
+        private static string EmailChangeFailKey(int userId) => $"email-change-fail:{userId}";
+
+        // E-posta değişikliği iki adımlı: önce mevcut şifreyle yeni adrese kod istenir, adres ancak o kodla değişir.
+        // Şifre istenmesi çalınan bir token'ın hesabı kendi adresine taşımasını keser; kod adresin sahibini doğrular.
+        [EnableRateLimiting("auth")]
+        [HttpPost("change-email/send-code")]
+        public async Task<IActionResult> SendEmailChangeCode([FromBody] EmailChangeCodeRequest request)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == User.GetUserId());
+            if (user == null) return NotFound("Kullanıcı bulunamadı.");
+            if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword ?? "", user.Password))
+                return BadRequest("Mevcut şifre hatalı.");
+
+            var newEmail = (request.NewEmail ?? "").Trim();
+            if (!new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(newEmail))
+                return BadRequest("Geçerli bir e-posta adresi giriniz.");
+            if (await _context.Users.AnyAsync(u => u.Email == newEmail && u.Id != user.Id))
+                return BadRequest("Bu e-posta adresi zaten kullanımda.");
+
+            // kayıt koduyla aynı sınır: bir adrese dakikada bir kod
+            var cooldownKey = $"otp-sent:{newEmail.ToLowerInvariant()}";
+            if (_cache.TryGetValue(cooldownKey, out _))
+                return StatusCode(429, "Bu adrese az önce kod gönderildi. Lütfen bir dakika sonra tekrar deneyin.");
+            _cache.Set(cooldownKey, true, TimeSpan.FromMinutes(1));
+
+            var code = System.Security.Cryptography.RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
+            _cache.Set(EmailChangeKey(user.Id), new PendingEmailChange(newEmail, code), EmailCodeLifetime);
+            _cache.Remove(EmailChangeFailKey(user.Id));
+
+            await _emailService.SendEmailAsync(newEmail, "E-Kurs E-posta Değişikliği Doğrulama Kodu", $@"
+                <p>E-Kurs hesabınızın e-posta adresini bu adresle değiştirmek için doğrulama kodunuz:</p>
+                <h2 style='color: #4285F4;'>{code}</h2>
+                <p>Bu kod {EmailCodeLifetime.TotalMinutes:0} dakika boyunca geçerlidir. Bu isteği siz yapmadıysanız bu e-postayı yok sayın.</p>");
+            return Ok(new { message = "Doğrulama kodu e-posta adresinize gönderildi." });
+        }
+
+        [EnableRateLimiting("auth")]
         [HttpPut("change-email")]
         public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailRequest request)
         {
-            var username = GetCurrentUsername();
-            if (string.IsNullOrEmpty(username)) return Unauthorized();
-
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == User.GetUserId());
             if (user == null) return NotFound("Kullanıcı bulunamadı.");
 
-            if (!new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(request.NewEmail))
-                return BadRequest("Geçerli bir e-posta adresi giriniz.");
+            var newEmail = (request.NewEmail ?? "").Trim();
+            var key = EmailChangeKey(user.Id);
+            if (!_cache.TryGetValue(key, out PendingEmailChange? pending) || pending == null
+                || pending.Code != request.VerificationCode || !string.Equals(pending.Email, newEmail, StringComparison.OrdinalIgnoreCase))
+            {
+                // kaba kuvvete karşı: 5 yanlış denemede kod geçersiz olur, yenisi istenmeli
+                var failKey = EmailChangeFailKey(user.Id);
+                var fails = _cache.Get<int>(failKey) + 1;
+                _cache.Set(failKey, fails, EmailCodeLifetime);
+                if (fails >= MaxEmailCodeAttempts) _cache.Remove(key);
+                return BadRequest("Geçersiz veya süresi dolmuş doğrulama kodu.");
+            }
 
-            var emailExists = await _context.Users.AnyAsync(u => u.Email == request.NewEmail && u.Id != user.Id);
-            if (emailExists)
+            // kod istendikten sonra adres başka bir hesaba geçmiş olabilir
+            if (await _context.Users.AnyAsync(u => u.Email == pending.Email && u.Id != user.Id))
                 return BadRequest("Bu e-posta adresi zaten kullanımda.");
 
-            user.Email = request.NewEmail;
-
-            // Sync to Student/Teacher
+            var oldEmail = user.Email;
+            user.Email = pending.Email;
             var student = await _context.Students.FirstOrDefaultAsync(s => s.UserId == user.Id);
-            if (student != null) student.Email = request.NewEmail;
-
+            if (student != null) student.Email = pending.Email;
             var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == user.Id);
-            if (teacher != null) teacher.Email = request.NewEmail;
-
+            if (teacher != null) teacher.Email = pending.Email;
             await _context.SaveChangesAsync();
+            _cache.Remove(key);
+            _cache.Remove(EmailChangeFailKey(user.Id));
+
+            // eski adrese bilgi: değişikliği sahibi yapmadıysa fark etsin. Gönderim hatası değişikliği geri almaz.
+            if (!string.IsNullOrWhiteSpace(oldEmail))
+            {
+                try
+                {
+                    await _emailService.SendEmailAsync(oldEmail, "E-Kurs e-posta adresiniz değişti",
+                        "<p>E-Kurs hesabınızın e-posta adresi değiştirildi. Bu değişikliği siz yapmadıysanız hemen destek ile iletişime geçin.</p>");
+                }
+                catch (Exception) { /* bildirim en iyi çaba */ }
+            }
             return Ok(new { message = "E-posta adresiniz başarıyla güncellendi." });
         }
 
@@ -429,9 +494,16 @@ namespace EdTechApi.API.Controllers
         public string NewPassword { get; set; } = string.Empty;
     }
 
+    public class EmailChangeCodeRequest
+    {
+        public string NewEmail { get; set; } = string.Empty;
+        public string CurrentPassword { get; set; } = string.Empty;
+    }
+
     public class ChangeEmailRequest
     {
         public string NewEmail { get; set; } = string.Empty;
+        public string VerificationCode { get; set; } = string.Empty;
     }
 
     public class ChangeUsernameRequest
