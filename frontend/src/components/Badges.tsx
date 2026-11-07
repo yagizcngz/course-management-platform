@@ -67,6 +67,9 @@ const GLYPHS: Record<BadgeKind, string> = {
   mentor:
     "M12 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0 M3.5 19c0-4 2.5-6 5.5-6s5.5 2 5.5 6 M18.5 9a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0 M15 13.5c3.5-.5 5.5 1.5 5.5 5.5",
   architect: "M12 5 6 20 M12 5l6 15 M8.4 14h7.2 M12 3.2v1.8",
+  discussion: "M4 5h16v11H10l-4 3.5V16H4Z M8 9.5h8 M8 12.5h5",
+  voice: "M3 4h11v8H8l-3 2.5V12H3Z M17 9h4v8h-2v2.5L16 17h-5v-2",
+  friends: "M12 19.5s-7.5-4.6-7.5-10A4 4 0 0 1 12 7a4 4 0 0 1 7.5 2.5c0 5.4-7.5 10-7.5 10Z",
 };
 
 /** The metal of each rarity tier; legendary keeps the brand gold. */

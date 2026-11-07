@@ -1538,6 +1538,39 @@
         "title": "Popular Mentor",
         "criteria": "Have {{count}} students enrol in your courses."
       },
+      "icebreaker": {
+        "title": "Icebreaker",
+        "criteria_one": "Start a discussion in the Community.",
+        "criteria_other": "Start {{count}} discussions in the Community."
+      },
+      "discussionLeader": {
+        "title": "Discussion Leader"
+      },
+      "contributor": {
+        "title": "Contributor",
+        "criteria_one": "Reply to a discussion someone else started.",
+        "criteria_other": "Join {{count}} discussions started by others."
+      },
+      "regular": {
+        "title": "Community Regular"
+      },
+      "communityPillar": {
+        "title": "Pillar of the Community"
+      },
+      "firstFriend": {
+        "title": "First Friend",
+        "criteria_one": "Make a friend.",
+        "criteria_other": "Have {{count}} friends."
+      },
+      "socialCircle": {
+        "title": "Social Circle"
+      },
+      "networker": {
+        "title": "Networker"
+      },
+      "connector": {
+        "title": "Connector"
+      },
       "architect": {
         "title": "Curriculum Architect",
         "criteria": "Publish {{count}} lessons across your courses."

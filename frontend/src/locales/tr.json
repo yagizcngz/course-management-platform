@@ -1457,6 +1457,36 @@
         "title": "Yüksek Katılımlı Eğitmen",
         "criteria": "Kurslarına {{count}} öğrenci kaydolsun."
       },
+      "icebreaker": {
+        "title": "Buzkıran",
+        "criteria": "Toplulukta {{count}} tartışma başlat."
+      },
+      "discussionLeader": {
+        "title": "Tartışma Lideri"
+      },
+      "contributor": {
+        "title": "Katkıcı",
+        "criteria": "Başkalarının başlattığı {{count}} tartışmaya katıl."
+      },
+      "regular": {
+        "title": "Topluluğun Müdavimi"
+      },
+      "communityPillar": {
+        "title": "Topluluğun Direği"
+      },
+      "firstFriend": {
+        "title": "İlk Arkadaş",
+        "criteria": "{{count}} arkadaş edin."
+      },
+      "socialCircle": {
+        "title": "Arkadaş Çevresi"
+      },
+      "networker": {
+        "title": "Bağlantı Ustası"
+      },
+      "connector": {
+        "title": "Köprü Kuran"
+      },
       "architect": {
         "title": "Müfredat Mimarı",
         "criteria": "Kurslarında toplam {{count}} ders yayımla."

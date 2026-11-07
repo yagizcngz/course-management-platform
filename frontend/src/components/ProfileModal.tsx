@@ -68,6 +68,7 @@ interface PublicProfile {
   featuredBadges: string[] | null;
   learning: AchievementStats["learning"];
   teaching: AchievementStats["teaching"];
+  social: AchievementStats["social"];
   taughtCourses: { id: number; title: string; category: string }[] | null;
 }
 
@@ -258,7 +259,10 @@ function RecordSections({ profile }: { profile: PublicProfile }) {
   const { t, i18n } = useTranslation();
   const build = useBadgeBuilder();
   const badges = useMemo(
-    () => (profile ? build({ learning: profile.learning, teaching: profile.teaching }) : null),
+    () =>
+      profile
+        ? build({ learning: profile.learning, teaching: profile.teaching, social: profile.social })
+        : null,
     [build, profile],
   );
   const shown = badges ? featuredBadges(badges, profile?.featuredBadges) : [];

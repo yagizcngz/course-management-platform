@@ -14,6 +14,11 @@ export interface AchievementStats {
     }[];
   } | null;
   teaching: { joinedAt: string; courses: number; students: number; lessons: number } | null;
+  /**
+   * Community activity: when each discussion the user started was opened, when they first replied
+   * to each discussion someone else started, and how many accepted friends they have.
+   */
+  social?: { threads: string[]; joined: string[]; friends: number } | null;
 }
 
 /** Rarity tiers, from the easiest to the hardest to earn. */
@@ -32,7 +37,10 @@ export type BadgeKind =
   | "author"
   | "senior"
   | "mentor"
-  | "architect";
+  | "architect"
+  | "discussion"
+  | "voice"
+  | "friends";
 
 export interface Badge {
   id: string;
@@ -102,6 +110,23 @@ const DAYS: Rule[] = [
   ["senior", "senior", "rare", 180],
   ["veteran", "senior", "epic", 365],
   ["pillar", "senior", "legendary", 730],
+];
+
+// community badges, in every role's catalogue
+const THREADS: Rule[] = [
+  ["icebreaker", "discussion", "common", 1],
+  ["discussionLeader", "discussion", "rare", 10],
+];
+const JOINED: Rule[] = [
+  ["contributor", "voice", "common", 1],
+  ["regular", "voice", "uncommon", 10],
+  ["communityPillar", "voice", "epic", 50],
+];
+const FRIENDS: Rule[] = [
+  ["firstFriend", "friends", "common", 1],
+  ["socialCircle", "friends", "uncommon", 5],
+  ["networker", "friends", "rare", 15],
+  ["connector", "friends", "epic", 30],
 ];
 
 export function buildBadges(stats: AchievementStats, t: TFunction, label: (cat: string) => string) {
@@ -200,6 +225,25 @@ export function buildBadges(stats: AchievementStats, t: TFunction, label: (cat: 
       (_, count) => t("badges.senior.criteria", { count }),
       (n) => new Date(joined + n * DAY).toISOString(),
     );
+  }
+  // every participant (student or teacher) gets the same community ladders; a profile whose
+  // activity is hidden counts as none
+  if (l || te) {
+    const so = stats.social ?? { threads: [], joined: [], friends: 0 };
+    ladder(
+      THREADS,
+      so.threads.length,
+      (_, count) => t("badges.icebreaker.criteria", { count }),
+      (n) => nth(so.threads, n),
+    );
+    ladder(
+      JOINED,
+      so.joined.length,
+      (_, count) => t("badges.contributor.criteria", { count }),
+      (n) => nth(so.joined, n),
+    );
+    // friendships keep no acceptance date, so these carry none
+    ladder(FRIENDS, so.friends, (_, count) => t("badges.firstFriend.criteria", { count }));
   }
   return sortBadges(out);
 }
