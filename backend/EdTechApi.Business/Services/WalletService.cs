@@ -207,7 +207,7 @@ namespace EdTechApi.Business.Services
                 .Select(g => new { CourseId = g.Key, At = g.Max(t => t.CreatedAt), Title = g.Max(t => t.Description) })
                 .ToListAsync();
             var now = DateTime.UtcNow;
-            return latest.Select(p => new ActivePurchase(p.CourseId, p.Title, p.At, p.At + RefundWindow,
+            return latest.Select(p => new ActivePurchase(p.CourseId, p.Title ?? "", p.At, p.At + RefundWindow,
                 now - p.At <= RefundWindow && !refunded.Contains(p.CourseId), refunded.Contains(p.CourseId))).ToList();
         }
 

@@ -43,7 +43,7 @@ namespace EdTechApi.Business.Services
 
                 var mailMessage = new MailMessage
                 {
-                    From = new MailAddress(email, "EdTech E-Kurs Sistemi"),
+                    From = new MailAddress(email!, "EdTech E-Kurs Sistemi"), // notConfigured above returned on a blank address
                     Subject = subject,
                     Body = body,
                     IsBodyHtml = true

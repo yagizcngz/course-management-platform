@@ -14,7 +14,7 @@ namespace EdTechApi.API.Controllers
     [Authorize]
     public class FriendsController : ControllerBase
     {
-        public const string Accepted = "Accepted";
+        public new const string Accepted = "Accepted"; // hides ControllerBase.Accepted(); status names are read across controllers
         public const string Pending = "Pending";
         private readonly AppDbContext _context;
 
