@@ -1,4 +1,4 @@
-using EdTechApi.Core.Entities;
+﻿using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,7 +20,12 @@ namespace EdTechApi.API.Helpers
 
             CatalogSeed.SeedCategories(db);
             var demo = isDevelopment && config["Seed:DemoUsers"] == "true";
-            if (!demo) return;
+            if (demo) SeedDemo(db, config);
+            DataSanitizer.Run(db);
+        }
+
+        private static void SeedDemo(AppDbContext db, IConfiguration config)
+        {
             CatalogSeed.SeedCatalog(db);
 
             var demoPass = config["Seed:DemoPassword"];

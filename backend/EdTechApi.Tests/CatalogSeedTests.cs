@@ -1,4 +1,4 @@
-using EdTechApi.API.Helpers;
+﻿using EdTechApi.API.Helpers;
 using EdTechApi.Business.Services;
 using EdTechApi.Core.Constants;
 using EdTechApi.Core.DTOs;
@@ -148,6 +148,19 @@ namespace EdTechApi.Tests
         }
 
         [Fact]
+        public void Sanitizer_gives_profile_less_accounts_a_numbered_profile_once()
+        {
+            _db.Users.AddRange(new User { Username = "legacy_s", Role = "User", FirstName = "L", Email = "ls@test" },
+                new User { Username = "legacy_t", Role = "Teacher", FirstName = "T", Email = "lt@test" });
+            _db.SaveChanges();
+
+            Assert.Equal(4, DataSanitizer.Run(_db)); // two profiles, two numbers
+            Assert.Equal(0, DataSanitizer.Run(_db));
+            Assert.NotEmpty(_db.Students.Single(s => s.User!.Username == "legacy_s").StudentNumber);
+            Assert.NotEmpty(_db.Teachers.Single(t => t.User!.Username == "legacy_t").TeacherNumber);
+        }
+
+        [Fact]
         public void Demo_accounts_start_with_progress_and_courses()
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
@@ -162,6 +175,9 @@ namespace EdTechApi.Tests
             Assert.InRange(enrollments.Count, 2, 5);
             Assert.Contains(enrollments, e => e.Status == EnrollmentService.Completed);
             Assert.Contains(enrollments, e => e.Status == EnrollmentService.InProgress);
+            // the startup sanitizer records seeded completions once, so badges and teacher graduate counts see them
+            var finished = enrollments.Where(e => e.Status == EnrollmentService.Completed).Select(e => e.CourseId).ToList();
+            Assert.Equal(finished.Order(), _db.CourseCompletions.Where(c => c.StudentId == student.Id).Select(c => c.CourseId).ToList().Order());
             var user = _db.Users.Single(u => u.Username == "demo_student");
             Assert.Equal(_db.WalletTransactions.Where(t => t.UserId == user.Id).ToList().Sum(t => t.Amount), user.Balance);
             Assert.True(_db.Courses.Count(c => c.Teacher!.User!.Username == "demo_teacher") >= 1);
