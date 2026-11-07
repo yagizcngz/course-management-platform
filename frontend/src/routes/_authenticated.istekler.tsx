@@ -1,6 +1,6 @@
 import { formatDate, formatDateTime, pillButton } from "@/lib/utils";
 import { authHeaders, readError } from "@/lib/auth";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
@@ -56,7 +56,7 @@ function RequestsPage() {
   const [selectedTeachingIds, setSelectedTeachingIds] = useState<number[]>([]);
   const [selectedSupportIds, setSelectedSupportIds] = useState<number[]>([]);
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     try {
       const token = localStorage.getItem("jwt_token");
       if (!token) {
@@ -77,11 +77,11 @@ function RequestsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     fetchRequests();
-  }, []);
+  }, [fetchRequests]);
 
   const handleApprove = async (id: number) => {
     try {
@@ -534,7 +534,7 @@ function InstructorApplications() {
   const { t, i18n } = useTranslation();
   const [items, setItems] = useState<InstructorApplication[] | null>(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       const res = await fetch(`${API_BASE}/api/TeacherApplications`, { headers: authHeaders() });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -543,11 +543,11 @@ function InstructorApplications() {
       setItems([]);
       toast.error(t("common.loadFailed"));
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [load]);
 
   const decide = async (id: number, action: "approve" | "reject") => {
     const res = await fetch(`${API_BASE}/api/TeacherApplications/${id}/${action}`, {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -31,7 +31,7 @@ function MySupportRequestsPage() {
   const [requests, setRequests] = useState<SupportRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     try {
       const token = localStorage.getItem("jwt_token");
       if (!token) return;
@@ -52,11 +52,11 @@ function MySupportRequestsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     fetchRequests();
-  }, []);
+  }, [fetchRequests]);
 
   const sortedRequests = [...requests].sort((a, b) => {
     const dateA = a.isResolved ? a.repliedAt || a.createdAt : a.createdAt;

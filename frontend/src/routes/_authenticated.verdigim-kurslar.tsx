@@ -1,6 +1,6 @@
 import { authHeaders, readError } from "@/lib/auth";
 import { formatDate, formatTry, pillButton } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "@/components/PageHeader";
@@ -47,7 +47,7 @@ function TaughtCoursesPage() {
   const [dbTeachers, setDbTeachers] = useState<TeacherLiteDto[]>([]);
   const [dbEnrollments, setDbEnrollments] = useState<EnrollmentDto[]>([]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const token = localStorage.getItem("jwt_token");
       if (!token) {
@@ -121,11 +121,11 @@ function TaughtCoursesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handleAddCourse = async (e: React.FormEvent) => {
     e.preventDefault();
