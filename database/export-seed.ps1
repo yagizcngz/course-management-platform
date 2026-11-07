@@ -19,7 +19,8 @@ $root = Split-Path $PSScriptRoot -Parent
 
 # parents before children, so foreign keys hold while inserting
 $tables = 'Categories', 'SystemSettings', 'Announcements', 'Users', 'Teachers', 'Students', 'Courses', 'Lessons',
-    'Enrollments', 'LessonCompletions', 'WalletTransactions', 'TeacherApplications', 'TeachingRequests',
+    'Enrollments', 'LessonCompletions', 'CourseCompletions', 'CourseRatings', 'WalletTransactions',
+    'TeacherApplications', 'TeachingRequests', 'BranchChangeRequests',
     'SupportRequests', 'ForumThreads', 'ForumPosts', 'ForumPostLikes', 'Friendships', 'DirectMessages'
 
 $conn = New-Object System.Data.SqlClient.SqlConnection "Server=$Server;Database=$Database;Integrated Security=True;TrustServerCertificate=True"
