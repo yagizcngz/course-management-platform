@@ -8,7 +8,6 @@ import {
   List,
   Plus,
   Trash2,
-  Palette,
   ShieldPlus,
   Eye,
   Receipt,
@@ -19,10 +18,9 @@ import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { LanguageToggle, ThemeToggle } from "@/components/DisplayToggles";
 import { Switch } from "@/components/ui/switch";
 import { chip, pillButton } from "@/lib/utils";
-import { authHeaders, getRoleFromToken, isAdminRole, isTeacherRole, readError } from "@/lib/auth";
+import { authHeaders, getRoleFromToken, isAdminRole, readError } from "@/lib/auth";
 import { API_BASE, refundNote, type ActivePurchase } from "@/components/courseHelpers";
 import { formatDate, formatTry } from "@/lib/utils";
 import { getReduceMotion, setReduceMotion } from "@/lib/motionPref";
@@ -63,7 +61,6 @@ function SettingsPage() {
   const activeTab: Tab = Route.useSearch().tab ?? "account";
   const setActiveTab = (tab: Tab) =>
     navigate({ search: tab === "account" ? {} : { tab }, replace: true, resetScroll: false });
-  const role = getRoleFromToken();
   const [reduceMotion, setReduceMotionState] = useState(false);
   // purchases tab: balance and refundable purchases from /api/wallet/me (participants only)
   const [wallet, setWallet] = useState<{
@@ -483,34 +480,6 @@ function SettingsPage() {
                 <ArrowRight className="size-4" />
               </Link>
             </Panel>
-
-            <Panel no="03" title={t("settings.account.shortcutsTitle")} icon={<Sparkles />}>
-              <ul className="space-y-2 text-sm">
-                {(isAdmin
-                  ? [
-                      ["/raporlar", "sidebar.reports"],
-                      ["/ogrenciler", "sidebar.students"],
-                      ["/duyurular", "sidebar.announcements"],
-                    ]
-                  : [
-                      ...(isTeacherRole(role)
-                        ? [["/verdigim-kurslar", "sidebar.taughtCourses"]]
-                        : []),
-                      ["/kurslarim", "sidebar.myCourses"],
-                      ["/cuzdan", "sidebar.wallet"],
-                      ["/yardim-taleplerim", "sidebar.mySupportRequests"],
-                      ["/yardim", "sidebar.help"],
-                    ]
-                ).map(([to, key]) => (
-                  <li key={to}>
-                    <Link to={to} className="inline-flex items-center gap-2 hover:underline">
-                      <ArrowRight className="size-3.5 text-gold" />
-                      {t(key)}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </Panel>
           </div>
         )}
 
@@ -556,12 +525,17 @@ function SettingsPage() {
               </form>
             </Panel>
 
-            <section className="md:col-span-2 min-w-0 rounded-xl border border-destructive/40 bg-card p-6">
-              <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-destructive">
-                02 · {t("settings.profile.manageAccount")}
-              </p>
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
-                <p className="max-w-xl text-sm text-muted-foreground">
+            <section className="flex min-w-0 flex-col gap-5 rounded-xl border border-destructive/40 bg-card p-6">
+              <div>
+                <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-destructive">
+                  02
+                </p>
+                <h2 className="mt-1 font-serif text-2xl leading-tight">
+                  {t("settings.profile.manageAccount")}
+                </h2>
+              </div>
+              <div className="flex flex-1 flex-col items-start justify-between gap-4">
+                <p className="text-sm text-muted-foreground">
                   {t("settings.profile.manageAccountDesc")}
                 </p>
                 <ConfirmDialog
@@ -596,16 +570,7 @@ function SettingsPage() {
                 />
               </label>
             </Panel>
-            <Panel no="02" title={t("settings.preferences.displayTitle")} icon={<Palette />}>
-              <p className="text-sm text-muted-foreground">
-                {t("settings.preferences.displayDesc")}
-              </p>
-              <div className="flex flex-wrap items-center gap-3">
-                <LanguageToggle />
-                <ThemeToggle />
-              </div>
-            </Panel>
-            <Panel no="03" title={t("settings.preferences.motionTitle")} icon={<Sparkles />}>
+            <Panel no="02" title={t("settings.preferences.motionTitle")} icon={<Sparkles />}>
               <p className="text-sm text-muted-foreground">
                 {t("settings.preferences.motionDesc")}
               </p>
@@ -626,7 +591,7 @@ function SettingsPage() {
         )}
 
         {activeTab === "privacy" && (
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6">
             <Panel no="01" title={t("settings.privacy.visibilityTitle")} icon={<Eye />}>
               <p className="text-sm text-muted-foreground">
                 {t("settings.privacy.visibilityDesc")}
@@ -638,13 +603,6 @@ function SettingsPage() {
                   onCheckedChange={(v) => saveFlags({ isProfilePublic: v })}
                 />
               </label>
-            </Panel>
-            <Panel no="02" title={t("settings.privacy.badgesTitle")} icon={<UserIcon />}>
-              <p className="text-sm text-muted-foreground">{t("settings.privacy.badgesDesc")}</p>
-              <Link to="/profil" className={pillButton.outline}>
-                {t("settings.account.openProfile")}
-                <ArrowRight className="size-4" />
-              </Link>
             </Panel>
           </div>
         )}

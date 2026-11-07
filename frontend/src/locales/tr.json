@@ -61,8 +61,7 @@
         "usernameHint": "Kullanıcı adını değiştirince yeniden giriş yapmanız istenir.",
         "profileTitle": "Profil bilgileri",
         "profileDesc": "Adınız, fotoğrafınız, hakkınızda yazısı ve öne çıkan rozetleriniz profil sayfanızda düzenlenir.",
-        "openProfile": "Profilimi aç",
-        "shortcutsTitle": "Kısayollar"
+        "openProfile": "Profilimi aç"
       },
       "profile": {
         "title": "Profil Ayarları",
@@ -87,8 +86,6 @@
         "emailNotifications": "E-posta Bildirimleri",
         "receiveNotifications": "Destek yanıtlarını e-postayla gönder",
         "updatePreferences": "Tercihleri Kaydet",
-        "displayTitle": "Dil ve görünüm",
-        "displayDesc": "Arayüz dili ve açık/koyu tema bu tarayıcıda saklanır.",
         "motionTitle": "Hareket",
         "motionDesc": "Bu tarayıcıda sayfa animasyonlarını, hareketli sahneleri ve geçişleri kapatır. Sisteminizin hareketi azaltma ayarına her durumda uyulur.",
         "reduceMotion": "Hareketi azalt"
@@ -152,9 +149,7 @@
       "privacy": {
         "visibilityTitle": "Profil görünürlüğü",
         "visibilityDesc": "Gizli profil; öğrenme ilerlemenizi, bitirdiğiniz kursları, öğrenme ve topluluk rozetlerinizi ve topluluk istatistiklerinizi diğer üyelerden gizler. Eğitmenlik bilgileri (kurslarınız, öğrencileriniz, eğitmenlik rozetleriniz) açık kalır; adınız ve fotoğrafınız gönderilerinizin ve mesajlarınızın yanında görünmeye devam eder; yöneticiler her şeyi görür.",
-        "publicProfile": "Herkese açık profil",
-        "badgesTitle": "Öne çıkan rozetler",
-        "badgesDesc": "Kazandığınız en fazla beş rozeti profil kartınızda öne çıkarın. Diğer üyeler yalnızca sabitlenen rozetleri görür."
+        "publicProfile": "Herkese açık profil"
       },
       "purchases": {
         "title": "Satın almalar ve iadeler",

@@ -61,8 +61,7 @@
         "usernameHint": "After changing your username you will be asked to sign in again.",
         "profileTitle": "Profile details",
         "profileDesc": "Your name, photo, about text and featured badges are edited on your profile page.",
-        "openProfile": "Open my profile",
-        "shortcutsTitle": "Shortcuts"
+        "openProfile": "Open my profile"
       },
       "profile": {
         "title": "Profile Settings",
@@ -87,8 +86,6 @@
         "emailNotifications": "Email Notifications",
         "receiveNotifications": "Email me support replies",
         "updatePreferences": "Save Preferences",
-        "displayTitle": "Language and appearance",
-        "displayDesc": "The interface language and light/dark theme are kept in this browser.",
         "motionTitle": "Motion",
         "motionDesc": "Turns off page animations, moving scenes and transitions in this browser. Your system's reduced-motion setting is followed either way.",
         "reduceMotion": "Reduce motion"
@@ -152,9 +149,7 @@
       "privacy": {
         "visibilityTitle": "Profile visibility",
         "visibilityDesc": "A private profile hides your learning progress, finished courses, learning and community badges and community stats from other members. Teaching details (your courses, students, teaching badges) stay public, and your name and photo still show next to your posts and messages; admins always see everything.",
-        "publicProfile": "Public profile",
-        "badgesTitle": "Featured badges",
-        "badgesDesc": "Choose up to five earned badges to feature on your profile card. Only pinned badges are shown to others."
+        "publicProfile": "Public profile"
       },
       "purchases": {
         "title": "Purchases & refunds",

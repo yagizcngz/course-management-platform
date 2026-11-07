@@ -168,6 +168,8 @@
   }
   html {
     color-scheme: light;
+    /* the page keeps its scrollbar space, so a shorter tab or page cannot shift the header sideways */
+    scrollbar-gutter: stable;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
