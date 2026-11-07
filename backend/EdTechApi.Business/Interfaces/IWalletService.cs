@@ -1,4 +1,4 @@
-using EdTechApi.Core.Entities;
+﻿using EdTechApi.Core.Entities;
 
 namespace EdTechApi.Business.Interfaces
 {
@@ -13,5 +13,6 @@ namespace EdTechApi.Business.Interfaces
         Task<List<int>> GetOwnedCourseIdsAsync(int userId);
         Task<bool> OwnsCourseAsync(int userId, int courseId);
         Task<List<int>> GetRefundableCourseIdsAsync(int userId);
+        Task<List<EdTechApi.Business.Services.ActivePurchase>> GetActivePurchasesAsync(int userId);
     }
 }

@@ -1,4 +1,4 @@
-using EdTechApi.Business.Interfaces;
+﻿using EdTechApi.Business.Interfaces;
 using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
 using Microsoft.EntityFrameworkCore;
@@ -107,7 +107,8 @@ namespace EdTechApi.Business.Services
             return await _context.Users.Where(u => u.Id == buyer.Id).Select(u => u.Balance).FirstAsync();
         }
 
-        // İade: son satın alma 7 gün içindeyse ücret öğrenciye döner, öğretmen payı geri alınır, kayıt silinir.
+        // İade: son satın alma 7 gün içindeyse (kurs bitirilmiş olsa da) ücret öğrenciye döner, öğretmen payı geri alınır,
+        // kayıt silinir. Bitirme kaydı (CourseCompletion) ve rozetler kalır; kurs başına yalnızca bir iade yapılır.
         public async Task<decimal> RefundCourseAsync(User buyer, int courseId)
         {
             var purchase = await _context.WalletTransactions
@@ -118,9 +119,9 @@ namespace EdTechApi.Business.Services
                 throw new ArgumentException("Bu kurs için iade edilebilir bir satın alma yok.");
             if (DateTime.UtcNow - purchase.CreatedAt > RefundWindow)
                 throw new ArgumentException($"İade süresi ({RefundWindow.TotalDays:0} gün) doldu.");
-            // bitirilmiş kurs sahiplikte kalır; iadesi ücretsiz yeniden katılım açığı olurdu
-            if ((await CompletedCourseIdsAsync(buyer.Id)).Contains(courseId))
-                throw new ArgumentException("Tamamlanmış kurs iade edilemez.");
+            // al-izle-iade döngüsünü kapatır: iade edilmiş bir kursu yeniden alan öğrenci ikinci kez iade edemez
+            if (await RefundedCourseIdsQuery(buyer.Id).ContainsAsync(courseId))
+                throw new ArgumentException("Bu kurs daha önce iade edildi; ikinci kez iade edilemez.");
 
             var earning = await _context.WalletTransactions
                 .FirstOrDefaultAsync(t => t.Type == "Earning" && t.RelatedTransactionId == purchase.Id);
@@ -178,23 +179,41 @@ namespace EdTechApi.Business.Services
             (await GetActivePurchaseCourseIdsAsync(userId)).Contains(courseId);
 
         // Sahip olunan kurslar: iade edilmemiş satın almalar ve bitirilmiş kurslar. Bunlara tekrar ücretsiz katılınır,
-        // bir daha satın alınamaz. Arayüz aynı listeyi /api/wallet/me'den alır.
-        public async Task<List<int>> GetOwnedCourseIdsAsync(int userId) =>
-            (await GetActivePurchaseCourseIdsAsync(userId)).Union(await CompletedCourseIdsAsync(userId)).ToList();
+        // bir daha satın alınamaz. Bitirilip iade edilen kursun parası döndüğü için sahipliği de biter (yeniden alınır).
+        // Arayüz aynı listeyi /api/wallet/me'den alır.
+        public async Task<List<int>> GetOwnedCourseIdsAsync(int userId)
+        {
+            var active = await GetActivePurchaseCourseIdsAsync(userId);
+            var refunded = await RefundedCourseIdsQuery(userId).ToListAsync();
+            return active.Union((await CompletedCourseIdsAsync(userId)).Except(refunded)).ToList();
+        }
 
         public async Task<bool> OwnsCourseAsync(int userId, int courseId) =>
             (await GetOwnedCourseIdsAsync(userId)).Contains(courseId);
 
-        // İade süresi içindeki, iade edilmemiş ve bitirilmemiş satın almalar (RefundCourseAsync'in kuralları)
-        public async Task<List<int>> GetRefundableCourseIdsAsync(int userId)
+        // İade süresi içindeki, iade edilmemiş satın almalar; daha önce iade edilmiş kurs hariç (RefundCourseAsync'in kuralları)
+        public async Task<List<int>> GetRefundableCourseIdsAsync(int userId) =>
+            (await GetActivePurchasesAsync(userId))
+                .Where(p => p.Refundable).Select(p => p.CourseId).ToList();
+
+        // İade edilmemiş satın almalar: son satın alma anı, iade son günü ve iade edilebilir mi (arayüz nedenini gösterir)
+        public async Task<List<ActivePurchase>> GetActivePurchasesAsync(int userId)
         {
-            var since = DateTime.UtcNow - RefundWindow;
-            var recent = await _context.WalletTransactions
-                .Where(t => t.UserId == userId && t.Type == "Purchase" && t.CourseId != null && t.CreatedAt >= since)
-                .Select(t => t.CourseId!.Value).Distinct().ToListAsync();
-            return recent.Intersect(await GetActivePurchaseCourseIdsAsync(userId))
-                .Except(await CompletedCourseIdsAsync(userId)).ToList();
+            var active = await GetActivePurchaseCourseIdsAsync(userId);
+            var refunded = await RefundedCourseIdsQuery(userId).ToListAsync();
+            var latest = await _context.WalletTransactions
+                .Where(t => t.UserId == userId && t.Type == "Purchase" && t.CourseId != null && active.Contains(t.CourseId.Value))
+                .GroupBy(t => t.CourseId!.Value)
+                .Select(g => new { CourseId = g.Key, At = g.Max(t => t.CreatedAt) })
+                .ToListAsync();
+            var now = DateTime.UtcNow;
+            return latest.Select(p => new ActivePurchase(p.CourseId, p.At, p.At + RefundWindow,
+                now - p.At <= RefundWindow && !refunded.Contains(p.CourseId), refunded.Contains(p.CourseId))).ToList();
         }
+
+        private IQueryable<int> RefundedCourseIdsQuery(int userId) => _context.WalletTransactions
+            .Where(t => t.UserId == userId && t.Type == "Refund" && t.CourseId != null)
+            .Select(t => t.CourseId!.Value).Distinct();
 
         private async Task<List<int>> CompletedCourseIdsAsync(int userId)
         {
@@ -212,4 +231,6 @@ namespace EdTechApi.Business.Services
             return counts.Where(c => c.Purchases > c.Refunds).Select(c => c.CourseId).ToList();
         }
     }
+
+    public record ActivePurchase(int CourseId, DateTime PurchasedAt, DateTime RefundableUntil, bool Refundable, bool RefundedBefore);
 }

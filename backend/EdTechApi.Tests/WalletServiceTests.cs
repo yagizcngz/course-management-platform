@@ -1,4 +1,4 @@
-using EdTechApi.Business.Services;
+﻿using EdTechApi.Business.Services;
 using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
 using Microsoft.Data.Sqlite;
@@ -244,16 +244,55 @@ namespace EdTechApi.Tests
         }
 
         [Fact]
-        public async Task A_completed_purchase_cannot_be_refunded()
+        public async Task A_completed_purchase_is_refundable_in_the_window_and_the_completion_stays()
         {
             await _wallet.TopUpAsync(_studentUser.Id, 200m);
             await _wallet.PurchaseCourseAsync(_studentUser, _course.Id);
-            Assert.Contains(_course.Id, await _wallet.GetRefundableCourseIdsAsync(_studentUser.Id));
             await CompleteCourseAsync();
+            Assert.Contains(_course.Id, await _wallet.GetRefundableCourseIdsAsync(_studentUser.Id));
+
+            await _wallet.RefundCourseAsync(_studentUser, _course.Id);
+
+            Assert.Equal(200m, BalanceOf(_studentUser));
+            Assert.False(IsEnrolled());
+            // money back means no ownership; the finished course still counts for badges
+            Assert.False(await _wallet.OwnsCourseAsync(_studentUser.Id, _course.Id));
+            var student = _db.Students.Single(s => s.UserId == _studentUser.Id);
+            Assert.Equal(new[] { _course.Id }, await new EnrollmentService(_db).GetCompletedCourseIdsAsync(student.Id));
+        }
+
+        [Fact]
+        public async Task A_rebought_course_cannot_be_refunded_a_second_time()
+        {
+            await _wallet.TopUpAsync(_studentUser.Id, 200m);
+            await _wallet.PurchaseCourseAsync(_studentUser, _course.Id);
+            await _wallet.RefundCourseAsync(_studentUser, _course.Id);
+            await _wallet.PurchaseCourseAsync(_studentUser, _course.Id);
 
             Assert.DoesNotContain(_course.Id, await _wallet.GetRefundableCourseIdsAsync(_studentUser.Id));
+            Assert.True((await _wallet.GetActivePurchasesAsync(_studentUser.Id)).Single().RefundedBefore);
             await Assert.ThrowsAsync<ArgumentException>(() => _wallet.RefundCourseAsync(_studentUser, _course.Id));
             Assert.Equal(100m, BalanceOf(_studentUser));
+        }
+
+        [Fact]
+        public async Task A_completion_is_recorded_once_and_survives_new_lessons_and_rejoining()
+        {
+            var student = _db.Students.Single(s => s.UserId == _studentUser.Id);
+            var enrollments = new EnrollmentService(_db);
+            await enrollments.EnrollStudentAsync(student.Id, _course.Id);
+            await CompleteCourseAsync();
+            await enrollments.LeaveCourseAsync(student.Id, _course.Id);
+            await enrollments.EnrollStudentAsync(student.Id, _course.Id);
+            var l2 = new Lesson { CourseId = _course.Id, Title = "L2", Order = 2 };
+            _db.Lessons.Add(l2);
+            await _db.SaveChangesAsync();
+            // the new lesson drops progress below 100% but the completion stays
+            Assert.Equal(new[] { _course.Id }, await enrollments.GetCompletedCourseIdsAsync(student.Id));
+            await enrollments.CompleteLessonAsync(student.Id, _course.Id, l2.Id); // finished again: still one record
+
+            Assert.Single(_db.CourseCompletions);
+            Assert.Equal(new[] { _course.Id }, await enrollments.GetCompletedCourseIdsAsync(student.Id));
         }
     }
 }

@@ -1,3 +1,4 @@
+﻿using EdTechApi.Business.Services;
 using EdTechApi.API.Helpers;
 using EdTechApi.Business.Interfaces;
 using EdTechApi.DataAccess.Context;
@@ -30,8 +31,13 @@ namespace EdTechApi.API.Controllers
             if (user == null) return Unauthorized();
             var transactions = await _walletService.GetTransactionsAsync(user.Id);
             var ownedCourseIds = await _walletService.GetOwnedCourseIdsAsync(user.Id);
-            var refundableCourseIds = await _walletService.GetRefundableCourseIdsAsync(user.Id);
-            return Ok(new { balance = user.Balance, transactions, ownedCourseIds, refundableCourseIds });
+            var purchases = await _walletService.GetActivePurchasesAsync(user.Id);
+            var refundableCourseIds = purchases.Where(p => p.Refundable).Select(p => p.CourseId).ToList();
+            return Ok(new
+            {
+                balance = user.Balance, transactions, ownedCourseIds, refundableCourseIds, purchases,
+                refundWindowDays = (int)WalletService.RefundWindow.TotalDays
+            });
         }
 
         [HttpPost("top-up")]
