@@ -37,7 +37,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: { error: unknown; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   const { t } = useTranslation();
@@ -134,7 +134,7 @@ function RootComponent() {
     let off = false;
     const apply = () => !off && i18n.changeLanguage(saved);
     Promise.all(
-      router.state.matches.map((m) => router.loadRouteChunk(router.looseRoutesById[m.routeId])),
+      router.state.matches.map((m) => router.loadRouteChunk(router.routesById[m.routeId])),
     )
       .catch(() => {})
       .then(() =>
