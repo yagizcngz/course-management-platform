@@ -379,10 +379,14 @@ export function CourseDetailModal({
     }
   };
 
-  const showStatusToast = (type: "success" | "error", text: string) => {
+  const showStatusToast = (type: "success" | "error", text: string) =>
     setStatusMessage({ type, text });
-    setTimeout(() => setStatusMessage(null), 3000);
-  };
+  // each new message restarts the 3 s timer, so an older timer cannot hide a newer message
+  useEffect(() => {
+    if (!statusMessage) return;
+    const id = window.setTimeout(() => setStatusMessage(null), 3000);
+    return () => window.clearTimeout(id);
+  }, [statusMessage]);
 
   const handleRemoveImage = () => setEditImageUrl("");
 

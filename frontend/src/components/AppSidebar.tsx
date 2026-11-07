@@ -195,7 +195,7 @@ export function AppSidebar() {
     return () => window.removeEventListener("wallet-changed", load);
   }, [showBalance]);
 
-  // unread direct messages, refreshed on navigation, after a conversation is read and every minute
+  // unread direct messages, refreshed on navigation, after a conversation is read and every 20 s (the conversation list's rate)
   // plus pending incoming friend requests; a rise since the last check shows a toast
   const [unread, setUnread] = useState(0);
   const [requests, setRequests] = useState(0);
@@ -224,7 +224,7 @@ export function AppSidebar() {
         })
         .catch(() => {});
     load();
-    const id = window.setInterval(load, 60_000);
+    const id = window.setInterval(load, 20_000);
     window.addEventListener("messages-read", load);
     window.addEventListener("friends-changed", load);
     return () => {
