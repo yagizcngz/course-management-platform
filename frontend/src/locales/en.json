@@ -41,7 +41,10 @@
         "profile": "Profile",
         "preferences": "Preferences",
         "system": "System Settings",
-        "categories": "Categories"
+        "categories": "Categories",
+        "security": "Security",
+        "privacy": "Privacy",
+        "purchases": "Purchases & refunds"
       },
       "account": {
         "title": "Account Settings",
@@ -54,7 +57,11 @@
         "updateEmail": "Update Email",
         "changePassword": "Change Password",
         "identityTitle": "Username and email",
-        "usernameHint": "After changing your username you will be asked to sign in again."
+        "usernameHint": "After changing your username you will be asked to sign in again.",
+        "profileTitle": "Profile details",
+        "profileDesc": "Your name, photo, about text and featured badges are edited on your profile page.",
+        "openProfile": "Open my profile",
+        "shortcutsTitle": "Shortcuts"
       },
       "profile": {
         "title": "Profile Settings",
@@ -75,12 +82,15 @@
       },
       "preferences": {
         "title": "Preferences",
-        "description": "Manage your notifications and app preferences.",
+        "description": "We email you when the support team answers one of your requests. Sign-up codes are always sent.",
         "emailNotifications": "Email Notifications",
-        "receiveNotifications": "Receive notifications",
+        "receiveNotifications": "Email me support replies",
         "updatePreferences": "Save Preferences",
         "displayTitle": "Language and appearance",
-        "displayDesc": "The interface language and light/dark theme are kept in this browser."
+        "displayDesc": "The interface language and light/dark theme are kept in this browser.",
+        "motionTitle": "Motion",
+        "motionDesc": "Turns off page animations, moving scenes and transitions in this browser. Your system's reduced-motion setting is followed either way.",
+        "reduceMotion": "Reduce motion"
       },
       "saving": "Saving...",
       "success": "Changes saved successfully.",
@@ -129,14 +139,27 @@
         "emailFailed": "Could not update the email.",
         "usernameFailed": "Could not update the username."
       },
-      "eyebrow": "Account · Preferences · Platform",
-      "intro": "Manage your sign-in details, password and notification preferences here. Admins also edit instructor application codes, the instructor share and the category tree.",
+      "eyebrow": "Account · Security · Preferences · Privacy",
+      "intro": "Your sign-in details, security, notifications, appearance, privacy and purchases in one place. Admins also edit system values and the category tree.",
       "admins": {
         "title": "Administrators",
         "description": "Open another administrator account. Public sign-up can never create one; only a signed-in admin can.",
         "submit": "Create administrator",
         "created": "Administrator {{username}} created.",
         "failed": "The administrator could not be created."
+      },
+      "privacy": {
+        "visibilityTitle": "Profile visibility",
+        "visibilityDesc": "A private profile hides your learning progress, finished courses, learning and community badges and community stats from other members. Teaching details (your courses, students, teaching badges) stay public, and your name and photo still show next to your posts and messages; admins always see everything.",
+        "publicProfile": "Public profile",
+        "badgesTitle": "Featured badges",
+        "badgesDesc": "Choose up to five earned badges to feature on your profile card. Only pinned badges are shown to others."
+      },
+      "purchases": {
+        "title": "Purchases & refunds",
+        "policy": "A course can be refunded once within {{days}} days of buying it, even if you finished it. The money goes back to your wallet and access closes; badges you earned stay.",
+        "none": "You have no purchases that can still be refunded or are still owned by purchase.",
+        "openWallet": "Open wallet"
       }
     },
     "login": {

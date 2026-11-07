@@ -41,7 +41,10 @@
         "profile": "Profil",
         "preferences": "Tercihler",
         "system": "Sistem Ayarları",
-        "categories": "Kategoriler"
+        "categories": "Kategoriler",
+        "security": "Güvenlik",
+        "privacy": "Gizlilik",
+        "purchases": "Satın almalar ve iadeler"
       },
       "account": {
         "title": "Hesap Ayarları",
@@ -54,7 +57,11 @@
         "updateEmail": "E-postayı Güncelle",
         "changePassword": "Şifreyi Değiştir",
         "identityTitle": "Kullanıcı adı ve e-posta",
-        "usernameHint": "Kullanıcı adını değiştirince yeniden giriş yapmanız istenir."
+        "usernameHint": "Kullanıcı adını değiştirince yeniden giriş yapmanız istenir.",
+        "profileTitle": "Profil bilgileri",
+        "profileDesc": "Adınız, fotoğrafınız, hakkınızda yazısı ve öne çıkan rozetleriniz profil sayfanızda düzenlenir.",
+        "openProfile": "Profilimi aç",
+        "shortcutsTitle": "Kısayollar"
       },
       "profile": {
         "title": "Profil Ayarları",
@@ -75,12 +82,15 @@
       },
       "preferences": {
         "title": "Tercihler",
-        "description": "Bildirim ve uygulama tercihlerinizi yönetin.",
+        "description": "Destek ekibi taleplerinizden birini yanıtladığında size e-posta göndeririz. Kayıt kodları her zaman gönderilir.",
         "emailNotifications": "E-posta Bildirimleri",
-        "receiveNotifications": "Bildirimleri al",
+        "receiveNotifications": "Destek yanıtlarını e-postayla gönder",
         "updatePreferences": "Tercihleri Kaydet",
         "displayTitle": "Dil ve görünüm",
-        "displayDesc": "Arayüz dili ve açık/koyu tema bu tarayıcıda saklanır."
+        "displayDesc": "Arayüz dili ve açık/koyu tema bu tarayıcıda saklanır.",
+        "motionTitle": "Hareket",
+        "motionDesc": "Bu tarayıcıda sayfa animasyonlarını, hareketli sahneleri ve geçişleri kapatır. Sisteminizin hareketi azaltma ayarına her durumda uyulur.",
+        "reduceMotion": "Hareketi azalt"
       },
       "saving": "Kaydediliyor...",
       "success": "Değişiklikler başarıyla kaydedildi.",
@@ -129,14 +139,27 @@
         "emailFailed": "E-posta güncellenemedi.",
         "usernameFailed": "Kullanıcı adı güncellenemedi."
       },
-      "eyebrow": "Hesap · Tercihler · Platform",
-      "intro": "Giriş bilgilerinizi, şifrenizi ve bildirim tercihlerinizi buradan yönetin. Yöneticiler eğitmen başvurusu kodlarını, öğretmen payını ve kategori ağacını da buradan düzenler.",
+      "eyebrow": "Hesap · Güvenlik · Tercihler · Gizlilik",
+      "intro": "Giriş bilgileriniz, güvenlik, bildirimler, görünüm, gizlilik ve satın almalarınız tek yerde. Yöneticiler sistem değerlerini ve kategori ağacını da buradan düzenler.",
       "admins": {
         "title": "Yöneticiler",
         "description": "Yeni bir yönetici hesabı açın. Herkese açık kayıt hiçbir zaman yönetici açamaz; yalnızca giriş yapmış bir yönetici açabilir.",
         "submit": "Yönetici oluştur",
         "created": "{{username}} yönetici olarak oluşturuldu.",
         "failed": "Yönetici oluşturulamadı."
+      },
+      "privacy": {
+        "visibilityTitle": "Profil görünürlüğü",
+        "visibilityDesc": "Gizli profil; öğrenme ilerlemenizi, bitirdiğiniz kursları, öğrenme ve topluluk rozetlerinizi ve topluluk istatistiklerinizi diğer üyelerden gizler. Eğitmenlik bilgileri (kurslarınız, öğrencileriniz, eğitmenlik rozetleriniz) açık kalır; adınız ve fotoğrafınız gönderilerinizin ve mesajlarınızın yanında görünmeye devam eder; yöneticiler her şeyi görür.",
+        "publicProfile": "Herkese açık profil",
+        "badgesTitle": "Öne çıkan rozetler",
+        "badgesDesc": "Kazandığınız en fazla beş rozeti profil kartınızda öne çıkarın. Diğer üyeler yalnızca sabitlenen rozetleri görür."
+      },
+      "purchases": {
+        "title": "Satın almalar ve iadeler",
+        "policy": "Bir kurs, bitirmiş olsanız da, satın almadan sonraki {{days}} gün içinde bir kez iade edilebilir. Ücret cüzdanınıza döner ve erişim kapanır; kazandığınız rozetler kalır.",
+        "none": "Satın alma yoluyla sahip olduğunuz veya iade edilebilecek bir kurs yok.",
+        "openWallet": "Cüzdanı aç"
       }
     },
     "login": {

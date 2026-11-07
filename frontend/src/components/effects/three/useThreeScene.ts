@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import type * as THREE_NS from "three";
+import { prefersLessMotion } from "@/lib/motionPref";
 
 type Three = typeof THREE_NS;
 
@@ -51,7 +52,7 @@ export function useThreeScene(setup: (ctx: SceneContext) => SceneHandle) {
       const scene = new THREE.Scene();
       const pointer = { x: 0, y: 0 };
       const raw = { x: 0, y: 0, inside: false };
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const reduce = prefersLessMotion();
       const handle = setupRef.current({ THREE, scene, renderer, pointer, raw, reduce });
       let last = performance.now();
       let elapsed = 0;

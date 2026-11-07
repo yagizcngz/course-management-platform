@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import {
   User as UserIcon,
@@ -10,6 +10,10 @@ import {
   Trash2,
   Palette,
   ShieldPlus,
+  Eye,
+  Receipt,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
@@ -18,8 +22,10 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { LanguageToggle, ThemeToggle } from "@/components/DisplayToggles";
 import { Switch } from "@/components/ui/switch";
 import { chip, pillButton } from "@/lib/utils";
-import { authHeaders, getRoleFromToken, isAdminRole, readError } from "@/lib/auth";
-import { API_BASE } from "@/components/courseHelpers";
+import { authHeaders, getRoleFromToken, isAdminRole, isTeacherRole, readError } from "@/lib/auth";
+import { API_BASE, refundNote, type ActivePurchase } from "@/components/courseHelpers";
+import { formatDate, formatTry } from "@/lib/utils";
+import { getReduceMotion, setReduceMotion } from "@/lib/motionPref";
 interface SystemSettingData {
   settingKey: string;
   settingValue: string;
@@ -33,15 +39,38 @@ interface CategoryData {
   subCategories?: string[];
 }
 
+const TABS = [
+  "account",
+  "security",
+  "preferences",
+  "privacy",
+  "purchases",
+  "system",
+  "categories",
+] as const;
+type Tab = (typeof TABS)[number];
+
 export const Route = createFileRoute("/_authenticated/ayarlar")({
   component: SettingsPage,
+  // ?tab= opens a section directly (links from the help centre and the wallet)
+  validateSearch: (search: Record<string, unknown>): { tab?: Tab } =>
+    TABS.includes(search.tab as Tab) ? { tab: search.tab as Tab } : {},
 });
 
 function SettingsPage() {
   const { t, i18n } = useTranslation();
-  const [activeTab, setActiveTab] = useState<"account" | "preferences" | "system" | "categories">(
-    "account",
-  );
+  const navigate = useNavigate({ from: "/ayarlar" });
+  const activeTab: Tab = Route.useSearch().tab ?? "account";
+  const setActiveTab = (tab: Tab) =>
+    navigate({ search: tab === "account" ? {} : { tab }, replace: true, resetScroll: false });
+  const role = getRoleFromToken();
+  const [reduceMotion, setReduceMotionState] = useState(false);
+  // purchases tab: balance and refundable purchases from /api/wallet/me (participants only)
+  const [wallet, setWallet] = useState<{
+    balance: number;
+    purchases: ActivePurchase[];
+    refundWindowDays: number;
+  } | null>(null);
 
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -75,8 +104,15 @@ function SettingsPage() {
   const [newCategoryDesc, setNewCategoryDesc] = useState("");
 
   useEffect(() => {
-    setIsAdmin(isAdminRole(getRoleFromToken()));
+    const admin = isAdminRole(getRoleFromToken());
+    setIsAdmin(admin);
+    setReduceMotionState(getReduceMotion());
     fetchProfile();
+    if (!admin)
+      fetch(`${API_BASE}/api/wallet/me`, { headers: authHeaders() })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((w) => w && setWallet(w))
+        .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -220,9 +256,15 @@ function SettingsPage() {
     }
   };
 
-  // the switch saves at once; a failed save puts it back
-  const savePreference = async (value: boolean) => {
-    setReceiveEmail(value);
+  // a switch saves at once; a failed save puts it back
+  const saveFlags = async (flags: {
+    receiveEmailNotifications?: boolean;
+    isProfilePublic?: boolean;
+  }) => {
+    const email = flags.receiveEmailNotifications ?? receiveEmail;
+    const pub = flags.isProfilePublic ?? isPublic;
+    setReceiveEmail(email);
+    setIsPublic(pub);
     const res = await fetch(`${API_BASE}/api/profile/me`, {
       method: "PUT",
       headers: authHeaders(),
@@ -231,13 +273,14 @@ function SettingsPage() {
         lastName,
         aboutMe,
         profilePictureUrl: profilePic,
-        isProfilePublic: isPublic,
-        receiveEmailNotifications: value,
+        isProfilePublic: pub,
+        receiveEmailNotifications: email,
       }),
     }).catch(() => null);
     if (res?.ok) showToast("success", t("settings.success"));
     else {
-      setReceiveEmail(!value);
+      setReceiveEmail(receiveEmail);
+      setIsPublic(isPublic);
       showToast("error", t("settings.system.updateFailed"));
     }
   };
@@ -303,9 +346,13 @@ function SettingsPage() {
     );
   }
 
-  const tabs: { id: typeof activeTab; label: string }[] = [
+  const tabs: { id: Tab; label: string }[] = [
     { id: "account", label: t("settings.tabs.account") },
+    { id: "security", label: t("settings.tabs.security") },
     { id: "preferences", label: t("settings.tabs.preferences") },
+    { id: "privacy", label: t("settings.tabs.privacy") },
+    // admins have no wallet
+    ...(isAdmin ? [] : [{ id: "purchases" as const, label: t("settings.tabs.purchases") }]),
     ...(isAdmin
       ? [
           { id: "system" as const, label: t("settings.tabs.system") },
@@ -429,7 +476,47 @@ function SettingsPage() {
               </form>
             </Panel>
 
-            <Panel no="02" title={t("settings.account.changePassword")} icon={<Lock />}>
+            <Panel no="02" title={t("settings.account.profileTitle")} icon={<UserIcon />}>
+              <p className="text-sm text-muted-foreground">{t("settings.account.profileDesc")}</p>
+              <Link to="/profil" className={pillButton.outline}>
+                {t("settings.account.openProfile")}
+                <ArrowRight className="size-4" />
+              </Link>
+            </Panel>
+
+            <Panel no="03" title={t("settings.account.shortcutsTitle")} icon={<Sparkles />}>
+              <ul className="space-y-2 text-sm">
+                {(isAdmin
+                  ? [
+                      ["/raporlar", "sidebar.reports"],
+                      ["/ogrenciler", "sidebar.students"],
+                      ["/duyurular", "sidebar.announcements"],
+                    ]
+                  : [
+                      ...(isTeacherRole(role)
+                        ? [["/verdigim-kurslar", "sidebar.taughtCourses"]]
+                        : []),
+                      ["/kurslarim", "sidebar.myCourses"],
+                      ["/cuzdan", "sidebar.wallet"],
+                      ["/yardim-taleplerim", "sidebar.mySupportRequests"],
+                      ["/yardim", "sidebar.help"],
+                    ]
+                ).map(([to, key]) => (
+                  <li key={to}>
+                    <Link to={to} className="inline-flex items-center gap-2 hover:underline">
+                      <ArrowRight className="size-3.5 text-gold" />
+                      {t(key)}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+          </div>
+        )}
+
+        {activeTab === "security" && (
+          <div className="grid gap-6 md:grid-cols-2">
+            <Panel no="01" title={t("settings.account.changePassword")} icon={<Lock />}>
               <form onSubmit={handleUpdatePassword} className="space-y-4">
                 <div className="space-y-1.5">
                   <label htmlFor="set-current" className="text-sm font-medium">
@@ -471,7 +558,7 @@ function SettingsPage() {
 
             <section className="md:col-span-2 min-w-0 rounded-xl border border-destructive/40 bg-card p-6">
               <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-destructive">
-                03 · {t("settings.profile.manageAccount")}
+                02 · {t("settings.profile.manageAccount")}
               </p>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-4">
                 <p className="max-w-xl text-sm text-muted-foreground">
@@ -503,7 +590,10 @@ function SettingsPage() {
                 <span className="text-sm font-medium">
                   {t("settings.preferences.receiveNotifications")}
                 </span>
-                <Switch checked={receiveEmail} onCheckedChange={savePreference} />
+                <Switch
+                  checked={receiveEmail}
+                  onCheckedChange={(v) => saveFlags({ receiveEmailNotifications: v })}
+                />
               </label>
             </Panel>
             <Panel no="02" title={t("settings.preferences.displayTitle")} icon={<Palette />}>
@@ -515,7 +605,83 @@ function SettingsPage() {
                 <ThemeToggle />
               </div>
             </Panel>
+            <Panel no="03" title={t("settings.preferences.motionTitle")} icon={<Sparkles />}>
+              <p className="text-sm text-muted-foreground">
+                {t("settings.preferences.motionDesc")}
+              </p>
+              <label className="flex items-center justify-between gap-4 rounded-lg border border-border p-4">
+                <span className="text-sm font-medium">
+                  {t("settings.preferences.reduceMotion")}
+                </span>
+                <Switch
+                  checked={reduceMotion}
+                  onCheckedChange={(v) => {
+                    setReduceMotion(v);
+                    setReduceMotionState(v);
+                  }}
+                />
+              </label>
+            </Panel>
           </div>
+        )}
+
+        {activeTab === "privacy" && (
+          <div className="grid gap-6 md:grid-cols-2">
+            <Panel no="01" title={t("settings.privacy.visibilityTitle")} icon={<Eye />}>
+              <p className="text-sm text-muted-foreground">
+                {t("settings.privacy.visibilityDesc")}
+              </p>
+              <label className="flex items-center justify-between gap-4 rounded-lg border border-border p-4">
+                <span className="text-sm font-medium">{t("settings.privacy.publicProfile")}</span>
+                <Switch
+                  checked={isPublic}
+                  onCheckedChange={(v) => saveFlags({ isProfilePublic: v })}
+                />
+              </label>
+            </Panel>
+            <Panel no="02" title={t("settings.privacy.badgesTitle")} icon={<UserIcon />}>
+              <p className="text-sm text-muted-foreground">{t("settings.privacy.badgesDesc")}</p>
+              <Link to="/profil" className={pillButton.outline}>
+                {t("settings.account.openProfile")}
+                <ArrowRight className="size-4" />
+              </Link>
+            </Panel>
+          </div>
+        )}
+
+        {activeTab === "purchases" && !isAdmin && (
+          <Panel no="01" title={t("settings.purchases.title")} icon={<Receipt />}>
+            <p className="text-sm text-muted-foreground">
+              {t("settings.purchases.policy", { days: wallet?.refundWindowDays ?? 7 })}
+            </p>
+            <p className="text-sm">
+              {t("wallet.balance")}:{" "}
+              <span className="font-semibold tabular-nums">
+                {wallet ? formatTry(wallet.balance) : "—"}
+              </span>
+            </p>
+            {wallet && wallet.purchases.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t("settings.purchases.none")}</p>
+            ) : (
+              <ul className="divide-y rounded-lg border border-border">
+                {wallet?.purchases.map((p) => {
+                  const note = refundNote(p, wallet.refundWindowDays, (d) =>
+                    formatDate(d, i18n.language),
+                  );
+                  return (
+                    <li key={p.courseId} className="px-4 py-3 text-sm">
+                      <p className="font-medium">{p.title}</p>
+                      <p className="text-xs text-muted-foreground">{t(note.key, note.values)}</p>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            <Link to="/cuzdan" className={pillButton.primary}>
+              {t("settings.purchases.openWallet")}
+              <ArrowRight className="size-4" />
+            </Link>
+          </Panel>
         )}
 
         {isAdmin && activeTab === "system" && (

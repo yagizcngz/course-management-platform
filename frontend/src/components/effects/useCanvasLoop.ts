@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { prefersLessMotion } from "@/lib/motionPref";
 
 export interface FrameInfo {
   ctx: CanvasRenderingContext2D;
@@ -25,7 +26,7 @@ export function useCanvasLoop(draw: (f: FrameInfo) => void) {
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
 
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = prefersLessMotion();
     let dpr = 1;
     let visible = true;
     let raf = 0;

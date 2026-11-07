@@ -10,7 +10,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { MotionConfig } from "motion/react";
+import { getReduceMotion, REDUCE_MOTION_CHANGED } from "@/lib/motionPref";
 
 import appCss from "../styles.css?url";
 import i18n from "../i18n";
@@ -103,7 +105,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
-const themeInitScript = `(function(){try{var s=localStorage.getItem('theme');var d=s?s==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;var r=document.documentElement;r.classList.toggle('dark',d);r.style.colorScheme=d?'dark':'light';r.lang=localStorage.getItem('i18nextLng')||'tr';}catch(e){}})();`;
+const themeInitScript = `(function(){try{var s=localStorage.getItem('theme');var d=s?s==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;var r=document.documentElement;r.classList.toggle('dark',d);r.style.colorScheme=d?'dark':'light';r.lang=localStorage.getItem('i18nextLng')||'tr';if(localStorage.getItem('reduceMotion')==='1')r.setAttribute('data-reduce-motion','');}catch(e){}})();`;
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
@@ -143,9 +145,20 @@ function RootComponent() {
     };
   }, [router]);
 
+  // motion components follow the in-app setting as well as the OS one
+  const [lessMotion, setLessMotion] = useState(false);
+  useEffect(() => {
+    const sync = () => setLessMotion(getReduceMotion());
+    sync();
+    window.addEventListener(REDUCE_MOTION_CHANGED, sync);
+    return () => window.removeEventListener(REDUCE_MOTION_CHANGED, sync);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <MotionConfig reducedMotion={lessMotion ? "always" : "user"}>
+        <Outlet />
+      </MotionConfig>
       <Toaster richColors position="top-right" />
     </QueryClientProvider>
   );
