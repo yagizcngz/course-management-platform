@@ -207,3 +207,23 @@ export const courseRelation = (
   return ownedIds.includes(Number(courseId)) ? "owned" : "none";
 };
 export const isEnrolledIn = (r: CourseRelation) => r !== "owned" && r !== "none";
+
+/** An unrefunded purchase from /api/wallet/me (`purchases`), with the API's refund verdict. */
+export interface ActivePurchase {
+  courseId: number;
+  /** The course title at purchase time. */
+  title: string;
+  purchasedAt: string;
+  refundableUntil: string;
+  refundable: boolean;
+  /** Refunded once already: buying it again is final. */
+  refundedBefore: boolean;
+}
+
+/** Why a purchase cannot be refunded (or the deadline if it can), as a locale key and its values. */
+export const refundNote = (p: ActivePurchase, days: number, date: (raw: string) => string) =>
+  p.refundable
+    ? { key: "lessons.refundHint", values: { date: date(p.refundableUntil) } }
+    : p.refundedBefore
+      ? { key: "lessons.refundUsed", values: {} }
+      : { key: "lessons.refundClosed", values: { days, date: date(p.refundableUntil) } };

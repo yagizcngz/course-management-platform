@@ -19,12 +19,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { API_BASE } from "@/components/courseHelpers";
+import { API_BASE, refundNote, type ActivePurchase } from "@/components/courseHelpers";
 import { CourseProgressBar } from "@/components/CourseProgressBar";
 import { authHeaders, getToken, parseJwt, readError } from "@/lib/auth";
 import { TrackedVideo } from "@/components/TrackedVideo";
 import { REQUIRED_SHARE, watchedSeconds, watchedShare, type WatchState } from "@/lib/watchProgress";
-import { formatTry } from "@/lib/utils";
+import { formatDate, formatTry } from "@/lib/utils";
 
 // development and testing: "Mark complete" works at once, whatever the video did (the API honours
 // devOverride only in its Development environment)
@@ -69,7 +69,7 @@ const toPlayable = (url: string) => {
 
 function CoursePage() {
   const { id } = Route.useParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [data, setData] = useState<CourseLessons | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<number | null>(null);
@@ -78,7 +78,9 @@ function CoursePage() {
   const [balance, setBalance] = useState<number | null>(null);
   // bought (not refunded) or finished earlier: rejoining is free and buying again is blocked
   const [owned, setOwned] = useState(false);
-  const [refundable, setRefundable] = useState(false);
+  // this course's unrefunded purchase and the refund window, both from /api/wallet/me
+  const [purchase, setPurchase] = useState<ActivePurchase | null>(null);
+  const [refundDays, setRefundDays] = useState(7);
   const [refundOpen, setRefundOpen] = useState(false);
   // genuine viewing of the open lesson's video; reset whenever another lesson opens
   const [watch, setWatch] = useState<{ state: WatchState; duration: number } | null>(null);
@@ -111,7 +113,12 @@ function CoursePage() {
       if (stale()) return;
       setBalance(wallet.balance);
       setOwned(wallet.ownedCourseIds.includes(Number(id)));
-      setRefundable(wallet.refundableCourseIds.includes(Number(id)));
+      setPurchase(
+        (wallet.purchases as ActivePurchase[] | undefined)?.find(
+          (p) => p.courseId === Number(id),
+        ) ?? null,
+      );
+      setRefundDays(wallet.refundWindowDays ?? 7);
     }
   };
 
@@ -338,15 +345,20 @@ function CoursePage() {
             </Card>
           )}
 
-          {hasAccess && refundable && !canEdit && (
+          {hasAccess && purchase && !canEdit && (
             <p className="text-xs text-muted-foreground">
-              {t("lessons.refundHint")}{" "}
-              <button
-                onClick={() => setRefundOpen(true)}
-                className="underline underline-offset-4 hover:text-foreground"
-              >
-                {t("lessons.refund")}
-              </button>
+              {(() => {
+                const note = refundNote(purchase, refundDays, (d) => formatDate(d, i18n.language));
+                return t(note.key, note.values);
+              })()}{" "}
+              {purchase.refundable && (
+                <button
+                  onClick={() => setRefundOpen(true)}
+                  className="underline underline-offset-4 hover:text-foreground"
+                >
+                  {t("lessons.refund")}
+                </button>
+              )}
             </p>
           )}
 

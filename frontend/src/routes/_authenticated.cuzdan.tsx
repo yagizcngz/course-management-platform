@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { API_BASE } from "@/components/courseHelpers";
-import { formatDateTime, formatTry } from "@/lib/utils";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { API_BASE, refundNote, type ActivePurchase } from "@/components/courseHelpers";
+import { notifyCoursesChanged } from "@/components/useMyCourses";
+import { formatDate, formatDateTime, formatTry } from "@/lib/utils";
 import { authHeaders, getRoleFromToken, isTeacherRole, readError } from "@/lib/auth";
 import { participantOnly } from "@/hooks/useAdminGuard";
 
@@ -30,6 +32,8 @@ function WalletPage() {
   const { t, i18n } = useTranslation();
   const [balance, setBalance] = useState<number | null>(null);
   const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
+  const [purchases, setPurchases] = useState<ActivePurchase[]>([]);
+  const [refundDays, setRefundDays] = useState(7);
   const [amount, setAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [loadError, setLoadError] = useState(false);
@@ -42,6 +46,8 @@ function WalletPage() {
       const data = await res.json();
       setBalance(data.balance);
       setTransactions(data.transactions);
+      setPurchases(data.purchases ?? []);
+      setRefundDays(data.refundWindowDays ?? 7);
       setLoadError(false);
     } catch {
       setLoadError(true);
@@ -68,6 +74,25 @@ function WalletPage() {
       toast.success(t("wallet.topUpSuccess"));
       setAmount("");
       window.dispatchEvent(new Event("wallet-changed"));
+      await load();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const refund = async (p: ActivePurchase) => {
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/wallet/refund/${p.courseId}`, {
+        method: "POST",
+        headers: authHeaders(),
+      });
+      if (!res.ok) throw new Error(await readError(res, t("lessons.refundFailed")));
+      toast.success(t("lessons.refundSuccess"));
+      window.dispatchEvent(new Event("wallet-changed"));
+      notifyCoursesChanged();
       await load();
     } catch (e) {
       toast.error((e as Error).message);
@@ -171,6 +196,63 @@ function WalletPage() {
             </CardContent>
           </Card>
         </div>
+
+        {purchases.length > 0 && (
+          <Card>
+            <CardContent className="p-0">
+              <div className="px-6 py-4 border-b">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t("wallet.purchases")}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {t("wallet.purchasesHint", { days: refundDays })}
+                </p>
+              </div>
+              <ul className="divide-y">
+                {[...purchases]
+                  .sort((a, b) => b.purchasedAt.localeCompare(a.purchasedAt))
+                  .map((p) => {
+                    const note = refundNote(p, refundDays, (d) => formatDate(d, i18n.language));
+                    return (
+                      <li
+                        key={p.courseId}
+                        className="px-6 py-3 flex flex-wrap items-center justify-between gap-3"
+                      >
+                        <div className="min-w-0">
+                          <Link
+                            to="/kurs/$id"
+                            params={{ id: String(p.courseId) }}
+                            className="text-sm font-medium hover:underline underline-offset-4"
+                          >
+                            {p.title}
+                          </Link>
+                          <p className="text-xs text-muted-foreground">
+                            {t("wallet.boughtOn", {
+                              date: formatDateTime(p.purchasedAt, i18n.language),
+                            })}{" "}
+                            · {t(note.key, note.values)}
+                          </p>
+                        </div>
+                        {p.refundable && (
+                          <ConfirmDialog
+                            title={t("lessons.refund")}
+                            description={t("wallet.refundConfirm", { course: p.title })}
+                            confirmLabel={t("lessons.refund")}
+                            onConfirm={() => refund(p)}
+                            destructive
+                          >
+                            <Button variant="outline" size="sm" disabled={submitting}>
+                              {t("lessons.refund")}
+                            </Button>
+                          </ConfirmDialog>
+                        )}
+                      </li>
+                    );
+                  })}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardContent className="p-0">

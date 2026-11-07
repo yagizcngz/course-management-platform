@@ -204,10 +204,10 @@ namespace EdTechApi.Business.Services
             var latest = await _context.WalletTransactions
                 .Where(t => t.UserId == userId && t.Type == "Purchase" && t.CourseId != null && active.Contains(t.CourseId.Value))
                 .GroupBy(t => t.CourseId!.Value)
-                .Select(g => new { CourseId = g.Key, At = g.Max(t => t.CreatedAt) })
+                .Select(g => new { CourseId = g.Key, At = g.Max(t => t.CreatedAt), Title = g.Max(t => t.Description) })
                 .ToListAsync();
             var now = DateTime.UtcNow;
-            return latest.Select(p => new ActivePurchase(p.CourseId, p.At, p.At + RefundWindow,
+            return latest.Select(p => new ActivePurchase(p.CourseId, p.Title, p.At, p.At + RefundWindow,
                 now - p.At <= RefundWindow && !refunded.Contains(p.CourseId), refunded.Contains(p.CourseId))).ToList();
         }
 
@@ -232,5 +232,5 @@ namespace EdTechApi.Business.Services
         }
     }
 
-    public record ActivePurchase(int CourseId, DateTime PurchasedAt, DateTime RefundableUntil, bool Refundable, bool RefundedBefore);
+    public record ActivePurchase(int CourseId, string Title, DateTime PurchasedAt, DateTime RefundableUntil, bool Refundable, bool RefundedBefore);
 }

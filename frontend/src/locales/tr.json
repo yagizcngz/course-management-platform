@@ -1165,7 +1165,7 @@
         "q1": "Bir kursa nasıl kayıt olurum, ödemeyi nasıl yaparım?",
         "a1": "Kurslar sayfasından bir kurs açın. Ücretsiz kurslara tek tıkla katılırsınız. Ücretli kurslar cüzdan bakiyesiyle alınır: Cüzdan sayfasından bakiye yükleyin, sonra kurs sayfasındaki satın al düğmesine basın. Ücret bakiyenizden düşer ve kurs hemen Kurslarım listenize eklenir.",
         "q2": "Satın aldığım bir kursu iade edebilir miyim?",
-        "a2": "Evet. Satın almadan sonraki 7 gün içinde kurs sayfasındaki \"İade et\" bağlantısıyla ücretin tamamı cüzdanınıza geri yüklenir ve kursa erişiminiz kapanır. 7 gün dolduktan sonra iade yapılamaz.",
+        "a2": "Evet. Satın almadan sonraki 7 gün içinde, kursu bitirmiş olsanız da, kurs sayfasındaki veya cüzdanınızdaki Satın almalar ve iadeler bölümündeki \"İade et\" bağlantısıyla ücretin tamamı cüzdanınıza geri yüklenir. Kursa erişiminiz kapanır, kursu bitirerek kazandığınız rozetler kalır. Her kurs bir kez iade edilebilir; 7 gün dolduktan sonra iade yapılamaz.",
         "q3": "Kurs ilerlemem ve rozetlerim nasıl hesaplanıyor?",
         "a3": "Bir dersi kurs sayfasındaki \"Dersi Tamamla\" düğmesiyle ya da videosunu sonuna kadar izleyerek bitirirsiniz. Kursun ilerleme çubuğu bitirdiğiniz derslerin oranını (%0-100) gösterir; tüm dersler bitince kurs \"Tamamlanan Kurslar\" bölümüne geçer. Tamamladığınız kurslar ve dersler profilinizdeki rozetleri açar: ilk mezuniyet, bir alanda uzmanlık, farklı alanlarda kurs ve toplam ders sayısı gibi.",
         "q4": "Eğitmen olmak için nasıl başvururum?",
@@ -1238,7 +1238,11 @@
         "Earning": "Kurs satışı",
         "Refund": "İade",
         "EarningReversal": "İade edilen satış"
-      }
+      },
+      "purchases": "Satın almalar ve iadeler",
+      "purchasesHint": "Satın aldığınız ve hâlâ sahip olduğunuz kurslar. Her biri, bitirmiş olsanız da, satın almadan sonraki {{days}} gün içinde bir kez iade edilebilir.",
+      "boughtOn": "{{date}} tarihinde alındı",
+      "refundConfirm": "\"{{course}}\" kursunun ücretinin tamamı cüzdanınıza döner ve kursa erişiminiz kapanır. Kursu bitirerek kazandığınız rozetler kalır."
     },
     "lessons": {
       "title": "Kurs",
@@ -1271,8 +1275,8 @@
       "deleted": "Ders silindi.",
       "deleteFailed": "Ders silinemedi.",
       "refund": "İade iste",
-      "refundHint": "Vazgeçtiniz mi? Satın almadan sonraki 7 gün içinde tam iade.",
-      "refundBody": "{{price}} cüzdanınıza iade edilecek ve \"{{course}}\" kursuna erişiminiz kapanacak.",
+      "refundHint": "Vazgeçtiniz mi? Kursu bitirmiş olsanız da {{date}} tarihine kadar tam iade.",
+      "refundBody": "{{price}} cüzdanınıza iade edilecek ve \"{{course}}\" kursuna erişiminiz kapanacak. Kursu bitirerek kazandığınız rozetler kalır.",
       "refundSuccess": "Cüzdanınıza iade edildi.",
       "refundFailed": "İade yapılamadı.",
       "completeFailed": "Ders tamamlanamadı.",
@@ -1285,7 +1289,9 @@
       "watched": "İzlenen %{{percent}}",
       "watchNeed": "Tamamlamak için %{{percent}} izleyin",
       "watchReady": "Tamamlanabilir",
-      "videoFailed": "Bu video yüklenemedi. Adresi bozuk ya da sunucusuna ulaşılamıyor olabilir."
+      "videoFailed": "Bu video yüklenemedi. Adresi bozuk ya da sunucusuna ulaşılamıyor olabilir.",
+      "refundClosed": "İade yapılamaz: {{days}} günlük iade süresi {{date}} tarihinde doldu.",
+      "refundUsed": "İade yapılamaz: bu kurs daha önce bir kez iade edildi, yeniden satın alma kesindir."
     },
     "publicNav": {
       "label": "Ana menü",
