@@ -44,6 +44,8 @@ namespace EdTechApi.API.Controllers
         [HttpGet("/api/lessons/outline")]
         public async Task<IActionResult> Outline() =>
             Ok((await _context.Lessons.AsNoTracking()
+                    // silinmiş kursun dersleri listelenmez (Course filtresi alt sorguda da uygulanır)
+                    .Where(l => _context.Courses.Any(c => c.Id == l.CourseId))
                     .OrderBy(l => l.Order).ThenBy(l => l.Id)
                     .Select(l => new { l.CourseId, l.Title, l.Description })
                     .ToListAsync())
@@ -100,6 +102,8 @@ namespace EdTechApi.API.Controllers
             if (course == null) return NotFound("Kurs bulunamadı.");
             if (!await CanEditAsync(course)) return StatusCode(403, "Bu kursun derslerini düzenleyemezsiniz.");
             if (string.IsNullOrWhiteSpace(request.Title)) return BadRequest("Ders başlığı zorunludur.");
+            if (!EdTechApi.Core.Constants.SafeUrl.IsAllowed(request.VideoUrl, VideoUrlSigner.Prefix, "/uploads/"))
+                return BadRequest(EdTechApi.Core.Constants.SafeUrl.Error);
 
             var nextOrder = request.Order ?? (await _context.Lessons.Where(l => l.CourseId == courseId).MaxAsync(l => (int?)l.Order) ?? 0) + 1;
             var lesson = new Lesson
@@ -161,6 +165,8 @@ namespace EdTechApi.API.Controllers
             // yeni video eski süreyi geçersiz kılar; form ölçtüyse yenisi yazılır
             if (lesson.VideoUrl != request.VideoUrl || request.DurationSeconds != null)
                 lesson.DurationSeconds = ValidDuration(request.DurationSeconds);
+            if (!EdTechApi.Core.Constants.SafeUrl.IsAllowed(request.VideoUrl, VideoUrlSigner.Prefix, "/uploads/"))
+                return BadRequest(EdTechApi.Core.Constants.SafeUrl.Error);
             lesson.VideoUrl = request.VideoUrl;
             if (request.Order.HasValue) lesson.Order = request.Order.Value;
             await _context.SaveChangesAsync();

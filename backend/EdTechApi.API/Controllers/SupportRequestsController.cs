@@ -62,6 +62,9 @@ namespace EdTechApi.API.Controllers
             if (userId == null && (string.IsNullOrWhiteSpace(dto.Name) || string.IsNullOrWhiteSpace(dto.Email)))
             {
                 return BadRequest(new { message = "Name and Email are required for guest users." });
+            // yönetici yanıtı bu adrese e-postayla gider; adres olmayan metin kabul edilmez
+            if (userId == null && !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(dto.Email))
+                return BadRequest("Geçerli bir e-posta adresi giriniz.");
             }
 
             var request = new SupportRequest
