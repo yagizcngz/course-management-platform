@@ -31,17 +31,31 @@ namespace EdTechApi.Business.Services
                 .ToListAsync();
         }
 
-        public async Task<decimal> TopUpAsync(int userId, decimal amount)
+        // reference: tekrar anahtarı (bkz. WalletTransaction.Reference). Aynı anahtar ikinci kez gelirse bakiye değişmez.
+        public async Task<decimal> TopUpAsync(int userId, decimal amount, string? reference = null)
         {
             if (amount <= 0 || amount > MaxTopUp || decimal.Round(amount, 2) != amount)
                 throw new ArgumentException($"Yükleme tutarı 0 ile {MaxTopUp:N0} TL arasında, en fazla 2 ondalıklı olmalı.");
 
-            await using var tx = await _context.Database.BeginTransactionAsync();
-            await _context.Users.Where(u => u.Id == userId)
-                .ExecuteUpdateAsync(s => s.SetProperty(u => u.Balance, u => u.Balance + amount));
-            _context.WalletTransactions.Add(new WalletTransaction { UserId = userId, Amount = amount, Type = "TopUp", Description = "Bakiye yükleme" });
-            await _context.SaveChangesAsync();
-            await tx.CommitAsync();
+            if (reference == null || !await _context.WalletTransactions.AnyAsync(t => t.UserId == userId && t.Reference == reference))
+            {
+                await using var tx = await _context.Database.BeginTransactionAsync();
+                await _context.Users.Where(u => u.Id == userId)
+                    .ExecuteUpdateAsync(s => s.SetProperty(u => u.Balance, u => u.Balance + amount));
+                var entry = new WalletTransaction { UserId = userId, Amount = amount, Type = "TopUp", Description = "Bakiye yükleme", Reference = reference };
+                _context.WalletTransactions.Add(entry);
+                try
+                {
+                    await _context.SaveChangesAsync();
+                    await tx.CommitAsync();
+                }
+                catch (DbUpdateException) when (reference != null)
+                {
+                    // aynı anahtarla eşzamanlı ikinci istek: benzersiz indeks reddetti, bakiye artışı geri alınır
+                    await tx.RollbackAsync();
+                    _context.Entry(entry).State = EntityState.Detached;
+                }
+            }
 
             return await _context.Users.Where(u => u.Id == userId).Select(u => u.Balance).FirstAsync();
         }

@@ -844,6 +844,10 @@ namespace EdTechApi.DataAccess.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Reference")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<int?>("RelatedTransactionId")
                         .HasColumnType("int");
 
@@ -861,6 +865,10 @@ namespace EdTechApi.DataAccess.Migrations
                         .HasFilter("[RelatedTransactionId] IS NOT NULL");
 
                     b.HasIndex("UserId", "CreatedAt");
+
+                    b.HasIndex("UserId", "Reference")
+                        .IsUnique()
+                        .HasFilter("[Reference] IS NOT NULL");
 
                     b.ToTable("WalletTransactions");
                 });

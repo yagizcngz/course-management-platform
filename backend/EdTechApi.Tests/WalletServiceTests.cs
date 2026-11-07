@@ -91,6 +91,16 @@ namespace EdTechApi.Tests
         }
 
         [Fact]
+        public async Task TopUp_with_a_repeated_key_credits_once()
+        {
+            // a retried request or a re-sent payment webhook carries the same key
+            Assert.Equal(100m, await _wallet.TopUpAsync(_studentUser.Id, 100m, "pay_123"));
+            Assert.Equal(100m, await _wallet.TopUpAsync(_studentUser.Id, 100m, "pay_123"));
+            Assert.Equal(150m, await _wallet.TopUpAsync(_studentUser.Id, 50m, "pay_124"));
+            Assert.Equal(2, _db.WalletTransactions.Count(t => t.UserId == _studentUser.Id && t.Type == "TopUp"));
+        }
+
+        [Fact]
         public async Task TopUp_adds_balance_and_logs_transaction()
         {
             Assert.Equal(250m, await _wallet.TopUpAsync(_studentUser.Id, 250m));

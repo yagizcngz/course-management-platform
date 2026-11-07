@@ -15,12 +15,19 @@ namespace EdTechApi.API.Controllers
     {
         private readonly IWalletService _walletService;
         private readonly AppDbContext _context;
+        private readonly bool _simulatedTopUp;
 
-        public WalletController(IWalletService walletService, AppDbContext context)
+        public WalletController(IWalletService walletService, AppDbContext context, IConfiguration configuration, IWebHostEnvironment env)
         {
             _walletService = walletService;
             _context = context;
+            _simulatedTopUp = SimulatedTopUpEnabled(configuration, env);
         }
+
+        // Bakiye yükleme simüle: gerçek ödeme alınmadan bakiye artar. Geliştirmede açık; test/staging ortamı
+        // Wallet:SimulatedTopUp=true ile açabilir; Production'da hiçbir ayarla açılmaz (gerçek ödeme sağlayıcısı bağlanana kadar).
+        public static bool SimulatedTopUpEnabled(IConfiguration configuration, IWebHostEnvironment env) =>
+            !env.IsProduction() && (configuration.GetValue<bool?>("Wallet:SimulatedTopUp") ?? env.IsDevelopment());
 
         public record TopUpRequest(decimal Amount);
 
@@ -40,19 +47,22 @@ namespace EdTechApi.API.Controllers
             return Ok(new
             {
                 balance = user.Balance, transactions, ownedCourseIds, refundableCourseIds, purchases, spent, earned,
-                refundWindowDays = (int)WalletService.RefundWindow.TotalDays
+                refundWindowDays = (int)WalletService.RefundWindow.TotalDays,
+                topUpEnabled = _simulatedTopUp
             });
         }
 
         [HttpPost("top-up")]
-        public async Task<IActionResult> TopUp([FromBody] TopUpRequest request)
+        public async Task<IActionResult> TopUp([FromBody] TopUpRequest request, [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey = null)
         {
+            if (!_simulatedTopUp) return NotFound();
+            if (idempotencyKey?.Length > 100) return BadRequest();
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == User.GetUserId());
             if (user == null) return Unauthorized();
             var role = user.Role.ToLower();
             if (role != "user" && role != "student" && role != "teacher")
                 return StatusCode(403, "Sadece katılımcılar cüzdan kullanabilir.");
-            var balance = await _walletService.TopUpAsync(user.Id, request.Amount);
+            var balance = await _walletService.TopUpAsync(user.Id, request.Amount, idempotencyKey);
             return Ok(new { balance });
         }
 

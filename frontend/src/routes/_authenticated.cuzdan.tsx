@@ -39,6 +39,8 @@ function WalletPage() {
   const [amount, setAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  // simulated top-up is off outside development until a real payment provider is wired in
+  const [topUpEnabled, setTopUpEnabled] = useState(false);
   const isTeacher = isTeacherRole(getRoleFromToken());
 
   const load = async () => {
@@ -50,6 +52,7 @@ function WalletPage() {
       setTransactions(data.transactions);
       setPurchases(data.purchases ?? []);
       setRefundDays(data.refundWindowDays ?? 7);
+      setTopUpEnabled(data.topUpEnabled === true);
       setTotals({ spent: data.spent ?? 0, earned: data.earned ?? 0 });
       setLoadError(false);
     } catch {
@@ -146,52 +149,54 @@ function WalletPage() {
             </CardContent>
           </Card>
 
-          <Card className="md:col-span-2">
-            <CardContent className="p-6">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                {t("wallet.topUp")}
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">{t("wallet.simulatedNote")}</p>
-              <div className="flex flex-wrap gap-2 mt-4">
-                {QUICK_AMOUNTS.map((v) => (
-                  <Button
-                    key={v}
-                    variant="outline"
-                    disabled={submitting}
-                    onClick={() => topUp(v)}
-                    className="tabular-nums"
-                  >
-                    +{formatTry(v)}
+          {topUpEnabled && (
+            <Card className="md:col-span-2">
+              <CardContent className="p-6">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t("wallet.topUp")}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">{t("wallet.simulatedNote")}</p>
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {QUICK_AMOUNTS.map((v) => (
+                    <Button
+                      key={v}
+                      variant="outline"
+                      disabled={submitting}
+                      onClick={() => topUp(v)}
+                      className="tabular-nums"
+                    >
+                      +{formatTry(v)}
+                    </Button>
+                  ))}
+                </div>
+                <form
+                  className="flex gap-2 mt-4"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    topUp(Number(amount));
+                  }}
+                >
+                  <label htmlFor="topup-amount" className="sr-only">
+                    {t("wallet.amount")}
+                  </label>
+                  <Input
+                    id="topup-amount"
+                    type="number"
+                    min={1}
+                    max={10000}
+                    step="0.01"
+                    placeholder={t("wallet.amount")}
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="max-w-48"
+                  />
+                  <Button type="submit" disabled={submitting || !amount}>
+                    {t("wallet.addFunds")}
                   </Button>
-                ))}
-              </div>
-              <form
-                className="flex gap-2 mt-4"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  topUp(Number(amount));
-                }}
-              >
-                <label htmlFor="topup-amount" className="sr-only">
-                  {t("wallet.amount")}
-                </label>
-                <Input
-                  id="topup-amount"
-                  type="number"
-                  min={1}
-                  max={10000}
-                  step="0.01"
-                  placeholder={t("wallet.amount")}
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="max-w-48"
-                />
-                <Button type="submit" disabled={submitting || !amount}>
-                  {t("wallet.addFunds")}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+                </form>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {purchases.length > 0 && (

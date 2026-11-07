@@ -13,6 +13,9 @@ namespace EdTechApi.Core.Entities
         // Earning/Refund/EarningReversal hangi satın almaya ait (iade hesabı için)
         public int? RelatedTransactionId { get; set; }
         public string? Description { get; set; }
+        // TopUp için tekrar anahtarı: ödeme sağlayıcısının ödeme kimliği veya istemcinin Idempotency-Key'i. Kullanıcı başına
+        // benzersiz; aynı anahtarla gelen ikinci istek (ağ tekrarı, webhook'un yeniden gönderimi) bakiyeyi ikinci kez artırmaz.
+        public string? Reference { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

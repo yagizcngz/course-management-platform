@@ -287,8 +287,9 @@ namespace EdTechApi.Tests
             _db.Users.Add(new User { Username = "boss", Email = "b@test", Role = "Admin" });
             _db.SaveChanges();
             var wallet = new WalletService(_db, new EnrollmentService(_db));
-            var asAdmin = new WalletController(wallet, _db) { ControllerContext = As("boss", "Admin") };
-            var asStudent = new WalletController(wallet, _db) { ControllerContext = As("ali") };
+            var config = new ConfigurationBuilder().Build();
+            var asAdmin = new WalletController(wallet, _db, config, new TestEnv("Development")) { ControllerContext = As("boss", "Admin") };
+            var asStudent = new WalletController(wallet, _db, config, new TestEnv("Development")) { ControllerContext = As("ali") };
 
             Assert.Equal(403, Assert.IsType<ObjectResult>(await asAdmin.TopUp(new(50))).StatusCode);
             Assert.IsType<OkObjectResult>(await asStudent.TopUp(new(50)));
@@ -329,6 +330,17 @@ namespace EdTechApi.Tests
                 new(_db, new ConfigurationBuilder().Build(), new TestEnv(environment), new EnrollmentService(_db)) { ControllerContext = As("ali") };
             Assert.IsType<BadRequestObjectResult>(await In(Environments.Production).Complete(course.Id, video.Id, forced));
             Assert.IsType<OkObjectResult>(await In(Environments.Development).Complete(course.Id, video.Id, forced));
+        }
+
+        [Theory]
+        [InlineData("Development", null, true)]
+        [InlineData("Staging", null, false)]
+        [InlineData("Staging", "true", true)]
+        [InlineData("Production", "true", false)] // no setting turns fake money on in production
+        public void Simulated_top_up_is_never_on_in_production(string environment, string? setting, bool expected)
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["Wallet:SimulatedTopUp"] = setting }).Build();
+            Assert.Equal(expected, WalletController.SimulatedTopUpEnabled(config, new TestEnv(environment)));
         }
 
         private sealed class TestEnv(string name) : IWebHostEnvironment
