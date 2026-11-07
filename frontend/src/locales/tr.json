@@ -28,7 +28,8 @@
       "mySupportRequests": "Yardım Taleplerim",
       "wallet": "Cüzdan",
       "messages": "Mesajlar",
-      "community": "Topluluk"
+      "community": "Topluluk",
+      "achievements": "Başarımlar"
     },
     "settings": {
       "title": "Ayarlar",
@@ -1790,6 +1791,15 @@
         "title": "Yeni",
         "hint": "Son eklenenler"
       }
+    },
+    "achievements": {
+      "title": "Başarımlar",
+      "intro": "Rolünüzün kazanabileceği bütün rozetler, açılmaya en yakın olanlar ve bitirdiğiniz kurslar.",
+      "pinOnProfile": "Profilinizde öne çıkacak rozetleri seçin",
+      "next": "Açılmaya en yakın",
+      "finished": "{{count}} bitirilen kurs",
+      "finishedHint": "Kalıcıdır: kurstan ayrılmak, iade ya da sonradan eklenen dersler bunu silmez.",
+      "noneFinished": "Henüz bir kurs bitirmediniz."
     }
   }
 }

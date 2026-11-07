@@ -28,7 +28,8 @@
       "mySupportRequests": "My Support Requests",
       "wallet": "Wallet",
       "messages": "Messages",
-      "community": "Community"
+      "community": "Community",
+      "achievements": "Achievements"
     },
     "settings": {
       "title": "Settings",
@@ -1893,6 +1894,16 @@
         "title": "New",
         "hint": "Recently added"
       }
+    },
+    "achievements": {
+      "title": "Achievements",
+      "intro": "Every badge your role can earn, what is closest to unlocking and the courses you have finished.",
+      "pinOnProfile": "Choose which badges your profile features",
+      "next": "Closest to unlocking",
+      "finished_one": "{{count}} finished course",
+      "finished_other": "{{count}} finished courses",
+      "finishedHint": "Kept for good: leaving a course, a refund or lessons added later do not remove it.",
+      "noneFinished": "You have not finished a course yet."
     }
   }
 }

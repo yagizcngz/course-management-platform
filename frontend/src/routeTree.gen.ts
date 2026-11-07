@@ -34,6 +34,7 @@ import { Route as AuthenticatedIsteklerRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedDuyurularRouteImport } from './routes/_authenticated.duyurular'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated.cuzdan'
+import { Route as AuthenticatedBasarimlarRouteImport } from './routes/_authenticated.basarimlar'
 import { Route as AuthenticatedAyarlarRouteImport } from './routes/_authenticated.ayarlar'
 import { Route as AuthenticatedKursIdRouteImport } from './routes/_authenticated.kurs.$id'
 
@@ -164,6 +165,11 @@ const AuthenticatedCuzdanRoute = AuthenticatedCuzdanRouteImport.update({
   path: '/cuzdan',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedBasarimlarRoute = AuthenticatedBasarimlarRouteImport.update({
+  id: '/basarimlar',
+  path: '/basarimlar',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAyarlarRoute = AuthenticatedAyarlarRouteImport.update({
   id: '/ayarlar',
   path: '/ayarlar',
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/topluluk': typeof ToplulukRoute
   '/ayarlar': typeof AuthenticatedAyarlarRoute
+  '/basarimlar': typeof AuthenticatedBasarimlarRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/duyurular': typeof AuthenticatedDuyurularRoute
@@ -214,6 +221,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/topluluk': typeof ToplulukRoute
   '/ayarlar': typeof AuthenticatedAyarlarRoute
+  '/basarimlar': typeof AuthenticatedBasarimlarRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/duyurular': typeof AuthenticatedDuyurularRoute
@@ -244,6 +252,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/topluluk': typeof ToplulukRoute
   '/_authenticated/ayarlar': typeof AuthenticatedAyarlarRoute
+  '/_authenticated/basarimlar': typeof AuthenticatedBasarimlarRoute
   '/_authenticated/cuzdan': typeof AuthenticatedCuzdanRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/duyurular': typeof AuthenticatedDuyurularRoute
@@ -274,6 +283,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/topluluk'
     | '/ayarlar'
+    | '/basarimlar'
     | '/cuzdan'
     | '/dashboard'
     | '/duyurular'
@@ -302,6 +312,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/topluluk'
     | '/ayarlar'
+    | '/basarimlar'
     | '/cuzdan'
     | '/dashboard'
     | '/duyurular'
@@ -331,6 +342,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/topluluk'
     | '/_authenticated/ayarlar'
+    | '/_authenticated/basarimlar'
     | '/_authenticated/cuzdan'
     | '/_authenticated/dashboard'
     | '/_authenticated/duyurular'
@@ -539,6 +551,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCuzdanRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/basarimlar': {
+      id: '/_authenticated/basarimlar'
+      path: '/basarimlar'
+      fullPath: '/basarimlar'
+      preLoaderRoute: typeof AuthenticatedBasarimlarRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/ayarlar': {
       id: '/_authenticated/ayarlar'
       path: '/ayarlar'
@@ -558,6 +577,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAyarlarRoute: typeof AuthenticatedAyarlarRoute
+  AuthenticatedBasarimlarRoute: typeof AuthenticatedBasarimlarRoute
   AuthenticatedCuzdanRoute: typeof AuthenticatedCuzdanRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDuyurularRoute: typeof AuthenticatedDuyurularRoute
@@ -578,6 +598,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAyarlarRoute: AuthenticatedAyarlarRoute,
+  AuthenticatedBasarimlarRoute: AuthenticatedBasarimlarRoute,
   AuthenticatedCuzdanRoute: AuthenticatedCuzdanRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDuyurularRoute: AuthenticatedDuyurularRoute,
