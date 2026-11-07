@@ -1,6 +1,7 @@
 using EdTechApi.API.Helpers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace EdTechApi.API.Controllers
 {
@@ -10,6 +11,7 @@ namespace EdTechApi.API.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
+    [EnableRateLimiting("uploads")]
     public class UploadsController : ControllerBase
     {
         private readonly IWebHostEnvironment _env;

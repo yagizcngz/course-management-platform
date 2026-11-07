@@ -105,6 +105,10 @@ builder.Services.AddRateLimiter(options =>
     options.AddPolicy("community", http => System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
         EdTechApi.API.Helpers.ClaimsPrincipalExtensions.GetUsername(http.User) ?? http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions { PermitLimit = 30, Window = TimeSpan.FromMinutes(1) }));
+    // Dosya yükleme (profil fotoğrafı, kurs görseli, video): kullanıcı başına 10 dakikada 20 dosya; diski doldurmayı yavaşlatır
+    options.AddPolicy("uploads", http => System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
+        EdTechApi.API.Helpers.ClaimsPrincipalExtensions.GetUsername(http.User) ?? http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions { PermitLimit = 20, Window = TimeSpan.FromMinutes(10) }));
     // Herkese açık yardım formu: IP başına saatte 5 talep, tabloyu doldurmayı ve e-posta bildirimini taşırmayı keser
     options.AddPolicy("support", http => System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
         http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
