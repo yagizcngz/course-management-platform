@@ -182,7 +182,8 @@ function MyCoursesPage() {
               {t("guest.exploreNew", "Yeni kurslar keşfederek öğrenmeye başlayın.")}
             </p>
             <button
-              onClick={() => navigate({ to: "/kurslar", search: { category: "" } })}
+              // the signed-in catalogue, not the public page outside the app
+              onClick={() => navigate({ to: "/katalog" })}
               className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90"
             >
               {t("guest.exploreCourses", "Kursları İncele")}
