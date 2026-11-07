@@ -29,7 +29,8 @@
       "wallet": "Cüzdan",
       "messages": "Mesajlar",
       "community": "Topluluk",
-      "achievements": "Başarımlar"
+      "achievements": "Başarımlar",
+      "instructorAnalytics": "Eğitmen paneli"
     },
     "settings": {
       "title": "Ayarlar",
@@ -1800,6 +1801,24 @@
       "finished": "{{count}} bitirilen kurs",
       "finishedHint": "Kalıcıdır: kurstan ayrılmak, iade ya da sonradan eklenen dersler bunu silmez.",
       "noneFinished": "Henüz bir kurs bitirmediniz."
+    },
+    "instructor": {
+      "title": "Eğitmen paneli",
+      "intro": "Kurslarınızın her birinin durumu: şu an kimin çalıştığı, kimin bitirdiği, ne satıldığı ve ne iade edildiği.",
+      "empty": "Henüz verdiğiniz bir kurs yok. Başlamak için:",
+      "lessons": "{{count}} ders",
+      "notes": "Bitirme oranı = mezunlar ÷ kursa hiç kaydolmuş herkes (ayrılanlar dahil). İade oranı = iadeler ÷ satışlar. Kazanç, iadeler düşülmüş payınızdır.",
+      "cols": {
+        "course": "Kurs",
+        "students": "Öğrenciler",
+        "joinedLast30": "Katılım (30 gün)",
+        "graduates": "Mezunlar",
+        "completionRate": "Bitirme",
+        "sales": "Satışlar",
+        "refunds": "İadeler",
+        "refundRate": "İade oranı",
+        "earned": "Kazanç"
+      }
     }
   }
 }

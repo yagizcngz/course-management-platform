@@ -29,7 +29,8 @@
       "wallet": "Wallet",
       "messages": "Messages",
       "community": "Community",
-      "achievements": "Achievements"
+      "achievements": "Achievements",
+      "instructorAnalytics": "Instructor panel"
     },
     "settings": {
       "title": "Settings",
@@ -1904,6 +1905,25 @@
       "finished_other": "{{count}} finished courses",
       "finishedHint": "Kept for good: leaving a course, a refund or lessons added later do not remove it.",
       "noneFinished": "You have not finished a course yet."
+    },
+    "instructor": {
+      "title": "Instructor panel",
+      "intro": "How each of your courses is doing: who is studying it now, who finished it, what sold and what was refunded.",
+      "empty": "You do not teach a course yet. Start from",
+      "lessons_one": "{{count}} lesson",
+      "lessons_other": "{{count}} lessons",
+      "notes": "Completion rate = graduates ÷ everyone who ever enrolled (leavers included). Refund rate = refunds ÷ sales. Earnings are your share after refunds.",
+      "cols": {
+        "course": "Course",
+        "students": "Students",
+        "joinedLast30": "Joined (30 days)",
+        "graduates": "Graduates",
+        "completionRate": "Completion",
+        "sales": "Sales",
+        "refunds": "Refunds",
+        "refundRate": "Refund rate",
+        "earned": "Earnings"
+      }
     }
   }
 }

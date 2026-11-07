@@ -31,6 +31,7 @@ import { Route as AuthenticatedKurslarimRouteImport } from './routes/_authentica
 import { Route as AuthenticatedKayitlarRouteImport } from './routes/_authenticated.kayitlar'
 import { Route as AuthenticatedKatalogRouteImport } from './routes/_authenticated.katalog'
 import { Route as AuthenticatedIsteklerRouteImport } from './routes/_authenticated.istekler'
+import { Route as AuthenticatedEgitmenPaneliRouteImport } from './routes/_authenticated.egitmen-paneli'
 import { Route as AuthenticatedDuyurularRouteImport } from './routes/_authenticated.duyurular'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
 import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated.cuzdan'
@@ -150,6 +151,12 @@ const AuthenticatedIsteklerRoute = AuthenticatedIsteklerRouteImport.update({
   path: '/istekler',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedEgitmenPaneliRoute =
+  AuthenticatedEgitmenPaneliRouteImport.update({
+    id: '/egitmen-paneli',
+    path: '/egitmen-paneli',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedDuyurularRoute = AuthenticatedDuyurularRouteImport.update({
   id: '/duyurular',
   path: '/duyurular',
@@ -196,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/duyurular': typeof AuthenticatedDuyurularRoute
+  '/egitmen-paneli': typeof AuthenticatedEgitmenPaneliRoute
   '/istekler': typeof AuthenticatedIsteklerRoute
   '/katalog': typeof AuthenticatedKatalogRoute
   '/kayitlar': typeof AuthenticatedKayitlarRoute
@@ -225,6 +233,7 @@ export interface FileRoutesByTo {
   '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/duyurular': typeof AuthenticatedDuyurularRoute
+  '/egitmen-paneli': typeof AuthenticatedEgitmenPaneliRoute
   '/istekler': typeof AuthenticatedIsteklerRoute
   '/katalog': typeof AuthenticatedKatalogRoute
   '/kayitlar': typeof AuthenticatedKayitlarRoute
@@ -256,6 +265,7 @@ export interface FileRoutesById {
   '/_authenticated/cuzdan': typeof AuthenticatedCuzdanRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/duyurular': typeof AuthenticatedDuyurularRoute
+  '/_authenticated/egitmen-paneli': typeof AuthenticatedEgitmenPaneliRoute
   '/_authenticated/istekler': typeof AuthenticatedIsteklerRoute
   '/_authenticated/katalog': typeof AuthenticatedKatalogRoute
   '/_authenticated/kayitlar': typeof AuthenticatedKayitlarRoute
@@ -287,6 +297,7 @@ export interface FileRouteTypes {
     | '/cuzdan'
     | '/dashboard'
     | '/duyurular'
+    | '/egitmen-paneli'
     | '/istekler'
     | '/katalog'
     | '/kayitlar'
@@ -316,6 +327,7 @@ export interface FileRouteTypes {
     | '/cuzdan'
     | '/dashboard'
     | '/duyurular'
+    | '/egitmen-paneli'
     | '/istekler'
     | '/katalog'
     | '/kayitlar'
@@ -346,6 +358,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cuzdan'
     | '/_authenticated/dashboard'
     | '/_authenticated/duyurular'
+    | '/_authenticated/egitmen-paneli'
     | '/_authenticated/istekler'
     | '/_authenticated/katalog'
     | '/_authenticated/kayitlar'
@@ -530,6 +543,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIsteklerRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/egitmen-paneli': {
+      id: '/_authenticated/egitmen-paneli'
+      path: '/egitmen-paneli'
+      fullPath: '/egitmen-paneli'
+      preLoaderRoute: typeof AuthenticatedEgitmenPaneliRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/duyurular': {
       id: '/_authenticated/duyurular'
       path: '/duyurular'
@@ -581,6 +601,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCuzdanRoute: typeof AuthenticatedCuzdanRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDuyurularRoute: typeof AuthenticatedDuyurularRoute
+  AuthenticatedEgitmenPaneliRoute: typeof AuthenticatedEgitmenPaneliRoute
   AuthenticatedIsteklerRoute: typeof AuthenticatedIsteklerRoute
   AuthenticatedKatalogRoute: typeof AuthenticatedKatalogRoute
   AuthenticatedKayitlarRoute: typeof AuthenticatedKayitlarRoute
@@ -602,6 +623,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCuzdanRoute: AuthenticatedCuzdanRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDuyurularRoute: AuthenticatedDuyurularRoute,
+  AuthenticatedEgitmenPaneliRoute: AuthenticatedEgitmenPaneliRoute,
   AuthenticatedIsteklerRoute: AuthenticatedIsteklerRoute,
   AuthenticatedKatalogRoute: AuthenticatedKatalogRoute,
   AuthenticatedKayitlarRoute: AuthenticatedKayitlarRoute,
