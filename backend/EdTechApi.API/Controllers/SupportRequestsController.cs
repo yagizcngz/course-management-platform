@@ -1,3 +1,5 @@
+﻿using EdTechApi.Business.Interfaces;
+using EdTechApi.Business.Services;
 using EdTechApi.API.Helpers;
 using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
@@ -13,10 +15,14 @@ namespace EdTechApi.API.Controllers
     public class SupportRequestsController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IEmailService _emailService;
+        private readonly ILogger<SupportRequestsController> _logger;
 
-        public SupportRequestsController(AppDbContext context)
+        public SupportRequestsController(AppDbContext context, IEmailService emailService, ILogger<SupportRequestsController> logger)
         {
             _context = context;
+            _emailService = emailService;
+            _logger = logger;
         }
 
         public class CreateSupportRequestDto
@@ -145,6 +151,24 @@ namespace EdTechApi.API.Controllers
             request.IsResolved = true;
 
             await _context.SaveChangesAsync();
+
+            // yanıt e-postası: hesabı olan kullanıcı Ayarlar'daki e-posta bildirimlerini kapattıysa gönderilmez
+            var owner = request.UserId == null ? null
+                : await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == request.UserId);
+            var to = owner?.Email ?? request.Email;
+            if (!string.IsNullOrWhiteSpace(to) && (owner == null || (owner.ReceiveEmailNotifications && owner.Role != AccountRetirement.DeletedRole)))
+            {
+                try
+                {
+                    await _emailService.SendEmailAsync(to, "E-Kurs destek talebiniz yanıtlandı",
+                        $"Merhaba,\n\nDestek talebinize yanıt verildi:\n\n{dto.ReplyMessage}\n\nYanıtı Yardım Taleplerim sayfasında da görebilirsiniz.");
+                }
+                catch (Exception ex)
+                {
+                    // yanıt kaydedildi; e-posta gidemese de talep sahibi uygulamada görür
+                    _logger.LogWarning(ex, "Destek yanıtı e-postası gönderilemedi (talep {Id}).", id);
+                }
+            }
 
             return Ok(new { message = "Reply sent successfully." });
         }
