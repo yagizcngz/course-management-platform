@@ -1024,7 +1024,7 @@
       "freeCourse": "Bu kurs ücretsiz; doğrudan katılabilirsiniz.",
       "alreadyPurchased": "Bu kursa zaten sahipsiniz. Kurs sayfasından ücretsiz olarak tekrar katılabilirsiniz.",
       "alreadyEnrolled": "Bu kursa zaten kayıtlısınız.",
-      "completedNoRefund": "Tamamlanmış kurs iade edilemez.",
+      "refundedBefore": "Bu kurs daha önce iade edildi; ikinci kez iade edilemez.",
       "insufficientBalance": "Yetersiz bakiye. Lütfen cüzdanınıza bakiye yükleyin.",
       "nothingToRefund": "Bu kurs için iade edilebilir bir satın alma yok.",
       "notEnrolled": "Bu kursa kayıtlı değilsiniz.",
@@ -1435,7 +1435,8 @@
       "specialist": {
         "title": "{{field}} Uzmanı",
         "criteria": "{{field}} alanında {{count}} kurs tamamla.",
-        "anyTitle": "Alan Uzmanı"
+        "anyTitle": "Alan Uzmanı",
+        "anyCriteria": "Aynı alanda {{count}} kurs tamamla."
       },
       "master": {
         "title": "{{field}} Ustası",
@@ -1498,7 +1499,6 @@
       "pinFailed": "Öne çıkan rozetler kaydedilemedi.",
       "moreEarned": "+{{count}} kazanılmış rozet daha",
       "inProgress": "Devam ediyor",
-      "anyField": "bir alan",
       "howToUnlock": "Kazanmak için",
       "filterLabel": "Rozetleri nadirliğe göre filtrele",
       "filterAll": "Tümü",
@@ -1579,7 +1579,58 @@
       },
       "featuredTitle": "Profilinizde öne çıkanlar",
       "featuredEmpty": "Henüz öne çıkan rozet yok. Profilinizde göstermek için aşağıdan kazandığınız bir rozeti sabitleyin.",
-      "featuredLocked": "Kazandığınız rozetleri buraya sabitleyerek profilinizde öne çıkarabilirsiniz."
+      "featuredLocked": "Kazandığınız rozetleri buraya sabitleyerek profilinizde öne çıkarabilirsiniz.",
+      "steady": {
+        "title": "İstikrarlı Öğrenci",
+        "criteria": "Art arda {{count}} gün ders bitir."
+      },
+      "consistent": {
+        "title": "Bir Haftalık Seri"
+      },
+      "unstoppable": {
+        "title": "Durdurulamaz"
+      },
+      "sprinter": {
+        "title": "Hızlı Başlangıç",
+        "criteria": "{{count}} kursu, ilk dersinden sonraki {{days}} gün içinde bitir."
+      },
+      "speedrunner": {
+        "title": "Rekortmen"
+      },
+      "appreciated": {
+        "title": "Beğenilen",
+        "criteria": "Topluluk gönderilerin {{count}} beğeni alsın."
+      },
+      "helpful": {
+        "title": "Yardımsever Ses"
+      },
+      "beloved": {
+        "title": "Topluluğun Gözdesi"
+      },
+      "firstSale": {
+        "title": "İlk Satış",
+        "criteria": "{{count}} kurs sat (iade edilen satışlar sayılmaz)."
+      },
+      "bestseller": {
+        "title": "Çok Satan"
+      },
+      "blockbuster": {
+        "title": "Gişe Rekortmeni"
+      },
+      "firstGraduate": {
+        "title": "İlk Mezun",
+        "criteria": "Öğrenciler kurslarını {{count}} kez bitirsin."
+      },
+      "graduateMaker": {
+        "title": "Mezun Yetiştiren"
+      },
+      "almaMater": {
+        "title": "Okul Gibi Eğitmen"
+      },
+      "versatile": {
+        "title": "Çok Yönlü Eğitmen",
+        "criteria": "{{count}} farklı alanda kurs ver."
+      }
     },
     "errorPage": {
       "notFoundEyebrow": "Hata · 404",

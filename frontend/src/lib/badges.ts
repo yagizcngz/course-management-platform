@@ -4,21 +4,39 @@ import type { TFunction } from "i18next";
 export interface AchievementStats {
   learning: {
     completedLessons: number;
+    /** Distinct UTC days (yyyy-mm-dd) with at least one finished lesson, for the streak badges. */
+    lessonDays?: string[];
     courses: {
       courseId: number;
       category: string;
+      /** Current progress; a finished course can drop below 100 when a lesson is added later. */
       percent: number;
+      /** When the first lesson of the course was finished. */
+      startedAt?: string | null;
+      /** Set once the course is finished and kept for good (leaving, refunds and new lessons don't clear it). */
       completedAt: string | null;
       /** Sent by the public profile endpoint. */
       title?: string;
     }[];
   } | null;
-  teaching: { joinedAt: string; courses: number; students: number; lessons: number } | null;
+  teaching: {
+    joinedAt: string;
+    courses: number;
+    students: number;
+    lessons: number;
+    /** Distinct fields the teacher's courses are in. */
+    fields?: number;
+    /** Course sales, refunded ones excluded. */
+    sales?: number;
+    /** Times a student finished one of the teacher's courses. */
+    graduates?: number;
+  } | null;
   /**
    * Community activity: when each discussion the user started was opened, when they first replied
-   * to each discussion someone else started, and how many accepted friends they have.
+   * to each discussion someone else started, how many accepted friends they have and how many likes
+   * other people gave their posts.
    */
-  social?: { threads: string[]; joined: string[]; friends: number } | null;
+  social?: { threads: string[]; joined: string[]; friends: number; likes?: number } | null;
 }
 
 /** Rarity tiers, from the easiest to the hardest to earn. */
@@ -40,7 +58,11 @@ export type BadgeKind =
   | "architect"
   | "discussion"
   | "voice"
-  | "friends";
+  | "friends"
+  | "streak"
+  | "sprint"
+  | "helpful"
+  | "sales";
 
 export interface Badge {
   id: string;
@@ -62,6 +84,27 @@ const DAY = 86_400_000;
 
 /** The n-th earliest date (1-based), or undefined when there are fewer. */
 const nth = (dates: string[], n: number) => [...dates].sort()[n - 1];
+
+/**
+ * Consecutive-day runs over yyyy-mm-dd days: entry n-1 is the first day a run of n days was
+ * reached, so the length is the longest streak.
+ */
+export function streakDays(days: string[]): string[] {
+  const reached: string[] = [];
+  let run = 0;
+  let prev = Number.NaN;
+  for (const d of [...new Set(days)].sort()) {
+    const at = Date.parse(d);
+    if (Number.isNaN(at)) continue;
+    run = at - prev === DAY ? run + 1 : 1;
+    prev = at;
+    if (run > reached.length) reached.push(d);
+  }
+  return reached;
+}
+
+/** A course finished within this many days of its first lesson counts for the sprint badges. */
+export const SPRINT_DAYS = 7;
 
 // [id (also the locale key), kind, rarity, target]; ids of the original badges are kept so pins survive
 type Rule = readonly [string, BadgeKind, Rarity, number];
@@ -90,6 +133,15 @@ const FIELD_RANKS: Rule[] = [
   ["specialist", "specialist", "rare", 3],
   ["master", "specialist", "epic", 5],
 ];
+const STREAK: Rule[] = [
+  ["steady", "streak", "common", 3],
+  ["consistent", "streak", "rare", 7],
+  ["unstoppable", "streak", "epic", 30],
+];
+const SPRINT: Rule[] = [
+  ["sprinter", "sprint", "uncommon", 1],
+  ["speedrunner", "sprint", "epic", 5],
+];
 
 const COURSES: Rule[] = [
   ["firstChapter", "author", "common", 1],
@@ -106,6 +158,17 @@ const LESSONS_TAUGHT: Rule[] = [
   ["architect", "architect", "uncommon", 20],
   ["masterBuilder", "architect", "epic", 100],
 ];
+const SALES: Rule[] = [
+  ["firstSale", "sales", "common", 1],
+  ["bestseller", "sales", "rare", 25],
+  ["blockbuster", "sales", "legendary", 100],
+];
+const GRADUATES: Rule[] = [
+  ["firstGraduate", "graduate", "uncommon", 1],
+  ["graduateMaker", "graduate", "rare", 10],
+  ["almaMater", "graduate", "epic", 50],
+];
+const TEACHING_FIELDS: Rule[] = [["versatile", "polymath", "rare", 3]];
 const DAYS: Rule[] = [
   ["senior", "senior", "rare", 180],
   ["veteran", "senior", "epic", 365],
@@ -121,6 +184,11 @@ const JOINED: Rule[] = [
   ["contributor", "voice", "common", 1],
   ["regular", "voice", "uncommon", 10],
   ["communityPillar", "voice", "epic", 50],
+];
+const LIKES: Rule[] = [
+  ["appreciated", "helpful", "common", 1],
+  ["helpful", "helpful", "rare", 25],
+  ["beloved", "helpful", "epic", 100],
 ];
 const FRIENDS: Rule[] = [
   ["firstFriend", "friends", "common", 1],
@@ -161,7 +229,7 @@ export function buildBadges(stats: AchievementStats, t: TFunction, label: (cat: 
   const te = stats.teaching;
   const l = te ? null : stats.learning;
   if (l) {
-    const done = l.courses.filter((c) => c.percent >= 100 && c.completedAt);
+    const done = l.courses.filter((c) => c.completedAt);
     const dates = done.map((c) => c.completedAt!);
 
     ladder(ENROLLED, l.courses.length, (_, count) => t("badges.explorer.criteria", { count }));
@@ -206,11 +274,34 @@ export function buildBadges(stats: AchievementStats, t: TFunction, label: (cat: 
       add(
         rule,
         best?.[1].length ?? 0,
-        t("badges.specialist.criteria", { count: target, field: t("badges.anyField") }),
+        // named after the strongest field once there is one, like the title
+        best?.[0]
+          ? t("badges.specialist.criteria", { count: target, field: label(best[0]) })
+          : t("badges.specialist.anyCriteria", { count: target }),
         () => at,
         best?.[0] ? t(`badges.${id}.title`, { field: label(best[0]) }) : t(`badges.${id}.anyTitle`),
       );
     }
+
+    const streak = streakDays(l.lessonDays ?? []);
+    ladder(
+      STREAK,
+      streak.length,
+      (_, count) => t("badges.steady.criteria", { count }),
+      (n) => streak[n - 1],
+    );
+    const sprints = done
+      .filter(
+        (c) =>
+          c.startedAt && Date.parse(c.completedAt!) - Date.parse(c.startedAt) <= SPRINT_DAYS * DAY,
+      )
+      .map((c) => c.completedAt!);
+    ladder(
+      SPRINT,
+      sprints.length,
+      (_, count) => t("badges.sprinter.criteria", { count, days: SPRINT_DAYS }),
+      (n) => nth(sprints, n),
+    );
   }
 
   if (te) {
@@ -219,6 +310,13 @@ export function buildBadges(stats: AchievementStats, t: TFunction, label: (cat: 
     ladder(COURSES, te.courses, (_, count) => t("badges.author.criteria", { count }));
     ladder(STUDENTS, te.students, (_, count) => t("badges.mentor.criteria", { count }));
     ladder(LESSONS_TAUGHT, te.lessons, (_, count) => t("badges.architect.criteria", { count }));
+    ladder(SALES, te.sales ?? 0, (_, count) => t("badges.firstSale.criteria", { count }));
+    ladder(GRADUATES, te.graduates ?? 0, (_, count) =>
+      t("badges.firstGraduate.criteria", { count }),
+    );
+    ladder(TEACHING_FIELDS, te.fields ?? 0, (_, count) =>
+      t("badges.versatile.criteria", { count }),
+    );
     ladder(
       DAYS,
       days,
@@ -244,6 +342,7 @@ export function buildBadges(stats: AchievementStats, t: TFunction, label: (cat: 
     );
     // friendships keep no acceptance date, so these carry none
     ladder(FRIENDS, so.friends, (_, count) => t("badges.firstFriend.criteria", { count }));
+    ladder(LIKES, so.likes ?? 0, (_, count) => t("badges.appreciated.criteria", { count }));
   }
   return sortBadges(out);
 }

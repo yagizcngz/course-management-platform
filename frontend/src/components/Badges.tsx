@@ -70,6 +70,12 @@ const GLYPHS: Record<BadgeKind, string> = {
   discussion: "M4 5h16v11H10l-4 3.5V16H4Z M8 9.5h8 M8 12.5h5",
   voice: "M3 4h11v8H8l-3 2.5V12H3Z M17 9h4v8h-2v2.5L16 17h-5v-2",
   friends: "M12 19.5s-7.5-4.6-7.5-10A4 4 0 0 1 12 7a4 4 0 0 1 7.5 2.5c0 5.4-7.5 10-7.5 10Z",
+  streak:
+    "M12 21c-3.6 0-6-2.6-6-6 0-3.5 2.7-5.4 3.7-9 1.6 1.5 2.3 3.2 2.1 5 1-.8 1.6-1.9 1.8-3.2 2.5 2.1 4.4 4.6 4.4 7.2 0 3.4-2.4 6-6 6Z",
+  sprint: "M13 3 5 13.5h6L10 21l8-10.5h-6Z",
+  helpful:
+    "M7 11v9H4v-9Z M7 11l4-7c1.5 0 2.5 1 2.2 2.6L12.6 10H19a2 2 0 0 1 2 2.3l-1.2 6A2 2 0 0 1 17.8 20H7",
+  sales: "M3 12V4h8l10 10-8 8Z M7.5 7.5h.01",
 };
 
 /** The metal of each rarity tier; legendary keeps the brand gold. */

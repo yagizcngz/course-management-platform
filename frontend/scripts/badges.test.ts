@@ -5,6 +5,7 @@ import {
   badgeState,
   buildBadges,
   featuredBadges,
+  streakDays,
   type AchievementStats,
 } from "../src/lib/badges.ts";
 
@@ -17,8 +18,11 @@ const course = (courseId: number, category: string, completedAt: string | null) 
   completedAt,
 });
 
-// community ladders every participant has: 2 discussion, 3 joined, 4 friend badges
-const SOCIAL = 9;
+// community ladders every participant has: 2 discussion, 3 joined, 4 friend, 3 like badges
+const SOCIAL = 12;
+// learner and teacher ladders; both roles have the same total
+const LEARNER = 19;
+const TEACHER = 19;
 
 test("a new student sees every learner badge, locked, with a generic specialist pair", () => {
   const badges = buildBadges(
@@ -26,7 +30,7 @@ test("a new student sees every learner badge, locked, with a generic specialist 
     t,
     String,
   );
-  assert.equal(badges.length, 14 + SOCIAL);
+  assert.equal(badges.length, LEARNER + SOCIAL);
   assert.ok(badges.every((b) => badgeState(b) === "locked"));
   assert.equal(badges.find((b) => b.id === "specialist")?.title, "badges.specialist.anyTitle");
   assert.ok(badges.some((b) => b.id === "master"));
@@ -53,7 +57,7 @@ test("ladders unlock by target and date the earning course", () => {
   assert.equal(byId.get("explorer")?.earned, true);
   assert.equal(byId.get("scholar")?.earned, true);
   assert.equal(byId.get("devoted")?.current, 20);
-  assert.equal(byId.size, 14 + SOCIAL);
+  assert.equal(byId.size, LEARNER + SOCIAL);
 });
 
 test("every student has the same total, however many fields they study", () => {
@@ -81,7 +85,7 @@ test("a teacher who also studies gets the teaching catalogue only", () => {
     t,
     String,
   );
-  assert.equal(badges.length, 12 + SOCIAL);
+  assert.equal(badges.length, TEACHER + SOCIAL);
   assert.ok(!badges.some((b) => b.id === "graduate" || b.id === "firstLesson"));
 });
 
@@ -110,7 +114,7 @@ test("teacher ladders cap progress at the target and sort earned rarest first", 
     t,
     String,
   );
-  assert.equal(badges.length, 12 + SOCIAL);
+  assert.equal(badges.length, TEACHER + SOCIAL);
   const veteran = badges.find((b) => b.id === "veteran")!;
   assert.equal(veteran.earned, true);
   assert.equal(veteran.current, 365);
@@ -153,4 +157,77 @@ test("admins (no learning or teaching) get no badges, social activity or not", (
     String,
   );
   assert.equal(badges.length, 0);
+});
+
+test("streaks count consecutive days and date the day each length was first reached", () => {
+  assert.deepEqual(streakDays([]), []);
+  // a 2-day run, a gap, then a 3-day run (duplicates and order don't matter)
+  const days = ["2026-01-05", "2026-01-01", "2026-01-02", "2026-01-04", "2026-01-06", "2026-01-06"];
+  assert.deepEqual(streakDays(days), ["2026-01-01", "2026-01-02", "2026-01-06"]);
+  assert.deepEqual(streakDays(["2026-02-28", "2026-03-01", "bad"]), ["2026-02-28", "2026-03-01"]);
+});
+
+test("streak and sprint ladders unlock for learners", () => {
+  const badges = buildBadges(
+    {
+      learning: {
+        completedLessons: 3,
+        lessonDays: ["2026-01-01", "2026-01-02", "2026-01-03"],
+        courses: [
+          { ...course(1, "web", "2026-01-03T10:00:00Z"), startedAt: "2026-01-01T10:00:00Z" },
+          { ...course(2, "web", "2026-03-20T10:00:00Z"), startedAt: "2026-03-01T10:00:00Z" },
+        ],
+      },
+      teaching: null,
+    },
+    t,
+    String,
+  );
+  const get = (id: string) => badges.find((b) => b.id === id)!;
+  assert.equal(get("steady").earnedAt, "2026-01-03");
+  assert.equal(get("consistent").current, 3);
+  assert.equal(get("sprinter").earned, true); // 2 days; the 19-day course is too slow
+  assert.equal(get("speedrunner").current, 1);
+});
+
+test("a finished course keeps counting when a later lesson drops its progress", () => {
+  const badges = buildBadges(
+    {
+      learning: {
+        completedLessons: 4,
+        courses: [{ ...course(1, "web", "2026-01-03"), percent: 80 }],
+      },
+      teaching: null,
+    },
+    t,
+    String,
+  );
+  assert.equal(badges.find((b) => b.id === "graduate")?.earned, true);
+});
+
+test("teacher sales, graduates and fields ladders read the teaching stats", () => {
+  const badges = buildBadges(
+    {
+      learning: null,
+      teaching: {
+        joinedAt: new Date().toISOString(),
+        courses: 3,
+        students: 5,
+        lessons: 9,
+        fields: 3,
+        sales: 30,
+        graduates: 4,
+      },
+      social: { threads: [], joined: [], friends: 0, likes: 25 },
+    },
+    t,
+    String,
+  );
+  const get = (id: string) => badges.find((b) => b.id === id)!;
+  assert.equal(get("bestseller").earned, true);
+  assert.equal(get("blockbuster").current, 30);
+  assert.equal(get("firstGraduate").earned, true);
+  assert.equal(get("graduateMaker").current, 4);
+  assert.equal(get("versatile").earned, true);
+  assert.equal(get("helpful").earned, true);
 });

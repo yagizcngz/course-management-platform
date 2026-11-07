@@ -268,8 +268,8 @@ function RecordSections({ profile }: { profile: PublicProfile }) {
   const shown = badges ? featuredBadges(badges, profile?.featuredBadges) : [];
   const earned = badges?.filter((b) => b.earned).length ?? 0;
   const courses = profile?.learning?.courses ?? [];
-  const ongoing = courses.filter((c) => c.percent < 100);
-  const completed = courses.filter((c) => c.percent >= 100);
+  const ongoing = courses.filter((c) => !c.completedAt);
+  const completed = courses.filter((c) => c.completedAt);
   const category = (c: string) =>
     i18n.exists(`dynamic.categories.${c}`) ? t(`dynamic.categories.${c}`) : c;
 

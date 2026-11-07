@@ -1097,7 +1097,7 @@
       "freeCourse": "This course is free; you can join it directly.",
       "alreadyPurchased": "You already own this course. You can rejoin it for free from its course page.",
       "alreadyEnrolled": "You are already enrolled in this course.",
-      "completedNoRefund": "A completed course cannot be refunded.",
+      "refundedBefore": "This course was refunded before; a second refund is not possible.",
       "insufficientBalance": "Insufficient balance. Please top up your wallet.",
       "nothingToRefund": "There is no refundable purchase for this course.",
       "notEnrolled": "You are not enrolled in this course.",
@@ -1516,7 +1516,8 @@
       "specialist": {
         "title": "{{field}} Specialist",
         "criteria": "Complete {{count}} courses in {{field}}.",
-        "anyTitle": "Field Specialist"
+        "anyTitle": "Field Specialist",
+        "anyCriteria": "Complete {{count}} courses in the same field."
       },
       "master": {
         "title": "{{field}} Master",
@@ -1583,7 +1584,6 @@
       "moreEarned_one": "+{{count}} more earned badge",
       "moreEarned_other": "+{{count}} more earned badges",
       "inProgress": "In progress",
-      "anyField": "one field",
       "howToUnlock": "To unlock",
       "filterLabel": "Filter badges by rarity",
       "filterAll": "All",
@@ -1667,7 +1667,62 @@
       },
       "featuredTitle": "Featured on your profile",
       "featuredEmpty": "Nothing featured yet. Pin an earned badge below to show it on your profile.",
-      "featuredLocked": "Badges you earn can be pinned here to feature them on your profile."
+      "featuredLocked": "Badges you earn can be pinned here to feature them on your profile.",
+      "steady": {
+        "title": "Steady Learner",
+        "criteria": "Finish lessons on {{count}} days in a row."
+      },
+      "consistent": {
+        "title": "Week-Long Streak"
+      },
+      "unstoppable": {
+        "title": "Unstoppable"
+      },
+      "sprinter": {
+        "title": "Sprinter",
+        "criteria_one": "Finish a course within {{days}} days of starting it.",
+        "criteria_other": "Finish {{count}} courses, each within {{days}} days of starting it."
+      },
+      "speedrunner": {
+        "title": "Speedrunner"
+      },
+      "appreciated": {
+        "title": "Appreciated",
+        "criteria_one": "Get a like on one of your Community posts.",
+        "criteria_other": "Get {{count}} likes on your Community posts."
+      },
+      "helpful": {
+        "title": "Helpful Voice"
+      },
+      "beloved": {
+        "title": "Community Favourite"
+      },
+      "firstSale": {
+        "title": "First Sale",
+        "criteria_one": "Sell a course (refunded sales don't count).",
+        "criteria_other": "Sell {{count}} courses (refunded sales don't count)."
+      },
+      "bestseller": {
+        "title": "Bestseller"
+      },
+      "blockbuster": {
+        "title": "Blockbuster"
+      },
+      "firstGraduate": {
+        "title": "First Graduate",
+        "criteria_one": "Have a student finish one of your courses.",
+        "criteria_other": "Have students finish your courses {{count}} times."
+      },
+      "graduateMaker": {
+        "title": "Graduate Maker"
+      },
+      "almaMater": {
+        "title": "Alma Mater"
+      },
+      "versatile": {
+        "title": "Versatile Instructor",
+        "criteria": "Teach courses in {{count}} different fields."
+      }
     },
     "errorPage": {
       "notFoundEyebrow": "Error · 404",

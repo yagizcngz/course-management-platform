@@ -111,7 +111,7 @@ const RULES: Rule[] = [
   [/Bu kurs ücretsiz/i, "freeCourse"],
   [/Bu kursa zaten sahipsiniz/i, "alreadyPurchased"],
   [/Bu kursa zaten kayıtlısınız/i, "alreadyEnrolled"],
-  [/Tamamlanmış kurs iade edilemez/i, "completedNoRefund"],
+  [/daha önce iade edildi; ikinci kez iade edilemez/i, "refundedBefore"],
   [/Yetersiz bakiye/i, "insufficientBalance"],
   [/iade edilebilir bir satın alma yok/i, "nothingToRefund"],
   [/Bu kursa kayıtlı değilsiniz/i, "notEnrolled"],
