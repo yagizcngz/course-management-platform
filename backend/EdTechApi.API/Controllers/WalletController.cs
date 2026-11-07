@@ -30,12 +30,9 @@ namespace EdTechApi.API.Controllers
             if (user == null) return Unauthorized();
             var transactions = await _walletService.GetTransactionsAsync(user.Id);
             var purchasedCourseIds = await _walletService.GetActivePurchaseCourseIdsAsync(user.Id);
-            var refundSince = DateTime.UtcNow - EdTechApi.Business.Services.WalletService.RefundWindow;
-            var recentPurchaseIds = await _context.WalletTransactions
-                .Where(t => t.UserId == user.Id && t.Type == "Purchase" && t.CourseId != null && t.CreatedAt >= refundSince)
-                .Select(t => t.CourseId!.Value).Distinct().ToListAsync();
-            var refundableCourseIds = recentPurchaseIds.Intersect(purchasedCourseIds).ToList();
-            return Ok(new { balance = user.Balance, transactions, purchasedCourseIds, refundableCourseIds });
+            var ownedCourseIds = await _walletService.GetOwnedCourseIdsAsync(user.Id);
+            var refundableCourseIds = await _walletService.GetRefundableCourseIdsAsync(user.Id);
+            return Ok(new { balance = user.Balance, transactions, purchasedCourseIds, ownedCourseIds, refundableCourseIds });
         }
 
         [HttpPost("top-up")]

@@ -154,6 +154,16 @@ namespace EdTechApi.Business.Services
                 done.TryGetValue(id, out var d) ? d.Count : 0, totals.GetValueOrDefault(id), d?.Last));
         }
 
+        public async Task<List<int>> GetCompletedCourseIdsAsync(int studentId)
+        {
+            // ilerleme öğrenciye bağlı (LessonCompletion), kayda değil; silinmiş dersler sayılmaz
+            var touched = await _context.LessonCompletions
+                .Where(c => c.StudentId == studentId && c.Lesson != null)
+                .Select(c => c.Lesson!.CourseId).Distinct().ToListAsync();
+            var progress = await GetProgressAsync(studentId, touched);
+            return progress.Where(p => p.Value.IsComplete).Select(p => p.Key).ToList();
+        }
+
         public async Task<CourseProgress> CompleteLessonAsync(int studentId, int courseId, int lessonId)
         {
             var enrollment = await _context.Enrollments.FirstOrDefaultAsync(e => e.StudentId == studentId && e.CourseId == courseId)

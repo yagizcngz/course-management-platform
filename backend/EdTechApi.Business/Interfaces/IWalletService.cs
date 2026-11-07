@@ -10,5 +10,8 @@ namespace EdTechApi.Business.Interfaces
         Task<decimal> RefundCourseAsync(User buyer, int courseId);
         Task<bool> HasActivePurchaseAsync(int userId, int courseId);
         Task<List<int>> GetActivePurchaseCourseIdsAsync(int userId);
+        Task<List<int>> GetOwnedCourseIdsAsync(int userId);
+        Task<bool> OwnsCourseAsync(int userId, int courseId);
+        Task<List<int>> GetRefundableCourseIdsAsync(int userId);
     }
 }

@@ -19,6 +19,9 @@ namespace EdTechApi.Business.Interfaces
         // Dersi bitmiş sayar; tüm dersler bitince kaydın durumu "Tamamlandı" olur
         Task<CourseProgress> CompleteLessonAsync(int studentId, int courseId, int lessonId);
 
+        // Öğrencinin tüm derslerini bitirdiği kurslar; kurstan ayrılmış olsa da sayılır
+        Task<List<int>> GetCompletedCourseIdsAsync(int studentId);
+
         // Kullanıcının Student kaydını döner; öğretmense ilk seferde oluşturur. Yoksa null.
         Task<EdTechApi.Core.Entities.Student?> GetOrCreateStudentForUserAsync(EdTechApi.Core.Entities.User user);
     }

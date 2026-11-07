@@ -54,11 +54,15 @@ namespace EdTechApi.Business.Services
                 throw new ArgumentException("Bu kurs ücretsiz; doğrudan katılabilirsiniz.");
             if (course.Teacher?.UserId == buyer.Id)
                 throw new ArgumentException("Kendi kursunuzu satın alamazsınız.");
-            if (await HasActivePurchaseAsync(buyer.Id, courseId))
-                throw new ArgumentException("Bu kursu zaten satın aldınız. Kurslar sayfasından tekrar katılabilirsiniz.");
+            // satın alınmış veya bitirilmiş kurs tekrar satın alınmaz; ücretsiz yeniden katılım açık
+            if (await OwnsCourseAsync(buyer.Id, courseId))
+                throw new ArgumentException("Bu kursa zaten sahipsiniz. Kurs sayfasından ücretsiz olarak tekrar katılabilirsiniz.");
 
             var student = await _enrollmentService.GetOrCreateStudentForUserAsync(buyer)
                 ?? throw new ArgumentException("Katılımcı profili bulunamadı.");
+            // kayıt varken ödeme alınmaz (ör. ücretsizken katılınmış, sonra ücretlendirilmiş kurs)
+            if (await _context.Enrollments.AnyAsync(e => e.StudentId == student.Id && e.CourseId == courseId))
+                throw new ArgumentException("Bu kursa zaten kayıtlısınız.");
 
             var sharePercent = DefaultTeacherSharePercent;
             var setting = await _context.SystemSettings.FirstOrDefaultAsync(s => s.SettingKey == "TEACHER_SHARE_PERCENT");
@@ -114,6 +118,9 @@ namespace EdTechApi.Business.Services
                 throw new ArgumentException("Bu kurs için iade edilebilir bir satın alma yok.");
             if (DateTime.UtcNow - purchase.CreatedAt > RefundWindow)
                 throw new ArgumentException($"İade süresi ({RefundWindow.TotalDays:0} gün) doldu.");
+            // bitirilmiş kurs sahiplikte kalır; iadesi ücretsiz yeniden katılım açığı olurdu
+            if ((await CompletedCourseIdsAsync(buyer.Id)).Contains(courseId))
+                throw new ArgumentException("Tamamlanmış kurs iade edilemez.");
 
             var earning = await _context.WalletTransactions
                 .FirstOrDefaultAsync(t => t.Type == "Earning" && t.RelatedTransactionId == purchase.Id);
@@ -169,6 +176,31 @@ namespace EdTechApi.Business.Services
         // İade edilmemiş satın alma var mı (satın alma sayısı iade sayısından fazla)
         public async Task<bool> HasActivePurchaseAsync(int userId, int courseId) =>
             (await GetActivePurchaseCourseIdsAsync(userId)).Contains(courseId);
+
+        // Sahip olunan kurslar: iade edilmemiş satın almalar ve bitirilmiş kurslar. Bunlara tekrar ücretsiz katılınır,
+        // bir daha satın alınamaz. Arayüz aynı listeyi /api/wallet/me'den alır.
+        public async Task<List<int>> GetOwnedCourseIdsAsync(int userId) =>
+            (await GetActivePurchaseCourseIdsAsync(userId)).Union(await CompletedCourseIdsAsync(userId)).ToList();
+
+        public async Task<bool> OwnsCourseAsync(int userId, int courseId) =>
+            (await GetOwnedCourseIdsAsync(userId)).Contains(courseId);
+
+        // İade süresi içindeki, iade edilmemiş ve bitirilmemiş satın almalar (RefundCourseAsync'in kuralları)
+        public async Task<List<int>> GetRefundableCourseIdsAsync(int userId)
+        {
+            var since = DateTime.UtcNow - RefundWindow;
+            var recent = await _context.WalletTransactions
+                .Where(t => t.UserId == userId && t.Type == "Purchase" && t.CourseId != null && t.CreatedAt >= since)
+                .Select(t => t.CourseId!.Value).Distinct().ToListAsync();
+            return recent.Intersect(await GetActivePurchaseCourseIdsAsync(userId))
+                .Except(await CompletedCourseIdsAsync(userId)).ToList();
+        }
+
+        private async Task<List<int>> CompletedCourseIdsAsync(int userId)
+        {
+            var studentId = await _context.Students.Where(s => s.UserId == userId).Select(s => (int?)s.Id).FirstOrDefaultAsync();
+            return studentId == null ? new() : await _enrollmentService.GetCompletedCourseIdsAsync(studentId.Value);
+        }
 
         public async Task<List<int>> GetActivePurchaseCourseIdsAsync(int userId)
         {

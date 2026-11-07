@@ -204,5 +204,56 @@ namespace EdTechApi.Tests
             await Assert.ThrowsAsync<ArgumentException>(() => _wallet.RefundCourseAsync(_studentUser, _course.Id));
             Assert.Equal(100m, BalanceOf(_studentUser));
         }
+
+        // Kursun tek dersini bitirir: kurs tamamlanmış olur
+        private async Task CompleteCourseAsync()
+        {
+            var lesson = new Lesson { CourseId = _course.Id, Title = "L1", Order = 1 };
+            _db.Lessons.Add(lesson);
+            await _db.SaveChangesAsync();
+            var student = _db.Students.Single(s => s.UserId == _studentUser.Id);
+            await new EnrollmentService(_db).CompleteLessonAsync(student.Id, _course.Id, lesson.Id);
+        }
+
+        [Fact]
+        public async Task A_completed_course_left_without_a_purchase_stays_owned_and_cannot_be_bought_again()
+        {
+            // ücretsizken katılıp bitirdiği kurs sonradan ücretlenmiş, öğrenci de kurstan ayrılmış
+            var student = _db.Students.Single(s => s.UserId == _studentUser.Id);
+            var enrollments = new EnrollmentService(_db);
+            await enrollments.EnrollStudentAsync(student.Id, _course.Id);
+            await CompleteCourseAsync();
+            await enrollments.LeaveCourseAsync(student.Id, _course.Id);
+            await _wallet.TopUpAsync(_studentUser.Id, 200m);
+
+            Assert.True(await _wallet.OwnsCourseAsync(_studentUser.Id, _course.Id));
+            await Assert.ThrowsAsync<ArgumentException>(() => _wallet.PurchaseCourseAsync(_studentUser, _course.Id));
+            Assert.Equal(200m, BalanceOf(_studentUser));
+        }
+
+        [Fact]
+        public async Task Purchase_while_already_enrolled_is_rejected_without_charging()
+        {
+            var student = _db.Students.Single(s => s.UserId == _studentUser.Id);
+            await new EnrollmentService(_db).EnrollStudentAsync(student.Id, _course.Id);
+            await _wallet.TopUpAsync(_studentUser.Id, 200m);
+
+            await Assert.ThrowsAsync<ArgumentException>(() => _wallet.PurchaseCourseAsync(_studentUser, _course.Id));
+            Assert.Equal(200m, BalanceOf(_studentUser));
+            Assert.False(_db.WalletTransactions.Any(t => t.Type == "Purchase"));
+        }
+
+        [Fact]
+        public async Task A_completed_purchase_cannot_be_refunded()
+        {
+            await _wallet.TopUpAsync(_studentUser.Id, 200m);
+            await _wallet.PurchaseCourseAsync(_studentUser, _course.Id);
+            Assert.Contains(_course.Id, await _wallet.GetRefundableCourseIdsAsync(_studentUser.Id));
+            await CompleteCourseAsync();
+
+            Assert.DoesNotContain(_course.Id, await _wallet.GetRefundableCourseIdsAsync(_studentUser.Id));
+            await Assert.ThrowsAsync<ArgumentException>(() => _wallet.RefundCourseAsync(_studentUser, _course.Id));
+            Assert.Equal(100m, BalanceOf(_studentUser));
+        }
     }
 }

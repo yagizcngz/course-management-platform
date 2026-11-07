@@ -40,8 +40,8 @@ namespace EdTechApi.API.Controllers
             if (course == null) return NotFound("Kurs bulunamadı.");
             if (course.Teacher?.UserId == user.Id) return BadRequest("Kendi kursunuza katılamazsınız.");
 
-            // Ücretli kurslar cüzdan üzerinden satın alınır; daha önce satın alınmışsa tekrar katılım ücretsiz
-            if (course.Price > 0 && !await _walletService.HasActivePurchaseAsync(user.Id, courseId))
+            // Ücretli kurslar cüzdan üzerinden satın alınır; satın alınmış veya bitirilmişse tekrar katılım ücretsiz
+            if (course.Price > 0 && !await _walletService.OwnsCourseAsync(user.Id, courseId))
                 return BadRequest("Bu kurs ücretli. Lütfen satın alın.");
 
             var student = await _enrollmentService.GetOrCreateStudentForUserAsync(user);
