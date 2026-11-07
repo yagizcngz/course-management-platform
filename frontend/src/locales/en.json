@@ -916,7 +916,9 @@
         "field": "Data field — column height is price",
         "book": "Catalogue notebook",
         "hint": "Click a course in the scene to open it"
-      }
+      },
+      "catalogTitle": "Courses",
+      "catalogLead": "Browse by field, sub-field and topic; filter the full list by rating, length, level, language and price."
     },
     "enrollments": {
       "breadcrumb": "/ enrollments",
@@ -1467,7 +1469,7 @@
     "catalog": {
       "eyebrow": "Catalogue",
       "title": "Every course, *one* shelf.",
-      "lead": "Search by title, topic, lesson or instructor, then narrow by discipline, level and price. Every course shows its full syllabus before you buy.",
+      "lead": "Search by title, topic, lesson or instructor, then narrow by field, topic, rating, length, level, language and price. Every course shows its full syllabus before you buy.",
       "categoryFilter": "Filter by discipline",
       "allCategories": "All",
       "level": "Level",
@@ -1480,6 +1482,8 @@
       "price": "Price",
       "anyPrice": "Any price",
       "prices": {
+        "free": "Free",
+        "paid": "Paid",
         "under500": "Under ₺500",
         "500to1000": "₺500 – ₺1,000",
         "over1000": "Over ₺1,000"
@@ -1487,10 +1491,12 @@
       "sort": "Sort",
       "sorts": {
         "popular": "Most popular",
+        "rated": "Highest rated",
         "newest": "Newest",
         "priceAsc": "Price: low to high",
         "priceDesc": "Price: high to low",
-        "title": "Title A–Z"
+        "title": "Title A–Z",
+        "relevance": "Best match"
       },
       "view": "Layout",
       "viewGrid": "Card view",
@@ -1498,7 +1504,37 @@
       "clearFilters": "Clear filters",
       "empty": "No course fits these filters. Try another level or price, or clear the search.",
       "subCategoryFilter": "Sub-field",
-      "allSubCategories": "All"
+      "allSubCategories": "All",
+      "facets": {
+        "title": "Filters",
+        "subCategory": "Sub-field",
+        "topic": "Topic",
+        "rating": "Rating",
+        "duration": "Video length",
+        "language": "Language",
+        "subtitles": "Subtitles",
+        "any": "Any"
+      },
+      "ratingAtLeast": "{{value}} & up",
+      "durations": {
+        "under1": "Under 1 hour",
+        "1to3": "1–3 hours",
+        "3to6": "3–6 hours",
+        "over6": "Over 6 hours"
+      },
+      "header": {
+        "all": "All courses",
+        "breadcrumb": "Catalogue path",
+        "topicTitle": "{{topic}} courses",
+        "topicLead": "Every course on {{topic}}, with its rating, length and syllabus.",
+        "topicLeadIn": "Courses on {{topic}} in {{where}}, with their rating, length and syllabus.",
+        "subLead": "Courses in {{sub}}, part of {{category}}: compare ratings, length and level, then open a syllabus.",
+        "categoryLead": "Every course in {{category}}.",
+        "courses_one": "{{count}} course",
+        "courses_other": "{{count}} courses",
+        "learners_one": "{{formatted}} learner",
+        "learners_other": "{{formatted}} learners"
+      }
     },
     "directory": {
       "eyebrow": "Disciplines",

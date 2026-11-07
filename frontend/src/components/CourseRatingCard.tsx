@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { API_BASE } from "./courseHelpers";
 import { authHeaders, readError } from "@/lib/auth";
 import { RatingSummary, StarInput } from "./StarRating";
+import { refreshCourseStats } from "./useCourseStats";
 
 interface Summary {
   average: number;
@@ -48,6 +49,7 @@ export function CourseRatingCard({
       });
       if (!res.ok) throw new Error(await readError(res, t("rating.saveFailed")));
       setSummary(await res.json());
+      refreshCourseStats();
       toast.success(t(method === "PUT" ? "rating.saved" : "rating.removed"));
     } catch (e) {
       toast.error((e as Error).message);

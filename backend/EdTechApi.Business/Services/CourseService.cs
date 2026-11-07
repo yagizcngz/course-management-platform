@@ -52,13 +52,37 @@ namespace EdTechApi.Business.Services
         {
             var now = DateTime.UtcNow;
             DateTime d7 = now.AddDays(-7), d14 = now.AddDays(-14), d30 = now.AddDays(-30);
-            return await _context.Enrollments.AsNoTracking()
+            var joins = await _context.Enrollments.AsNoTracking()
                 .GroupBy(e => e.CourseId)
-                .Select(g => new CourseStats(g.Key, g.Count(),
-                    g.Count(e => e.EnrollmentDate >= d7),
-                    g.Count(e => e.EnrollmentDate >= d14 && e.EnrollmentDate < d7),
-                    g.Count(e => e.EnrollmentDate >= d30)))
-                .ToListAsync();
+                .Select(g => new
+                {
+                    CourseId = g.Key,
+                    Students = g.Count(),
+                    Last7 = g.Count(e => e.EnrollmentDate >= d7),
+                    Prev7 = g.Count(e => e.EnrollmentDate >= d14 && e.EnrollmentDate < d7),
+                    Last30 = g.Count(e => e.EnrollmentDate >= d30)
+                })
+                .ToDictionaryAsync(x => x.CourseId);
+            var ratings = await _context.CourseRatings.AsNoTracking()
+                .GroupBy(r => r.CourseId)
+                .Select(g => new { CourseId = g.Key, Sum = g.Sum(r => r.Stars), Count = g.Count() })
+                .ToDictionaryAsync(x => x.CourseId);
+            var lessons = await _context.Lessons.AsNoTracking()
+                .GroupBy(l => l.CourseId)
+                .Select(g => new { CourseId = g.Key, Count = g.Count(), Seconds = g.Sum(l => l.DurationSeconds ?? 0) })
+                .ToDictionaryAsync(x => x.CourseId);
+
+            return (await _context.Courses.AsNoTracking().Select(c => c.Id).ToListAsync())
+                .Select(id =>
+                {
+                    joins.TryGetValue(id, out var j);
+                    ratings.TryGetValue(id, out var r);
+                    lessons.TryGetValue(id, out var l);
+                    return new CourseStats(id, j?.Students ?? 0, j?.Last7 ?? 0, j?.Prev7 ?? 0, j?.Last30 ?? 0,
+                        r == null ? 0 : Math.Round((double)r.Sum / r.Count, 2), r?.Count ?? 0,
+                        l?.Count ?? 0, l?.Seconds ?? 0);
+                })
+                .ToList();
         }
 
         public async Task<CourseRatingSummary> GetRatingAsync(int courseId, int? studentId)
@@ -203,8 +227,9 @@ namespace EdTechApi.Business.Services
         }
     }
 
-    // Aktif kayıtlar: toplam, son 7 gün, ondan önceki 7 gün ve son 30 gün
-    public record CourseStats(int CourseId, int Students, int Last7, int Prev7, int Last30);
+    // Aktif kayıtlar (toplam, son 7 gün, ondan önceki 7 gün, son 30 gün), puan ortalaması ve sayısı, ders sayısı ve toplam video süresi
+    public record CourseStats(int CourseId, int Students, int Last7, int Prev7, int Last30,
+        double RatingAverage, int RatingCount, int Lessons, int DurationSeconds);
 
     // Ortalama 0-5 (puan yoksa 0); Mine oturumdaki öğrencinin puanı, CanRate kursa sahip olup olmadığı
     public record CourseRatingSummary(double Average, int Count, int? Mine, bool CanRate);

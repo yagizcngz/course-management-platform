@@ -3,7 +3,17 @@ import assert from "node:assert/strict";
 import { showcaseRows, type CourseStats } from "../src/lib/showcase.ts";
 
 const stat = (courseId: number, students: number, last7: number, prev7: number, last30: number) =>
-  ({ courseId, students, last7, prev7, last30 }) satisfies CourseStats;
+  ({
+    courseId,
+    students,
+    last7,
+    prev7,
+    last30,
+    ratingAverage: 0,
+    ratingCount: 0,
+    lessons: 0,
+    durationSeconds: 0,
+  }) satisfies CourseStats;
 
 test("rows rank by students, recent joins, weekly rise and newness, skipping empty ones", () => {
   const courses = [

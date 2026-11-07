@@ -8,6 +8,12 @@ export interface CourseStats {
   prev7: number;
   /** Joined in the last 30 days. */
   last30: number;
+  /** Average of 1-5 star ratings, 0 when nobody rated. */
+  ratingAverage: number;
+  ratingCount: number;
+  lessons: number;
+  /** Total video length of the lessons, in seconds. */
+  durationSeconds: number;
 }
 
 export type ShowcaseKind = "popular" | "hottest" | "trending" | "new";
@@ -37,7 +43,17 @@ export function showcaseRows<T extends ShowcaseCourse>(
   size = 8,
 ): ShowcaseRow<T>[] {
   const byId = new Map(stats.map((s) => [s.courseId, s]));
-  const zero: CourseStats = { courseId: 0, students: 0, last7: 0, prev7: 0, last30: 0 };
+  const zero: CourseStats = {
+    courseId: 0,
+    students: 0,
+    last7: 0,
+    prev7: 0,
+    last30: 0,
+    ratingAverage: 0,
+    ratingCount: 0,
+    lessons: 0,
+    durationSeconds: 0,
+  };
   const of = (c: T) => byId.get(c.id) ?? zero;
   const rank = (kind: ShowcaseKind, metric: (c: T) => number): ShowcaseRow<T> => ({
     kind,

@@ -1,14 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Flame, Sparkles, TrendingUp, Trophy, type LucideIcon } from "lucide-react";
-import { API_BASE } from "./courseHelpers";
 import { formatDate } from "@/lib/utils";
-import {
-  showcaseRows,
-  type CourseStats,
-  type ShowcaseCourse,
-  type ShowcaseKind,
-} from "@/lib/showcase";
+import { showcaseRows, type ShowcaseCourse, type ShowcaseKind } from "@/lib/showcase";
+import { useCourseStats } from "./useCourseStats";
+import { RatingSummary } from "./StarRating";
 
 const ICONS: Record<ShowcaseKind, LucideIcon> = {
   popular: Trophy,
@@ -16,16 +12,6 @@ const ICONS: Record<ShowcaseKind, LucideIcon> = {
   trending: TrendingUp,
   new: Sparkles,
 };
-
-// one fetch per page load; the rows only need rough, minutes-old numbers
-let statsRequest: Promise<CourseStats[]> | null = null;
-const loadStats = () =>
-  (statsRequest ??= fetch(`${API_BASE}/api/courses/stats`)
-    .then((r) => (r.ok ? r.json() : []))
-    .catch(() => {
-      statsRequest = null;
-      return [];
-    }));
 
 /**
  * Curated rows above a course list (most popular, hottest, trending, new), each a horizontal
@@ -46,14 +32,7 @@ export function CourseShowcase<T extends ShowcaseCourse>({
   onOpen: (c: T) => void;
 }) {
   const { t, i18n } = useTranslation();
-  const [stats, setStats] = useState<CourseStats[]>([]);
-  useEffect(() => {
-    let off = false;
-    loadStats().then((s) => !off && setStats(s));
-    return () => {
-      off = true;
-    };
-  }, []);
+  const { list: stats, byId } = useCourseStats();
   const rows = useMemo(() => showcaseRows(courses, stats), [courses, stats]);
   // a course's image index must match the grid's so placeholder art stays the same
   const indexOf = useMemo(() => new Map(courses.map((c, i) => [c.id, i])), [courses]);
@@ -78,35 +57,43 @@ export function CourseShowcase<T extends ShowcaseCourse>({
               <p className="text-xs text-muted-foreground">{t(`showcase.${row.kind}.hint`)}</p>
             </div>
             <ul className="flex gap-4 overflow-x-auto snap-x pb-2 -mx-1 px-1">
-              {row.items.map(({ course, metric: value }) => (
-                <li key={course.id} className="snap-start shrink-0 w-56">
-                  <button
-                    type="button"
-                    onClick={() => onOpen(course)}
-                    className="group w-full text-left bg-card border border-border hover:border-accent rounded-md overflow-hidden transition-colors"
-                  >
-                    <div className="aspect-video bg-muted overflow-hidden">
-                      <img
-                        src={imageOf(course, indexOf.get(course.id) ?? 0)}
-                        alt=""
-                        loading="lazy"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="p-3">
-                      <p className="text-[10px] font-mono text-accent uppercase truncate">
-                        {categoryOf(course)}
-                      </p>
-                      <p className="text-sm font-semibold line-clamp-2 min-h-[2.5rem]">
-                        {titleOf(course)}
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {metric(row.kind, value)}
-                      </p>
-                    </div>
-                  </button>
-                </li>
-              ))}
+              {row.items.map(({ course, metric: value }) => {
+                const s = byId.get(course.id);
+                return (
+                  <li key={course.id} className="snap-start shrink-0 w-56">
+                    <button
+                      type="button"
+                      onClick={() => onOpen(course)}
+                      className="group w-full text-left bg-card border border-border hover:border-accent rounded-md overflow-hidden transition-colors"
+                    >
+                      <div className="aspect-video bg-muted overflow-hidden">
+                        <img
+                          src={imageOf(course, indexOf.get(course.id) ?? 0)}
+                          alt=""
+                          loading="lazy"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="p-3">
+                        <p className="text-[10px] font-mono text-accent uppercase truncate">
+                          {categoryOf(course)}
+                        </p>
+                        <p className="text-sm font-semibold line-clamp-2 min-h-[2.5rem]">
+                          {titleOf(course)}
+                        </p>
+                        <RatingSummary
+                          average={s?.ratingAverage ?? 0}
+                          count={s?.ratingCount ?? 0}
+                          className="mt-1"
+                        />
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {metric(row.kind, value)}
+                        </p>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </section>
         );

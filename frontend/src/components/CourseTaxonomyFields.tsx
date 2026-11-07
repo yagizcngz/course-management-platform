@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { fetchSubCategories, type CourseExtras } from "./courseHelpers";
-
-// teaching and subtitle languages the API accepts (CourseLanguages)
-const LANGUAGES = ["tr", "en", "de", "fr", "es", "ar"] as const;
+import { LANGUAGES } from "@/lib/courseFilters";
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
 

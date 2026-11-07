@@ -26,7 +26,8 @@ export function PageIntro({
   lead,
   children,
 }: {
-  eyebrow: string;
+  /** A label, or a breadcrumb on pages that sit under another. */
+  eyebrow: ReactNode;
   title: string;
   lead: string;
   children?: ReactNode;
@@ -34,7 +35,7 @@ export function PageIntro({
   return (
     <section className="border-b border-border">
       <div className="mx-auto max-w-7xl px-4 pb-12 pt-14 sm:px-6 lg:pt-20">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-gold">{eyebrow}</p>
+        <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-gold">{eyebrow}</div>
         <h1 className="mt-5 max-w-4xl font-serif text-[clamp(2.75rem,6vw,5rem)] leading-[0.95] tracking-tight">
           <SplitHeadline text={title} />
         </h1>

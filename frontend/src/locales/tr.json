@@ -843,7 +843,9 @@
         "field": "Veri alanı — sütun yüksekliği fiyat",
         "book": "Katalog defteri",
         "hint": "Sahnedeki bir kursa tıklayarak açın"
-      }
+      },
+      "catalogTitle": "Kurslar",
+      "catalogLead": "Alana, alt alana ve konuya göre gezinin; tam listeyi puana, süreye, seviyeye, dile ve fiyata göre süzün."
     },
     "enrollments": {
       "breadcrumb": "/ kayıtlar",
@@ -1388,7 +1390,7 @@
     "catalog": {
       "eyebrow": "Katalog",
       "title": "Bütün kurslar, *tek* rafta.",
-      "lead": "Başlığa, konuya, derse ya da eğitmene göre arayın; sonra alana, seviyeye ve fiyata göre daraltın. Her kursun müfredatının tamamı satın almadan önce açık.",
+      "lead": "Başlığa, konuya, derse ya da eğitmene göre arayın; sonra alana, konuya, puana, süreye, seviyeye, dile ve fiyata göre daraltın. Her kursun müfredatının tamamı satın almadan önce açık.",
       "categoryFilter": "Alana göre süz",
       "allCategories": "Tümü",
       "level": "Seviye",
@@ -1401,6 +1403,8 @@
       "price": "Fiyat",
       "anyPrice": "Tüm fiyatlar",
       "prices": {
+        "free": "Ücretsiz",
+        "paid": "Ücretli",
         "under500": "₺500 altı",
         "500to1000": "₺500 – ₺1.000",
         "over1000": "₺1.000 üzeri"
@@ -1408,10 +1412,12 @@
       "sort": "Sırala",
       "sorts": {
         "popular": "En popüler",
+        "rated": "En yüksek puan",
         "newest": "En yeni",
         "priceAsc": "Fiyat: artan",
         "priceDesc": "Fiyat: azalan",
-        "title": "Ada göre (A–Z)"
+        "title": "Ada göre (A–Z)",
+        "relevance": "En iyi eşleşme"
       },
       "view": "Görünüm",
       "viewGrid": "Kart görünümü",
@@ -1419,7 +1425,35 @@
       "clearFilters": "Süzgeçleri temizle",
       "empty": "Bu süzgeçlere uyan kurs yok. Başka bir seviye ya da fiyat deneyin veya aramayı temizleyin.",
       "subCategoryFilter": "Alt alan",
-      "allSubCategories": "Tümü"
+      "allSubCategories": "Tümü",
+      "facets": {
+        "title": "Süzgeçler",
+        "subCategory": "Alt alan",
+        "topic": "Konu",
+        "rating": "Puan",
+        "duration": "Video süresi",
+        "language": "Dil",
+        "subtitles": "Altyazı",
+        "any": "Tümü"
+      },
+      "ratingAtLeast": "{{value}} ve üzeri",
+      "durations": {
+        "under1": "1 saatten kısa",
+        "1to3": "1–3 saat",
+        "3to6": "3–6 saat",
+        "over6": "6 saatten uzun"
+      },
+      "header": {
+        "all": "Tüm kurslar",
+        "breadcrumb": "Katalog yolu",
+        "topicTitle": "{{topic}} kursları",
+        "topicLead": "{{topic}} üzerine bütün kurslar; puanı, süresi ve müfredatıyla.",
+        "topicLeadIn": "{{where}} içinde {{topic}} kursları; puanı, süresi ve müfredatıyla.",
+        "subLead": "{{category}} alanının {{sub}} kursları: puanı, süreyi ve seviyeyi karşılaştırın, sonra müfredata bakın.",
+        "categoryLead": "{{category}} alanındaki bütün kurslar.",
+        "courses": "{{count}} kurs",
+        "learners": "{{formatted}} öğrenci"
+      }
     },
     "directory": {
       "eyebrow": "Alanlar",

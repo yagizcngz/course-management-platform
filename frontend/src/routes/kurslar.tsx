@@ -1,48 +1,42 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { LayoutGrid, List, Search, X } from "lucide-react";
+import { LayoutGrid, List, Search, SlidersHorizontal, X } from "lucide-react";
 import { GuestCourseModal, PageIntro, PublicPage } from "../components/PublicPage";
 import { CourseShowcase } from "../components/CourseShowcase";
+import { CourseFilterPanel } from "../components/CourseFilterPanel";
+import { CatalogCrumbs, CatalogMeta } from "../components/CatalogHeading";
+import { useCatalogHeading } from "../components/useCatalogHeading";
+import { RatingSummary } from "../components/StarRating";
+import { useCourseStats } from "../components/useCourseStats";
 import { getCourseImage, type CourseData } from "../components/courseHelpers";
 import { CourseCard } from "../components/landing/VariantAtelier";
 import { courseRank, price } from "../components/landing/catalog";
 import { rankBy } from "@/lib/search";
+import {
+  SORTS,
+  activeFilterCount,
+  clearedFilters,
+  filterCourses,
+  inScope,
+  parseCourseSearch,
+  sortCourses,
+  type CourseSearch,
+  type FacetCourse,
+} from "@/lib/courseFilters";
 import { usePublicCatalog } from "../components/landing/usePublicCatalog";
 import type { LandingCourse } from "../components/landing/shared";
 
-const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
-const PRICES = ["under500", "500to1000", "over1000"] as const;
-const SORTS = ["popular", "newest", "priceAsc", "priceDesc", "title"] as const;
-
-type Level = (typeof LEVELS)[number];
-type PriceBand = (typeof PRICES)[number];
-type Sort = (typeof SORTS)[number];
-
-interface CatalogSearch {
-  q?: string;
-  category?: string;
-  subCategory?: string;
-  level?: Level;
-  price?: PriceBand;
-  sort?: Sort;
+interface CatalogSearch extends CourseSearch {
   view?: "index";
 }
 
-const pick = <T extends string>(list: readonly T[], value: unknown) =>
-  list.includes(value as T) ? (value as T) : undefined;
-const text = (value: unknown) =>
-  typeof value === "string" && value.trim() ? value.trim().slice(0, 120) : undefined;
+const self = (c: LandingCourse) => c as FacetCourse;
 
 export const Route = createFileRoute("/kurslar")({
   // every filter lives in the URL, so a category link anywhere can open this page pre-filtered
   validateSearch: (s: Record<string, unknown>): CatalogSearch => ({
-    q: text(s.q),
-    category: text(s.category),
-    subCategory: text(s.subCategory),
-    level: pick(LEVELS, s.level),
-    price: pick(PRICES, s.price),
-    sort: pick(SORTS, s.sort),
+    ...parseCourseSearch(s),
     view: s.view === "index" ? "index" : undefined,
   }),
   head: () => ({
@@ -50,63 +44,49 @@ export const Route = createFileRoute("/kurslar")({
       { title: "Kurslar — E-Kurs" },
       {
         name: "description",
-        content: "E-Kurs'taki tüm kurslar: ara, alana, seviyeye ve fiyata göre süz.",
+        content:
+          "E-Kurs'taki tüm kurslar: ara; alana, konuya, puana, süreye, seviyeye, dile ve fiyata göre süz.",
       },
     ],
   }),
   component: CoursesCatalog,
 });
 
-const inBand = (n: number, band?: PriceBand) =>
-  !band ||
-  (band === "under500" ? n < 500 : band === "500to1000" ? n >= 500 && n <= 1000 : n > 1000);
-
 function CoursesCatalog() {
   const { t } = useTranslation();
   const search = Route.useSearch();
   const navigate = useNavigate({ from: "/kurslar" });
   const { courses, categories, teachers, label, describe, extra } = usePublicCatalog();
+  const { byId: stats } = useCourseStats();
   const [selected, setSelected] = useState<LandingCourse | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   // typed text stays local so the field keeps spaces and focus; the trimmed value goes to the URL
   const [query, setQuery] = useState(search.q ?? "");
-  const sort = search.sort ?? "popular";
 
   const set = (patch: Partial<CatalogSearch>) =>
     navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true, resetScroll: false });
 
+  const inCategory = useMemo(
+    () => (courses ?? []).filter((c) => !search.category || c.category === search.category),
+    [courses, search.category],
+  );
+  // the header and the curated rows follow the scope; filters and sort touch "All courses" only
+  const scoped = useMemo(
+    () => inCategory.filter((c) => inScope(self(c), search)),
+    [inCategory, search],
+  );
+
   const results = useMemo(() => {
     if (!courses) return null;
-    // best matches first; with no query every course ranks the same, so the API's popular order stays
-    const list = rankBy(
-      courses.filter(
-        (c) =>
-          (!search.category || c.category === search.category) &&
-          (!search.subCategory || c.subCategory === search.subCategory) &&
-          (!search.level || c.level === search.level) &&
-          inBand(Number(c.price), search.price),
-      ),
-      (c) => courseRank(c, search.q ?? "", label, extra(c)),
+    const title = (c: LandingCourse) => label("courses", c.title);
+    // best matches first; with no query every course ranks the same and the API order stays
+    const ranked = rankBy(filterCourses(scoped, self, stats, search), (c) =>
+      courseRank(c, search.q ?? "", label, extra(c)),
     );
-    if (sort === "newest")
-      list.sort(
-        (a, b) => Date.parse(b.createdAt ?? "") - Date.parse(a.createdAt ?? "") || b.id - a.id,
-      );
-    if (sort === "priceAsc") list.sort((a, b) => Number(a.price) - Number(b.price));
-    if (sort === "priceDesc") list.sort((a, b) => Number(b.price) - Number(a.price));
-    if (sort === "title")
-      list.sort((a, b) => label("courses", a.title).localeCompare(label("courses", b.title), "tr"));
-    return list;
-  }, [
-    courses,
-    search.category,
-    search.subCategory,
-    search.level,
-    search.price,
-    search.q,
-    sort,
-    label,
-    extra,
-  ]);
+    // a search keeps its relevance order until a sort is picked
+    if (search.q && !search.sort) return ranked;
+    return sortCourses(ranked, self, stats, search.sort ?? "popular", title);
+  }, [courses, scoped, stats, search, label, extra]);
 
   const counts = useMemo(() => {
     const m = new Map<string, number>();
@@ -117,26 +97,37 @@ function CoursesCatalog() {
     ...categories.filter((c) => counts.has(c)),
     ...[...counts.keys()].filter((c) => !categories.includes(c)),
   ];
-  // sub-fields of the chosen category, most courses first
-  const subCounts = useMemo(() => {
-    const m = new Map<string, number>();
-    for (const c of courses ?? [])
-      if (c.category === search.category && c.subCategory)
-        m.set(c.subCategory, (m.get(c.subCategory) ?? 0) + 1);
-    return [...m].sort((a, b) => b[1] - a[1]);
-  }, [courses, search.category]);
-  const filtered = !!(search.q || search.category || search.level || search.price);
 
+  const heading = useCatalogHeading(search, label, {
+    title: t("catalog.title"),
+    lead: t("catalog.lead"),
+  });
+  const refinements = activeFilterCount(search);
   const levelLabel = (level?: string | null) =>
     level ? t(`catalog.levels.${level}`, level) : t("catalog.allLevels");
 
   return (
     <PublicPage>
-      <PageIntro eyebrow={t("catalog.eyebrow")} title={t("catalog.title")} lead={t("catalog.lead")}>
+      <PageIntro
+        eyebrow={
+          heading.eyebrow ?? (
+            <CatalogCrumbs
+              crumbs={heading.crumbs}
+              current={heading.title}
+              onPick={(patch) => set(patch)}
+            />
+          )
+        }
+        title={heading.title}
+        lead={heading.lead}
+      >
+        <div className="mt-6">
+          <CatalogMeta courses={scoped} stats={stats} />
+        </div>
         <form
           role="search"
           onSubmit={(e) => e.preventDefault()}
-          className="relative mt-10 max-w-2xl"
+          className="relative mt-8 max-w-2xl"
         >
           <Search
             aria-hidden="true"
@@ -171,7 +162,9 @@ function CoursesCatalog() {
                   <button
                     type="button"
                     aria-pressed={on}
-                    onClick={() => set({ category: name ?? undefined, subCategory: undefined })}
+                    onClick={() =>
+                      set({ category: name ?? undefined, subCategory: undefined, topic: undefined })
+                    }
                     className={`rounded-full border px-4 py-1.5 text-sm transition-colors ${
                       on
                         ? "border-primary bg-primary text-primary-foreground"
@@ -189,78 +182,53 @@ function CoursesCatalog() {
           </ul>
         </nav>
 
-        {/* sub-fields of the chosen discipline */}
-        {search.category && subCounts.length > 0 && (
-          <div
-            role="group"
-            aria-label={t("catalog.subCategoryFilter")}
-            className="-mx-4 -mt-2 overflow-x-auto px-4 pb-5 sm:mx-0 sm:px-0 lg:overflow-visible"
-          >
-            <ul className="flex items-center gap-x-1 gap-y-2 max-lg:min-w-max lg:flex-wrap">
-              <li className="mr-2 font-mono text-[11px] uppercase tracking-[0.14em] text-gold">
-                {t("catalog.subCategoryFilter")}
-              </li>
-              {[[null, counts.get(search.category) ?? 0] as const, ...subCounts].map(([sub, n]) => (
-                <li key={sub ?? "all"}>
-                  <button
-                    type="button"
-                    aria-pressed={(search.subCategory ?? null) === sub}
-                    onClick={() => set({ subCategory: sub ?? undefined })}
-                    className="rounded-full px-3 py-1 text-sm text-muted-foreground transition-colors hover:text-foreground aria-pressed:bg-secondary aria-pressed:font-medium aria-pressed:text-foreground"
-                  >
-                    {sub ? label("subCategories", sub) : t("catalog.allSubCategories")}
-                    <span className="ml-1.5 font-mono text-[11px] tabular-nums opacity-70">
-                      {n}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+        {/* curated rows over the scope; a text search shows only the ranked list.
+            The old staggered grid is kept in components/stashed/StaggeredCourseGrid.tsx */}
+        {scoped.length > 0 && search.view !== "index" && !search.q && (
+          <div className="mt-4">
+            <CourseShowcase
+              courses={scoped}
+              titleOf={(c) => label("courses", c.title)}
+              categoryOf={(c) => label("categories", c.category)}
+              imageOf={(c, i) => getCourseImage(c as unknown as CourseData, i)}
+              onOpen={setSelected}
+            />
           </div>
         )}
 
-        {/* level, price, sort, view */}
-        <div className="flex flex-col gap-4 border-y border-border py-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-            <div role="group" aria-label={t("catalog.level")} className="flex flex-wrap gap-1">
-              {[undefined, ...LEVELS].map((lv) => (
-                <button
-                  key={lv ?? "all"}
-                  type="button"
-                  aria-pressed={search.level === lv}
-                  onClick={() => set({ level: lv })}
-                  className="rounded-full px-3 py-1 text-sm text-muted-foreground transition-colors hover:text-foreground aria-pressed:bg-secondary aria-pressed:font-medium aria-pressed:text-foreground"
-                >
-                  {levelLabel(lv)}
-                </button>
-              ))}
-            </div>
-            <label className="flex items-center gap-2 text-sm text-muted-foreground">
-              {t("catalog.price")}
-              <select
-                value={search.price ?? ""}
-                onChange={(e) => set({ price: pick(PRICES, e.target.value) })}
-                className="rounded-md border border-border bg-card px-2 py-1.5 text-sm text-foreground outline-none focus:border-gold"
-              >
-                <option value="">{t("catalog.anyPrice")}</option>
-                {PRICES.map((p) => (
-                  <option key={p} value={p}>
-                    {t(`catalog.prices.${p}`)}
-                  </option>
-                ))}
-              </select>
-            </label>
+        <h2 id="all-courses" className="mt-6 font-serif text-3xl">
+          {t("showcase.allCourses")}
+        </h2>
+
+        {/* toolbar: filters (mobile), sort, count, view */}
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border-y border-border py-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              aria-expanded={filtersOpen}
+              aria-controls="course-filters"
+              onClick={() => setFiltersOpen((v) => !v)}
+              className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-1.5 text-sm transition-colors hover:border-gold lg:hidden"
+            >
+              <SlidersHorizontal aria-hidden="true" className="size-4" />
+              {t("catalog.facets.title")}
+              {refinements > 0 && (
+                <span className="rounded-full bg-primary px-1.5 font-mono text-[11px] text-primary-foreground">
+                  {refinements}
+                </span>
+              )}
+            </button>
             <label className="flex items-center gap-2 text-sm text-muted-foreground">
               {t("catalog.sort")}
               <select
-                value={sort}
-                onChange={(e) =>
-                  set({
-                    sort: e.target.value === "popular" ? undefined : pick(SORTS, e.target.value),
-                  })
-                }
+                value={search.sort ?? (search.q ? "" : "popular")}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  set({ sort: v ? (SORTS.find((s) => s === v) ?? undefined) : undefined });
+                }}
                 className="rounded-md border border-border bg-card px-2 py-1.5 text-sm text-foreground outline-none focus:border-gold"
               >
+                {search.q && <option value="">{t("catalog.sorts.relevance")}</option>}
                 {SORTS.map((s) => (
                   <option key={s} value={s}>
                     {t(`catalog.sorts.${s}`)}
@@ -268,8 +236,21 @@ function CoursesCatalog() {
                 ))}
               </select>
             </label>
+            {(refinements > 0 || search.q) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery("");
+                  set({ ...clearedFilters, q: undefined });
+                }}
+                className="inline-flex items-center gap-1.5 text-sm text-muted-foreground underline decoration-gold underline-offset-4 hover:text-foreground"
+              >
+                <X aria-hidden="true" className="h-3.5 w-3.5" />
+                {t("catalog.clearFilters")}
+              </button>
+            )}
           </div>
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
             <p
               role="status"
               aria-live="polite"
@@ -301,108 +282,113 @@ function CoursesCatalog() {
           </div>
         </div>
 
-        {filtered && (
-          <button
-            type="button"
-            onClick={() => {
-              setQuery("");
-              set({
-                q: undefined,
-                category: undefined,
-                subCategory: undefined,
-                level: undefined,
-                price: undefined,
-              });
-            }}
-            className="mt-4 inline-flex items-center gap-1.5 text-sm text-muted-foreground underline decoration-gold underline-offset-4 hover:text-foreground"
+        <div className="mt-6 lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-10">
+          <aside
+            id="course-filters"
+            aria-label={t("catalog.facets.title")}
+            className={`${filtersOpen ? "block" : "hidden"} mb-8 lg:mb-0 lg:block`}
           >
-            <X aria-hidden="true" className="h-3.5 w-3.5" />
-            {t("catalog.clearFilters")}
-          </button>
-        )}
-
-        {results !== null && results.length === 0 && (
-          <p role="status" className="py-24 text-center text-muted-foreground">
-            {t("catalog.empty")}
-          </p>
-        )}
-
-        {/* curated rows over the filtered courses; a text search shows only the ranked list.
-            The old staggered grid is kept in components/stashed/StaggeredCourseGrid.tsx */}
-        {results && results.length > 0 && search.view !== "index" && !search.q && (
-          <div className="mt-10">
-            <CourseShowcase
-              courses={results}
-              titleOf={(c) => label("courses", c.title)}
-              categoryOf={(c) => label("categories", c.category)}
-              imageOf={(c, i) => getCourseImage(c as unknown as CourseData, i)}
-              onOpen={setSelected}
+            <CourseFilterPanel
+              search={search}
+              set={set}
+              inCategory={inCategory}
+              inScope={scoped}
+              stats={stats}
+              subCategoryLabel={(v) => label("subCategories", v)}
             />
-            <h2 className="font-bold">{t("showcase.allCourses")}</h2>
-          </div>
-        )}
+          </aside>
 
-        {results && results.length > 0 && search.view !== "index" && (
-          <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
-            {results.map((course, i) => (
-              <div key={course.id}>
-                <CourseCard
-                  course={course}
-                  index={i}
-                  teachers={teachers}
-                  label={label}
-                  description={describe(course)}
-                  onOpen={setSelected}
-                  meta={
-                    <span className="mt-1 block font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-                      {levelLabel(course.level)}
-                      {course.subCategory && ` · ${label("subCategories", course.subCategory)}`}
-                    </span>
-                  }
-                />
+          <div className="min-w-0">
+            {results !== null && results.length === 0 && (
+              <p role="status" className="py-24 text-center text-muted-foreground">
+                {t("catalog.empty")}
+              </p>
+            )}
+
+            {results && results.length > 0 && search.view !== "index" && (
+              <div className="grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 xl:grid-cols-3">
+                {results.map((course, i) => {
+                  const s = stats.get(course.id);
+                  return (
+                    <div key={course.id}>
+                      <CourseCard
+                        course={course}
+                        index={i}
+                        teachers={teachers}
+                        label={label}
+                        description={describe(course)}
+                        onOpen={setSelected}
+                        meta={
+                          <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                              {levelLabel(course.level)}
+                              {course.subCategory &&
+                                ` · ${label("subCategories", course.subCategory)}`}
+                            </span>
+                            <RatingSummary
+                              average={s?.ratingAverage ?? 0}
+                              count={s?.ratingCount ?? 0}
+                            />
+                          </span>
+                        }
+                      />
+                    </div>
+                  );
+                })}
               </div>
-            ))}
-          </div>
-        )}
+            )}
 
-        {results && results.length > 0 && search.view === "index" && (
-          <ol className="mt-10 border-t border-foreground/70">
-            {results.map((course, i) => (
-              <li key={course.id} className="border-b border-border">
-                <button
-                  type="button"
-                  onClick={() => setSelected(course)}
-                  className="group grid w-full grid-cols-[2.5rem_1fr_auto] items-baseline gap-x-4 py-4 text-left sm:grid-cols-[3rem_1fr_11rem_9rem_6rem]"
-                >
-                  <span className="font-mono text-xs tabular-nums text-gold">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block font-serif text-xl leading-tight break-words decoration-gold underline-offset-4 group-hover:underline">
-                      {label("courses", course.title)}
-                    </span>
-                    <span className="mt-1 block truncate text-xs text-muted-foreground">
-                      {course.instructor || "—"}
-                      <span className="sm:hidden"> · {label("categories", course.category)}</span>
-                    </span>
-                  </span>
-                  <span className="hidden text-sm text-muted-foreground sm:block">
-                    {label("categories", course.category)}
-                    {course.subCategory && (
-                      <span className="mt-0.5 block text-xs opacity-80">
-                        {label("subCategories", course.subCategory)}
-                      </span>
-                    )}
-                  </span>
-                  <span className="hidden font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground sm:block">
-                    {levelLabel(course.level)}
-                  </span>
-                  <span className="text-right tabular-nums">{price(course.price)}</span>
-                </button>
-              </li>
-            ))}
-          </ol>
-        )}
+            {results && results.length > 0 && search.view === "index" && (
+              <ol className="border-t border-foreground/70">
+                {results.map((course, i) => {
+                  const s = stats.get(course.id);
+                  return (
+                    <li key={course.id} className="border-b border-border">
+                      <button
+                        type="button"
+                        onClick={() => setSelected(course)}
+                        className="group grid w-full grid-cols-[2.5rem_1fr_auto] items-baseline gap-x-4 py-4 text-left sm:grid-cols-[3rem_1fr_10rem_8rem_6rem]"
+                      >
+                        <span className="font-mono text-xs tabular-nums text-gold">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block font-serif text-xl leading-tight break-words decoration-gold underline-offset-4 group-hover:underline">
+                            {label("courses", course.title)}
+                          </span>
+                          <span className="mt-1 block truncate text-xs text-muted-foreground">
+                            {course.instructor || "—"}
+                            <span className="sm:hidden">
+                              {" "}
+                              · {label("categories", course.category)}
+                            </span>
+                          </span>
+                          <RatingSummary
+                            average={s?.ratingAverage ?? 0}
+                            count={s?.ratingCount ?? 0}
+                            className="mt-1"
+                          />
+                        </span>
+                        <span className="hidden text-sm text-muted-foreground sm:block">
+                          {label("categories", course.category)}
+                          {course.subCategory && (
+                            <span className="mt-0.5 block text-xs opacity-80">
+                              {label("subCategories", course.subCategory)}
+                            </span>
+                          )}
+                        </span>
+                        <span className="hidden font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground sm:block">
+                          {levelLabel(course.level)}
+                        </span>
+                        <span className="text-right tabular-nums">{price(course.price)}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+          </div>
+        </div>
       </div>
 
       <GuestCourseModal course={selected} teachers={teachers} onClose={() => setSelected(null)} />

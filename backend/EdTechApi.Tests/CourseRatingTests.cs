@@ -36,6 +36,10 @@ namespace EdTechApi.Tests
             _course = new Course { Title = "C", Price = 0m, MaxCapacity = 10, Category = "Genel", TeacherId = teacher.Id };
             _db.Courses.Add(_course);
             _db.SaveChanges();
+            _db.Lessons.AddRange(
+                new Lesson { CourseId = _course.Id, Title = "L1", Order = 1, DurationSeconds = 600 },
+                new Lesson { CourseId = _course.Id, Title = "L2", Order = 2, DurationSeconds = 300 });
+            _db.SaveChanges();
 
             _courses = new CourseService(_db);
         }
@@ -58,6 +62,9 @@ namespace EdTechApi.Tests
             await _courses.RateAsync(_student.Id, _course.Id, 4);
             var summary = await _courses.RateAsync(_student.Id, _course.Id, 2);
             Assert.Equal((2.0, 1, (int?)2, true), (summary.Average, summary.Count, summary.Mine, summary.CanRate));
+
+            var stats = (await _courses.GetCourseStatsAsync()).Single(s => s.CourseId == _course.Id);
+            Assert.Equal((2.0, 1, 2, 900, 1), (stats.RatingAverage, stats.RatingCount, stats.Lessons, stats.DurationSeconds, stats.Students));
 
             summary = await _courses.RemoveRatingAsync(_student.Id, _course.Id);
             Assert.Equal((0.0, 0, (int?)null), (summary.Average, summary.Count, summary.Mine));

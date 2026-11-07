@@ -1,12 +1,28 @@
 import { pillButton, chip, formatTry } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "../components/PageHeader";
-import { Plus, X, Trash2, Filter } from "lucide-react";
+import { Plus, X, Trash2, SlidersHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { CourseDetailModal } from "../components/CourseDetailModal";
 import { CourseShowcase } from "../components/CourseShowcase";
+import { CourseFilterPanel } from "../components/CourseFilterPanel";
+import { CatalogCrumbs, CatalogMeta } from "../components/CatalogHeading";
+import { useCatalogHeading } from "../components/useCatalogHeading";
+import { RatingSummary } from "../components/StarRating";
+import { useCourseStats } from "../components/useCourseStats";
+import {
+  SORTS,
+  activeFilterCount,
+  clearedFilters,
+  filterCourses,
+  inScope,
+  parseCourseSearch,
+  sortCourses,
+  type CourseSearch,
+  type FacetCourse,
+} from "@/lib/courseFilters";
 import { useNavigate } from "@tanstack/react-router";
 import {
   emptyExtras,
@@ -36,24 +52,37 @@ import { rankBy, searchRank } from "@/lib/search";
 import { joinCourse, useMyCourses } from "@/components/useMyCourses";
 export const Route = createFileRoute("/_authenticated/katalog")({
   component: CoursesPage,
-  validateSearch: (search: Record<string, unknown>) => ({
-    category: (search.category as string) || "",
-  }),
+  // scope, filters and sort live in the URL (q stays in the header's search box)
+  validateSearch: (search: Record<string, unknown>): Omit<CourseSearch, "q"> => {
+    const { q: _q, ...rest } = parseCourseSearch(search);
+    return rest;
+  },
 });
+
+/** A course with the facet fields read once from the API's mixed-case shape. */
+type Row = CourseData & FacetCourse;
+const toRow = (c: CourseData): Row => ({
+  ...c,
+  id: Number(c.id ?? c.Id),
+  category: c.category || c.Category || "",
+  subCategory: c.subCategory ?? c.SubCategory ?? null,
+  level: c.level ?? c.Level ?? null,
+  price: Number(c.price ?? c.Price ?? 0) || 0,
+  createdAt: c.createdAt ?? c.CreatedAt,
+});
+const self = (c: Row) => c;
 
 function CoursesPage() {
   const { t, i18n } = useTranslation();
-  const { category: categoryFromUrl } = Route.useSearch();
-  const navigate = useNavigate();
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: "/katalog" });
+  const set = (patch: Partial<CourseSearch>) =>
+    navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true, resetScroll: false });
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(categoryFromUrl || "");
   const [dbCourses, setDbCourses] = useState<CourseData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // Sync category from URL when navigating from dashboard
-  useEffect(() => {
-    setSelectedCategory(categoryFromUrl || "");
-  }, [categoryFromUrl]);
+  const { byId: stats } = useCourseStats();
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const [currentUser, setCurrentUser] = useState({
     role: t("courses.student"),
@@ -81,7 +110,6 @@ function CoursesPage() {
   // eşleştirmesi için /api/teachers'tan çekilen liste.
   const [dbTeachers, setDbTeachers] = useState<TeacherLiteDto[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
-  const [isFilterOpen, setIsFilterOpen] = useState(!!categoryFromUrl);
 
   // ÇOKLU SEÇİM VE DÜZENLEME MODU STATE'LERİ
   const [isEditMode, setIsEditMode] = useState(false);
@@ -295,10 +323,7 @@ function CoursesPage() {
       setSelectedCourseIds([]);
     } else {
       // Tümünü seç
-      const allFilteredIds = filteredCourses
-        .map((c) => c.id ?? c.Id)
-        .filter((id): id is string | number => id !== undefined);
-      setSelectedCourseIds(allFilteredIds);
+      setSelectedCourseIds(filteredCourses.map((c) => c.id));
     }
   };
 
@@ -346,45 +371,45 @@ function CoursesPage() {
     value
       ? ["tr", "en"].map((lng) => t(`dynamic.${kind}.${value}`, { lng, defaultValue: value }))
       : [];
-  const filteredCourses = rankBy(
-    dbCourses.filter((c) => !selectedCategory || (c.category || c.Category) === selectedCategory),
-    (c) => {
+  const label = (kind: string, value: string) =>
+    i18n.exists(`dynamic.${kind}.${value}`) ? t(`dynamic.${kind}.${value}`) : value;
+  const rows = useMemo(() => dbCourses.map(toRow), [dbCourses]);
+  const inCategory = useMemo(
+    () => rows.filter((c) => !search.category || c.category === search.category),
+    [rows, search.category],
+  );
+  // the header and the curated rows follow the scope; filters and sort touch "All courses" only
+  const scoped = useMemo(() => inCategory.filter((c) => inScope(c, search)), [inCategory, search]);
+  const filteredCourses = useMemo(() => {
+    const ranked = rankBy(filterCourses(scoped, self, stats, search), (c) => {
       const title = c.title || c.Title || "";
       return searchRank(
         searchTerm,
         [title, ...both("courses", title)],
         [
           c.instructor || c.Instructor || "",
-          ...both("categories", c.category || c.Category),
-          ...both("subCategories", c.subCategory || c.SubCategory),
+          ...both("categories", c.category),
+          ...both("subCategories", c.subCategory),
+          c.topic ?? "",
           c.description || c.Description || "",
           ...both("descriptions", title),
         ],
       );
-    },
-  );
-
-  // curated rows over the selected category (or everything); a search shows only the ranked list
-  const showcaseCourses = useMemo(
-    () =>
-      dbCourses
-        .filter((c) => !selectedCategory || (c.category || c.Category) === selectedCategory)
-        .map((c) => ({ ...c, id: Number(c.id ?? c.Id), createdAt: c.createdAt ?? c.CreatedAt })),
-    [dbCourses, selectedCategory],
-  );
-  const showcaseOn = !isLoading && !searchTerm.trim() && !isEditMode;
-  const label = (kind: string, value: string) =>
-    i18n.exists(`dynamic.${kind}.${value}`) ? t(`dynamic.${kind}.${value}`) : value;
-
-  const handleCategorySelect = (cat: string) => {
-    const newCat = cat === selectedCategory ? "" : cat;
-    setSelectedCategory(newCat);
-    navigate({
-      to: "/katalog",
-      search: { category: newCat || "" },
-      replace: true,
     });
-  };
+    // a search keeps its relevance order until a sort is picked
+    if (searchTerm.trim() && !search.sort) return ranked;
+    return sortCourses(ranked, self, stats, search.sort ?? "popular", (c) =>
+      label("courses", c.title || c.Title || ""),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- both/label only read t, which i18n.language covers
+  }, [scoped, stats, search, searchTerm, i18n.language]);
+
+  const showcaseOn = !isLoading && !searchTerm.trim() && !isEditMode;
+  const heading = useCatalogHeading(search, label, {
+    title: t("courses.catalogTitle"),
+    lead: t("courses.catalogLead"),
+  });
+  const refinements = activeFilterCount(search);
 
   return (
     <>
@@ -427,162 +452,230 @@ function CoursesPage() {
       />
 
       <div className="p-8 animate-reveal">
-        {/* Category Filter */}
-        {categories.length > 0 && (
-          <div className="mb-6">
-            <button
-              onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className={chip(isFilterOpen || !!selectedCategory)}
-            >
-              <Filter className="size-3.5" />
-              {selectedCategory
-                ? i18n.exists(`dynamic.categories.${selectedCategory}`)
-                  ? t(`dynamic.categories.${selectedCategory}`)
-                  : selectedCategory
-                : t("courses.filter", "Filtrele")}
-            </button>
+        <header className="mb-8 space-y-4">
+          {heading.crumbs.length > 0 ? (
+            <CatalogCrumbs
+              crumbs={heading.crumbs}
+              current={heading.title}
+              onPick={(patch) => set(patch)}
+            />
+          ) : (
+            <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-gold">
+              {heading.eyebrow}
+            </p>
+          )}
+          <h1 className="font-serif text-4xl leading-tight md:text-5xl">{heading.title}</h1>
+          <p className="max-w-3xl text-muted-foreground">{heading.lead}</p>
+          <CatalogMeta courses={scoped} stats={stats} />
+        </header>
 
-            {isFilterOpen && (
-              <div className="flex items-center gap-2 mt-3 flex-wrap animate-in fade-in slide-in-from-top-2 duration-200">
-                <button
-                  onClick={() => handleCategorySelect("")}
-                  className={chip(!selectedCategory)}
-                >
-                  {t("courses.allCategories", "Tumu")}
-                </button>
-                {categories.map((cat) => (
+        {/* categories */}
+        {categories.length > 0 && (
+          <nav aria-label={t("catalog.categoryFilter")} className="mb-8">
+            <ul className="flex flex-wrap gap-2">
+              {["", ...categories].map((cat) => (
+                <li key={cat || "all"}>
                   <button
-                    key={cat}
-                    onClick={() => handleCategorySelect(cat)}
-                    className={chip(selectedCategory === cat)}
+                    type="button"
+                    aria-pressed={(search.category ?? "") === cat}
+                    onClick={() =>
+                      set({ category: cat || undefined, subCategory: undefined, topic: undefined })
+                    }
+                    className={chip((search.category ?? "") === cat)}
                   >
-                    {i18n.exists(`dynamic.categories.${cat}`)
-                      ? t(`dynamic.categories.${cat}`)
-                      : cat}
+                    {cat ? label("categories", cat) : t("courses.allCategories", "Tumu")}
                   </button>
-                ))}
-              </div>
-            )}
-          </div>
+                </li>
+              ))}
+            </ul>
+          </nav>
         )}
 
         {showcaseOn && (
           <CourseShowcase
-            courses={showcaseCourses}
+            courses={scoped}
             titleOf={(c) => label("courses", c.title || c.Title || t("courses.unnamedCourse"))}
-            categoryOf={(c) => label("categories", c.category || c.Category || "")}
+            categoryOf={(c) => label("categories", c.category)}
             imageOf={(c, i) => getCourseImage(c, i)}
             onOpen={setSelectedCourse}
           />
         )}
-        {showcaseOn && filteredCourses.length > 0 && (
-          <h2 className="font-bold mb-4">{t("showcase.allCourses")}</h2>
-        )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {isLoading ? (
-            <div className="col-span-full py-12 text-center text-muted-foreground animate-pulse font-mono text-xs uppercase tracking-widest">
-              {t("courses.loading")}
-            </div>
-          ) : filteredCourses.length === 0 ? (
-            <div className="col-span-full py-12 text-center text-muted-foreground text-xs">
-              {t("courses.notFound")}
-            </div>
-          ) : (
-            filteredCourses.map((c, index) => {
-              const currentId = c.id ?? c.Id;
-              const title = c.title || c.Title || t("courses.unnamedCourse");
-              const categoryRaw = c.category || c.Category || "";
-              const category = categoryRaw
-                ? i18n.exists(`dynamic.categories.${categoryRaw}`)
-                  ? t(`dynamic.categories.${categoryRaw}`)
-                  : categoryRaw
-                : t("courses.general");
-              const price = c.price || c.Price || "0";
-              const instructor = c.instructor || c.Instructor || t("courses.unknown");
-              const isSelected = selectedCourseIds.includes(currentId as string | number);
+        <h2 className="font-bold">{t("showcase.allCourses")}</h2>
+        <div className="mt-3 mb-6 flex flex-wrap items-center justify-between gap-3 border-y border-border py-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              aria-expanded={filtersOpen}
+              aria-controls="catalog-filters"
+              onClick={() => setFiltersOpen((v) => !v)}
+              className={`${chip(filtersOpen || refinements > 0)} lg:hidden`}
+            >
+              <SlidersHorizontal className="size-3.5" aria-hidden="true" />
+              {t("catalog.facets.title")}
+              {refinements > 0 && <span className="font-mono">{refinements}</span>}
+            </button>
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
+              {t("catalog.sort")}
+              <select
+                value={search.sort ?? (searchTerm.trim() ? "" : "popular")}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  set({ sort: v ? SORTS.find((s) => s === v) : undefined });
+                }}
+                className="h-8 rounded-md border border-border bg-card px-2 text-sm text-foreground outline-none focus:border-foreground"
+              >
+                {searchTerm.trim() && <option value="">{t("catalog.sorts.relevance")}</option>}
+                {SORTS.map((s) => (
+                  <option key={s} value={s}>
+                    {t(`catalog.sorts.${s}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {refinements > 0 && (
+              <button
+                type="button"
+                onClick={() => set(clearedFilters)}
+                className="inline-flex items-center gap-1 text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              >
+                <X className="size-3.5" aria-hidden="true" />
+                {t("catalog.clearFilters")}
+              </button>
+            )}
+          </div>
+          <p role="status" aria-live="polite" className="font-mono text-xs text-muted-foreground">
+            {isLoading
+              ? t("courses.loading")
+              : t("guest.courseCount", { count: filteredCourses.length })}
+          </p>
+        </div>
 
-              const imageUrl = getCourseImage(c, index);
+        <div className="lg:grid lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-8">
+          <aside
+            id="catalog-filters"
+            aria-label={t("catalog.facets.title")}
+            className={`${filtersOpen ? "block" : "hidden"} mb-6 lg:mb-0 lg:block`}
+          >
+            <CourseFilterPanel
+              search={search}
+              set={set}
+              inCategory={inCategory}
+              inScope={scoped}
+              stats={stats}
+              subCategoryLabel={(v) => label("subCategories", v)}
+            />
+          </aside>
+          <div className="grid min-w-0 grid-cols-1 content-start gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            {isLoading ? (
+              <div className="col-span-full py-12 text-center text-muted-foreground animate-pulse font-mono text-xs uppercase tracking-widest">
+                {t("courses.loading")}
+              </div>
+            ) : filteredCourses.length === 0 ? (
+              <div className="col-span-full py-12 text-center text-muted-foreground text-xs">
+                {t("courses.notFound")}
+              </div>
+            ) : (
+              filteredCourses.map((c, index) => {
+                const currentId = c.id ?? c.Id;
+                const title = c.title || c.Title || t("courses.unnamedCourse");
+                const categoryRaw = c.category || c.Category || "";
+                const category = categoryRaw
+                  ? i18n.exists(`dynamic.categories.${categoryRaw}`)
+                    ? t(`dynamic.categories.${categoryRaw}`)
+                    : categoryRaw
+                  : t("courses.general");
+                const price = c.price || c.Price || "0";
+                const instructor = c.instructor || c.Instructor || t("courses.unknown");
+                const isSelected = selectedCourseIds.includes(currentId as string | number);
 
-              return (
-                <div
-                  key={currentId || index}
-                  onClick={() => setSelectedCourse(c)}
-                  // a div (it holds buttons), so keyboard users get Enter/Space like a button
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.target !== e.currentTarget || (e.key !== "Enter" && e.key !== " "))
-                      return;
-                    e.preventDefault();
-                    setSelectedCourse(c);
-                  }}
-                  title={t("courses.viewDetails")}
-                  // Seçim yapıldıysa karta ekstra çerçeve ve arka plan rengi ekliyoruz
-                  className={`group bg-card border transition-colors rounded-md overflow-hidden shadow-sm flex flex-col cursor-pointer ${
-                    isSelected
-                      ? "border-foreground bg-foreground/5 ring-1 ring-foreground"
-                      : "border-border hover:border-accent"
-                  }`}
-                >
-                  <div className="w-full aspect-video relative overflow-hidden bg-muted">
-                    <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
-                    {isStudent && <CourseStatusPill status={relation(currentId)} />}
-                  </div>
-                  <div className="p-5 flex-1 flex flex-col">
-                    <div className="flex justify-between items-start mb-3">
-                      <span className="text-[10px] font-mono text-accent uppercase">
-                        {i18n.exists(`dynamic.categories.${category}`)
-                          ? t(`dynamic.categories.${category}`)
-                          : category}
-                      </span>
-                      {/* an enrolled or owned course is not for sale to this student */}
-                      {(!isStudent || relation(currentId) === "none") && (
-                        <span className="text-sm font-bold">{formatTry(Number(price), 0)}</span>
+                const imageUrl = getCourseImage(c, index);
+
+                return (
+                  <div
+                    key={currentId || index}
+                    onClick={() => setSelectedCourse(c)}
+                    // a div (it holds buttons), so keyboard users get Enter/Space like a button
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.target !== e.currentTarget || (e.key !== "Enter" && e.key !== " "))
+                        return;
+                      e.preventDefault();
+                      setSelectedCourse(c);
+                    }}
+                    title={t("courses.viewDetails")}
+                    // Seçim yapıldıysa karta ekstra çerçeve ve arka plan rengi ekliyoruz
+                    className={`group bg-card border transition-colors rounded-md overflow-hidden shadow-sm flex flex-col cursor-pointer ${
+                      isSelected
+                        ? "border-foreground bg-foreground/5 ring-1 ring-foreground"
+                        : "border-border hover:border-accent"
+                    }`}
+                  >
+                    <div className="w-full aspect-video relative overflow-hidden bg-muted">
+                      <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
+                      {isStudent && <CourseStatusPill status={relation(currentId)} />}
+                    </div>
+                    <div className="p-5 flex-1 flex flex-col">
+                      <div className="flex justify-between items-start mb-3">
+                        <span className="text-[10px] font-mono text-accent uppercase">
+                          {i18n.exists(`dynamic.categories.${category}`)
+                            ? t(`dynamic.categories.${category}`)
+                            : category}
+                        </span>
+                        {/* an enrolled or owned course is not for sale to this student */}
+                        {(!isStudent || relation(currentId) === "none") && (
+                          <span className="text-sm font-bold">{formatTry(Number(price), 0)}</span>
+                        )}
+                      </div>
+                      <h4 className="font-bold line-clamp-2">
+                        {i18n.exists(`dynamic.courses.${title}`)
+                          ? t(`dynamic.courses.${title}`)
+                          : title}
+                      </h4>
+                      <RatingSummary
+                        average={stats.get(c.id)?.ratingAverage ?? 0}
+                        count={stats.get(c.id)?.ratingCount ?? 0}
+                        className="mt-1.5 mb-4 flex-1 items-start"
+                      />
+                      <div className="flex justify-between items-center text-xs text-muted-foreground mt-auto">
+                        <span>{t("courses.instructorPrefix", { name: instructor })}</span>
+                        {isTeacherRole(currentUser.role) &&
+                          myTeacherId &&
+                          String(c.teacherId || c.TeacherId) !== String(myTeacherId) &&
+                          relation(currentId) === "none" && (
+                            <button
+                              onClick={(e) =>
+                                handleTeachCourseRequest(e, currentId as string | number)
+                              }
+                              className="bg-primary text-primary-foreground px-3 py-1 rounded hover:opacity-90 shadow-sm transition-all font-medium text-xs"
+                            >
+                              {t("courseModal.teachCourse", "Ders Ver")}
+                            </button>
+                          )}
+                      </div>
+
+                      {/* SADECE DÜZENLEME MODUNDAYKEN GÖRÜNECEK ONAY KUTUSU (Sil Butonu Yerine) */}
+                      {canManage && isEditMode && (
+                        <label
+                          onClick={(e) => e.stopPropagation()}
+                          className="mt-4 flex items-center justify-center gap-2 px-3 py-2 text-[11px] font-mono uppercase bg-background border border-border hover:bg-muted rounded-md cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            className="size-4 rounded border-border text-foreground focus:ring-foreground cursor-pointer"
+                            checked={isSelected}
+                            onChange={() => handleSelectCourse(currentId)}
+                          />
+                          {isSelected ? t("courses.selected") : t("courses.select")}
+                        </label>
                       )}
                     </div>
-                    <h4 className="font-bold mb-4 line-clamp-2 flex-1">
-                      {i18n.exists(`dynamic.courses.${title}`)
-                        ? t(`dynamic.courses.${title}`)
-                        : title}
-                    </h4>
-                    <div className="flex justify-between items-center text-xs text-muted-foreground mt-auto">
-                      <span>{t("courses.instructorPrefix", { name: instructor })}</span>
-                      {isTeacherRole(currentUser.role) &&
-                        myTeacherId &&
-                        String(c.teacherId || c.TeacherId) !== String(myTeacherId) &&
-                        relation(currentId) === "none" && (
-                          <button
-                            onClick={(e) =>
-                              handleTeachCourseRequest(e, currentId as string | number)
-                            }
-                            className="bg-primary text-primary-foreground px-3 py-1 rounded hover:opacity-90 shadow-sm transition-all font-medium text-xs"
-                          >
-                            {t("courseModal.teachCourse", "Ders Ver")}
-                          </button>
-                        )}
-                    </div>
-
-                    {/* SADECE DÜZENLEME MODUNDAYKEN GÖRÜNECEK ONAY KUTUSU (Sil Butonu Yerine) */}
-                    {canManage && isEditMode && (
-                      <label
-                        onClick={(e) => e.stopPropagation()}
-                        className="mt-4 flex items-center justify-center gap-2 px-3 py-2 text-[11px] font-mono uppercase bg-background border border-border hover:bg-muted rounded-md cursor-pointer transition-colors"
-                      >
-                        <input
-                          type="checkbox"
-                          className="size-4 rounded border-border text-foreground focus:ring-foreground cursor-pointer"
-                          checked={isSelected}
-                          onChange={() => handleSelectCourse(currentId)}
-                        />
-                        {isSelected ? t("courses.selected") : t("courses.select")}
-                      </label>
-                    )}
                   </div>
-                </div>
-              );
-            })
-          )}
+                );
+              })
+            )}
+          </div>
         </div>
       </div>
 
