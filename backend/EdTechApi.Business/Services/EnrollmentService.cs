@@ -31,6 +31,12 @@ namespace EdTechApi.Business.Services
             if (isAlreadyEnrolled)
                 throw new ArgumentException("Öğrenci bu kursa zaten kayıtlı.");
 
+            // Kursun satırını kilitler (değeri değiştirmeyen UPDATE): aynı kursa eşzamanlı katılımlar işlem bitene kadar
+            // sırayla sayılır, kapasite aşılmaz. Çağıran zaten bir işlemdeyse (satın alma) onun içinde çalışır.
+            await using var tx = _context.Database.CurrentTransaction == null ? await _context.Database.BeginTransactionAsync() : null;
+            await _context.Courses.Where(c => c.Id == courseId)
+                .ExecuteUpdateAsync(s => s.SetProperty(c => c.MaxCapacity, c => c.MaxCapacity));
+
             var currentEnrollmentCount = await _context.Enrollments
                 .CountAsync(e => e.CourseId == courseId);
 
@@ -46,6 +52,7 @@ namespace EdTechApi.Business.Services
 
             await _context.Enrollments.AddAsync(enrollment);
             await _context.SaveChangesAsync();
+            if (tx != null) await tx.CommitAsync();
         }
 
         public async Task<Student?> GetOrCreateStudentForUserAsync(User user)
