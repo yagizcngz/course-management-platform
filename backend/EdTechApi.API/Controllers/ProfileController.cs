@@ -1,4 +1,4 @@
-using EdTechApi.API.Helpers;
+﻿using EdTechApi.API.Helpers;
 using EdTechApi.Business.Interfaces;
 using EdTechApi.Business.Services;
 using EdTechApi.Core.Entities;
@@ -128,49 +128,73 @@ namespace EdTechApi.API.Controllers
         private static List<string> SplitBadges(string? value) =>
             string.IsNullOrEmpty(value) ? new() : value.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
 
+        private record LearningCourse(int CourseId, string Category, string Title, string? ImageUrl, int Percent,
+            DateTime? StartedAt, DateTime? CompletedAt);
+
+        // Rozetlerin ham verisi. Bitirilen kurslar kalıcı bitirme kaydından (CourseCompletion) gelir: kurstan ayrılmak,
+        // iade, sonradan eklenen ders veya kursun silinmesi bitişi düşürmez; aynı kursu yeniden bitirmek bir kez sayılır.
         private async Task<object?> LearningAsync(int? studentId)
         {
             if (studentId == null) return null;
-            var courses = await _context.Enrollments.AsNoTracking().Where(e => e.StudentId == studentId)
+            var sid = studentId.Value;
+            var enrolled = await _context.Enrollments.AsNoTracking().Where(e => e.StudentId == sid)
                 .Select(e => new { e.CourseId, e.Course.Category, e.Course.Title, e.Course.ImageUrl }).ToListAsync();
-            // kurstan ayrılmak bitirilmiş kursu (ve rozetlerini) silmez: ilerleme öğrenciye bağlı
-            var left = (await _enrollmentService.GetCompletedCourseIdsAsync(studentId.Value))
-                .Except(courses.Select(c => c.CourseId)).ToList();
-            courses.AddRange(await _context.Courses.AsNoTracking().Where(c => left.Contains(c.Id))
-                .Select(c => new { CourseId = c.Id, c.Category, c.Title, c.ImageUrl }).ToListAsync());
-            var progress = await _enrollmentService.GetProgressAsync(studentId.Value, courses.Select(c => c.CourseId).ToList());
+            var completions = (await _enrollmentService.GetCompletionsAsync(sid)).ToDictionary(c => c.CourseId);
+            var progress = await _enrollmentService.GetProgressAsync(sid, enrolled.Select(c => c.CourseId).ToList());
+            var lessonTimes = await _context.LessonCompletions.Where(c => c.StudentId == sid && c.Lesson != null)
+                .Select(c => new { c.Lesson!.CourseId, c.CompletedAt }).ToListAsync();
+            // hız rozeti için: kursta bitirilen ilk dersin anı
+            var startedAt = lessonTimes.GroupBy(x => x.CourseId).ToDictionary(g => g.Key, g => g.Min(x => x.CompletedAt));
+            DateTime? Started(int id) => startedAt.TryGetValue(id, out var at) ? at : null;
+            var leftIds = completions.Keys.Except(enrolled.Select(e => e.CourseId)).ToList();
+            var images = await _context.Courses.AsNoTracking().Where(c => leftIds.Contains(c.Id))
+                .ToDictionaryAsync(c => c.Id, c => c.ImageUrl);
+
+            var courses = enrolled.Select(e => new LearningCourse(e.CourseId, e.Category, e.Title, e.ImageUrl,
+                    progress[e.CourseId].Percent, Started(e.CourseId),
+                    completions.GetValueOrDefault(e.CourseId)?.CompletedAt))
+                .Concat(leftIds.Select(id => completions[id]).Select(c => new LearningCourse(c.CourseId, c.Category, c.Title,
+                    images.GetValueOrDefault(c.CourseId), 100, Started(c.CourseId), c.CompletedAt)));
             return new
             {
-                completedLessons = await _context.LessonCompletions.CountAsync(c => c.StudentId == studentId),
-                courses = courses.Select(c => new
-                {
-                    c.CourseId, c.Category, c.Title, c.ImageUrl, progress[c.CourseId].Percent,
-                    CompletedAt = progress[c.CourseId].IsComplete ? progress[c.CourseId].LastCompletedAt : null
-                })
+                completedLessons = await _context.LessonCompletions.CountAsync(c => c.StudentId == sid),
+                // seri rozetleri için ders bitirilen günler (UTC)
+                lessonDays = lessonTimes.Select(x => x.CompletedAt.ToString("yyyy-MM-dd")).Distinct().Order().ToList(),
+                courses
             };
         }
 
         // Topluluk rozetleri için: açtığı başlıkların ve katıldığı (başkasının açtığı) tartışmalara ilk yanıtının
-        // tarihleri, kabul edilmiş arkadaş sayısı. Sayılar kayıtlardan türediği için rozetler geriye dönük de açılır.
+        // tarihleri, kabul edilmiş arkadaş sayısı ve başkalarından aldığı beğeni. Sayılar kayıtlardan türediği için
+        // rozetler geriye dönük de açılır.
         private async Task<object> SocialAsync(int userId) => new
         {
             Threads = await _context.ForumThreads.Where(t => t.AuthorId == userId).Select(t => t.CreatedAt).ToListAsync(),
             Joined = await _context.ForumPosts.Where(p => p.AuthorId == userId && p.Thread!.AuthorId != userId)
                 .GroupBy(p => p.ThreadId).Select(g => g.Min(p => p.CreatedAt)).ToListAsync(),
             Friends = await _context.Friendships.CountAsync(f => f.Status == FriendsController.Accepted
-                && (f.RequesterId == userId || f.AddresseeId == userId))
+                && (f.RequesterId == userId || f.AddresseeId == userId)),
+            Likes = await _context.ForumPostLikes.CountAsync(l => l.UserId != userId
+                && _context.ForumPosts.Any(p => p.Id == l.PostId && p.AuthorId == userId))
         };
 
         private async Task<object?> TeachingAsync(Teacher? teacher)
         {
             if (teacher == null) return null;
-            var courseIds = await _context.Courses.Where(c => c.TeacherId == teacher.Id).Select(c => c.Id).ToListAsync();
+            var courses = await _context.Courses.Where(c => c.TeacherId == teacher.Id).Select(c => new { c.Id, c.Category }).ToListAsync();
+            var courseIds = courses.Select(c => c.Id).ToList();
+            var userId = teacher.UserId ?? 0;
             return new
             {
                 JoinedAt = teacher.CreatedAt,
                 Courses = courseIds.Count,
                 Students = await _context.Enrollments.Where(e => courseIds.Contains(e.CourseId)).Select(e => e.StudentId).Distinct().CountAsync(),
-                Lessons = await _context.Lessons.CountAsync(l => courseIds.Contains(l.CourseId))
+                Lessons = await _context.Lessons.CountAsync(l => courseIds.Contains(l.CourseId)),
+                Fields = courses.Select(c => c.Category).Distinct().Count(),
+                // iade edilen satışlar düşülür (her iade bir pay geri alımı yazar)
+                Sales = await _context.WalletTransactions.CountAsync(t => t.UserId == userId && t.Type == "Earning")
+                        - await _context.WalletTransactions.CountAsync(t => t.UserId == userId && t.Type == "EarningReversal"),
+                Graduates = await _context.CourseCompletions.CountAsync(c => courseIds.Contains(c.CourseId))
             };
         }
 
