@@ -21,92 +21,83 @@ namespace EdTechApi.API.Controllers
             _env = env;
         }
 
+        private const string ImageTypeError = "Sadece jpg, png, gif veya webp dosyaları yüklenebilir.";
+        private const string VideoTypeError = "Sadece mp4 veya webm videoları yüklenebilir.";
+        private const long MaxImageBytes = 20_000_000;
+        private const long MaxVideoBytes = 524_288_000;
+
         [HttpPost("profile-picture")]
-        [RequestSizeLimit(20_000_000)] // 20 MB üst sınır
+        [RequestSizeLimit(MaxImageBytes)] // 20 MB üst sınır
         public async Task<IActionResult> UploadProfilePicture(IFormFile file)
         {
-            if (file == null || file.Length == 0)
-                return BadRequest("Dosya seçilmedi.");
-
-            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
-            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!allowedExtensions.Contains(extension))
-                return BadRequest("Sadece jpg, png, gif veya webp dosyaları yüklenebilir.");
-
             var webRootPath = _env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot");
-            var uploadsFolder = Path.Combine(webRootPath, "uploads", "profile-pictures");
-            Directory.CreateDirectory(uploadsFolder);
-
-            var fileName = $"{Guid.NewGuid()}{extension}";
-            var filePath = Path.Combine(uploadsFolder, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            // Frontend bu göreli URL'i http://localhost:5157 ile birleştirip <img src> olarak kullanacak
-            var relativeUrl = $"/uploads/profile-pictures/{fileName}";
-            return Ok(new { url = relativeUrl });
+            var (fileName, error) = await SaveAsync(file, FileSignature.Images, ImageTypeError,
+                Path.Combine(webRootPath, "uploads", "profile-pictures"));
+            // Frontend bu göreli URL'i API adresiyle birleştirip <img src> olarak kullanır
+            return error ?? Ok(new { url = $"/uploads/profile-pictures/{fileName}" });
         }
 
-        // Kurs kapak fotoğrafı yükleme. Sadece kursları düzenleyebilen roller (Admin) kullanabilir.
-        // Kurslar.tsx / Kontrol Paneli'ndeki "Kursu Düzenle" ekranında hem dosya yükleme hem de
-        // dışarıdan link yapıştırma seçeneği var; bu endpoint yalnızca "dosya yükle" seçeneği için.
+        // Kurs kapak fotoğrafı yükleme (kursu düzenleyebilen yönetici/eğitmen). Düzenleme ekranında dışarıdan link
+        // yapıştırma seçeneği de var; bu endpoint yalnızca "dosya yükle" seçeneği için.
         [HttpPost("course-image")]
         [Authorize(Roles = RoleNames.AdminsAndTeachers)]
-        [RequestSizeLimit(20_000_000)] // 20 MB üst sınır
+        [RequestSizeLimit(MaxImageBytes)] // 20 MB üst sınır
         public async Task<IActionResult> UploadCourseImage(IFormFile file)
         {
-            if (file == null || file.Length == 0)
-                return BadRequest("Dosya seçilmedi.");
-
-            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
-            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!allowedExtensions.Contains(extension))
-                return BadRequest("Sadece jpg, png, gif veya webp dosyaları yüklenebilir.");
-
             var webRootPath = _env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot");
-            var uploadsFolder = Path.Combine(webRootPath, "uploads", "course-images");
-            Directory.CreateDirectory(uploadsFolder);
-
-            var fileName = $"{Guid.NewGuid()}{extension}";
-            var filePath = Path.Combine(uploadsFolder, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            var relativeUrl = $"/uploads/course-images/{fileName}";
-            return Ok(new { url = relativeUrl });
+            var (fileName, error) = await SaveAsync(file, FileSignature.Images, ImageTypeError,
+                Path.Combine(webRootPath, "uploads", "course-images"));
+            return error ?? Ok(new { url = $"/uploads/course-images/{fileName}" });
         }
 
         // Ders videosu yükleme. Dosya wwwroot dışına kaydedilir; LessonsController imzalı adresle sunar.
         [HttpPost("video")]
         [Authorize(Roles = RoleNames.AdminsAndTeachers)]
-        [RequestSizeLimit(524_288_000)] // 500 MB
-        [RequestFormLimits(MultipartBodyLengthLimit = 524_288_000)]
+        [RequestSizeLimit(MaxVideoBytes)] // 500 MB
+        [RequestFormLimits(MultipartBodyLengthLimit = MaxVideoBytes)]
         public async Task<IActionResult> UploadVideo(IFormFile file)
         {
+            var (fileName, error) = await SaveAsync(file, FileSignature.Videos, VideoTypeError,
+                VideoUrlSigner.FolderPath(_env));
+            return error ?? Ok(new { url = $"{VideoUrlSigner.Prefix}{fileName}" });
+        }
+
+        // Boyut üst sınırı RequestSizeLimit ile gövde okunmadan uygulanır. Uzantı izin listesinde, bildirilen MIME türü uzantıyla ve dosyanın ilk baytları ikisiyle aynı olmalı; görseller
+        // ayrıca gömülü HTML/betik için taranır. Dosya rastgele adla kaydedilir, istemcinin verdiği ad hiç kullanılmaz.
+        private static async Task<(string? FileName, IActionResult? Error)> SaveAsync(IFormFile? file,
+            IReadOnlyDictionary<string, string> allowed, string typeError, string folder)
+        {
             if (file == null || file.Length == 0)
-                return BadRequest("Dosya seçilmedi.");
+                return (null, new BadRequestObjectResult("Dosya seçilmedi."));
 
-            var allowedExtensions = new[] { ".mp4", ".webm" };
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!allowedExtensions.Contains(extension))
-                return BadRequest("Sadece mp4 veya webm videoları yüklenebilir.");
+            if (!allowed.TryGetValue(extension, out var mime)
+                || !string.Equals(file.ContentType, mime, StringComparison.OrdinalIgnoreCase))
+                return (null, new BadRequestObjectResult(typeError));
 
-            var uploadsFolder = EdTechApi.API.Helpers.VideoUrlSigner.FolderPath(_env);
-            Directory.CreateDirectory(uploadsFolder);
+            var head = new byte[FileSignature.HeaderLength];
+            await using (var probe = file.OpenReadStream())
+            {
+                var read = await probe.ReadAtLeastAsync(head, head.Length, throwOnEndOfStream: false);
+                if (!FileSignature.HeaderMatches(extension, head.AsSpan(0, read)))
+                    return (null, new BadRequestObjectResult(typeError));
+            }
 
+            if (allowed == FileSignature.Images)
+            {
+                using var buffer = new MemoryStream((int)file.Length);
+                await file.CopyToAsync(buffer);
+                if (FileSignature.ContainsMarkup(buffer.GetBuffer().AsSpan(0, (int)buffer.Length)))
+                    return (null, new BadRequestObjectResult(typeError));
+            }
+
+            Directory.CreateDirectory(folder);
             var fileName = $"{Guid.NewGuid()}{extension}";
-            using (var stream = new FileStream(Path.Combine(uploadsFolder, fileName), FileMode.Create))
+            await using (var stream = new FileStream(Path.Combine(folder, fileName), FileMode.CreateNew))
             {
                 await file.CopyToAsync(stream);
             }
-
-            return Ok(new { url = $"{EdTechApi.API.Helpers.VideoUrlSigner.Prefix}{fileName}" });
+            return (fileName, null);
         }
     }
 }
