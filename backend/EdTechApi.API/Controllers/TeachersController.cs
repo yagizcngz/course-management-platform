@@ -29,7 +29,16 @@ namespace EdTechApi.API.Controllers
         public async Task<IActionResult> GetAll()
         {
             var teachers = await _teacherService.GetAllTeachersAsync();
+            foreach (var t in teachers) HidePrivate(t);
             return Ok(teachers);
+        }
+
+        // E-posta ve eğitmen numarası yalnızca yöneticiye ve eğitmenin kendisine döner (kayıt izlenmez, kaydedilmez)
+        private void HidePrivate(Teacher t)
+        {
+            if (User.IsAdmin() || (t.UserId != null && t.UserId == User.GetUserId())) return;
+            t.Email = "";
+            t.TeacherNumber = null;
         }
 
         // --- Branş değişikliği talepleri: öğretmen branşını doğrudan değiştiremez, yönetici onaylar ---
@@ -148,6 +157,8 @@ namespace EdTechApi.API.Controllers
             {
                 return NotFound("Öğretmen bulunamadı.");
             }
+            _context.Entry(teacher).State = EntityState.Detached;
+            HidePrivate(teacher);
             return Ok(teacher);
         }
 

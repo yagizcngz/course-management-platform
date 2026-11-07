@@ -32,7 +32,10 @@ namespace EdTechApi.API.Controllers
         {
             if (User.IsAdmin()) return Ok(await _studentService.GetAllStudentsAsync());
             if (!User.IsInRole("Teacher")) return StatusCode(403, "Öğrenci listesini görme yetkiniz yok.");
-            return Ok(await StudentsOfMyCourses().ToListAsync());
+            // eğitmen kendi öğrencilerinin e-postasını görmez (eğitmen analizleriyle aynı kural)
+            var mine = await StudentsOfMyCourses().AsNoTracking().ToListAsync();
+            foreach (var s in mine) s.Email = "";
+            return Ok(mine);
         }
 
         [HttpGet("{id}")]
@@ -43,18 +46,22 @@ namespace EdTechApi.API.Controllers
             {
                 return NotFound("Öğrenci bulunamadı.");
             }
-            var username = User.GetUsername();
-            var isSelf = student.UserId != null && await _context.Users.AnyAsync(u => u.Id == student.UserId && u.Username == username);
+            var isSelf = student.UserId != null && student.UserId == User.GetUserId();
             var isMyStudent = User.IsInRole("Teacher") && await StudentsOfMyCourses().AnyAsync(s => s.Id == id);
             if (!User.IsAdmin() && !isSelf && !isMyStudent) return StatusCode(403, "Bu öğrenciyi görme yetkiniz yok.");
+            if (!User.IsAdmin() && !isSelf)
+            {
+                _context.Entry(student).State = EntityState.Detached;
+                student.Email = "";
+            }
             return Ok(student);
         }
 
         private IQueryable<Student> StudentsOfMyCourses()
         {
-            var username = User.GetUsername();
+            var userId = User.GetUserId();
             return _context.Students.Where(s => s.Enrollments.Any(e =>
-                e.Course.Teacher != null && e.Course.Teacher.User != null && e.Course.Teacher.User.Username == username));
+                e.Course.Teacher != null && e.Course.Teacher.UserId != null && e.Course.Teacher.UserId == userId));
         }
 
 
