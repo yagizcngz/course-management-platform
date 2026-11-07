@@ -44,6 +44,9 @@ type SyllabusLesson = { id: number; title: string; description?: string | null; 
 import {
   API_BASE,
   resolveImageSrc,
+  emptyExtras,
+  extrasBody,
+  extrasOf,
   getCourseImage,
   getCourseEnrollments,
   getTeacherFullName,
@@ -91,6 +94,7 @@ export function CourseDetailModal({
   const [editCategory, setEditCategory] = useState("");
   const [editSubCategory, setEditSubCategory] = useState("");
   const [editLevel, setEditLevel] = useState("");
+  const [editExtras, setEditExtras] = useState(emptyExtras);
   const [editPrice, setEditPrice] = useState("");
   const [editCapacity, setEditCapacity] = useState("");
   // editTeacherId: teachers listesinden seçilen öğretmenin id'si (string olarak, select
@@ -296,6 +300,7 @@ export function CourseDetailModal({
     setEditCategory(currentCategory);
     setEditSubCategory(subCategory ?? "");
     setEditLevel(level ?? "");
+    setEditExtras(extrasOf(course));
     setEditPrice(String(course.price ?? course.Price ?? ""));
     setEditCapacity(String(course.maxCapacity ?? course.MaxCapacity ?? ""));
 
@@ -416,6 +421,7 @@ export function CourseDetailModal({
           Category: editCategory,
           SubCategory: editSubCategory || null,
           Level: editLevel || null,
+          ...extrasBody(editExtras),
           Instructor: instructorToSend,
           TeacherId: teacherIdToSend,
           MaxCapacity: Number(editCapacity) || 0,
@@ -436,6 +442,9 @@ export function CourseDetailModal({
           SubCategory: editSubCategory || null,
           level: editLevel || null,
           Level: editLevel || null,
+          topic: extrasBody(editExtras).Topic,
+          language: editExtras.language,
+          subtitleLanguages: extrasBody(editExtras).SubtitleLanguages,
           instructor: instructorToSend,
           Instructor: instructorToSend,
           teacherId: teacherIdToSend,
@@ -825,6 +834,8 @@ export function CourseDetailModal({
                 onSubCategoryChange={setEditSubCategory}
                 level={editLevel}
                 onLevelChange={setEditLevel}
+                extras={editExtras}
+                onExtrasChange={setEditExtras}
                 selectClassName="w-full p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-foreground transition-colors"
               />
 

@@ -19,7 +19,7 @@ import {
 } from "@/components/courseHelpers";
 import { CourseDetailModal } from "@/components/CourseDetailModal";
 
-import { API_BASE } from "@/components/courseHelpers";
+import { API_BASE, emptyExtras, extrasBody } from "@/components/courseHelpers";
 import { CourseTaxonomyFields } from "@/components/CourseTaxonomyFields";
 import { teacherOnly } from "@/hooks/useAdminGuard";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -43,6 +43,7 @@ function TaughtCoursesPage() {
   const [newCategory, setNewCategory] = useState("");
   const [newSubCategory, setNewSubCategory] = useState("");
   const [newLevel, setNewLevel] = useState("");
+  const [newExtras, setNewExtras] = useState(emptyExtras);
 
   const [selectedCourse, setSelectedCourse] = useState<CourseData | null>(null);
   const [dbTeachers, setDbTeachers] = useState<TeacherLiteDto[]>([]);
@@ -118,6 +119,7 @@ function TaughtCoursesPage() {
           Category: newCategory,
           SubCategory: newSubCategory || null,
           Level: newLevel || null,
+          ...extrasBody(newExtras),
           Instructor: `${profile.firstName ?? ""} ${profile.lastName ?? ""}`.trim(),
           MaxCapacity: Number(newCapacity) || 0,
           Price: Number(newPrice) || 0,
@@ -133,6 +135,7 @@ function TaughtCoursesPage() {
         setNewCategory("");
         setNewSubCategory("");
         setNewLevel("");
+        setNewExtras(emptyExtras);
         setNewCapacity("");
         setNewPrice("");
         setNewDescription("");
@@ -358,6 +361,8 @@ function TaughtCoursesPage() {
                 onSubCategoryChange={setNewSubCategory}
                 level={newLevel}
                 onLevelChange={setNewLevel}
+                extras={newExtras}
+                onExtrasChange={setNewExtras}
                 labelClassName="text-sm font-medium block"
                 selectClassName="w-full rounded-md border p-2 text-sm bg-background"
               />

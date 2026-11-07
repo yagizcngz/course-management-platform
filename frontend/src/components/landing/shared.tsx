@@ -17,6 +17,10 @@ export interface LandingCourse {
   teacherId?: number | null;
   level?: string | null;
   subCategory?: string | null;
+  topic?: string | null;
+  /** Teaching language and comma separated subtitle languages (ISO codes). */
+  language?: string | null;
+  subtitleLanguages?: string | null;
   maxCapacity?: number;
   createdAt?: string;
   enrollments: unknown[];

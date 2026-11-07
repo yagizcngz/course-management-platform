@@ -25,6 +25,7 @@ import { authHeaders, getToken, parseJwt, readError } from "@/lib/auth";
 import { TrackedVideo } from "@/components/TrackedVideo";
 import { REQUIRED_SHARE, watchedSeconds, watchedShare, type WatchState } from "@/lib/watchProgress";
 import { formatDate, formatTry } from "@/lib/utils";
+import { measureVideo } from "@/lib/videoDuration";
 import { CourseRatingCard } from "@/components/CourseRatingCard";
 
 // development and testing: "Mark complete" works at once, whatever the video did (the API honours
@@ -550,6 +551,13 @@ function LessonEditor({
         if (!up.ok) throw new Error(await readError(up, t("lessons.uploadFailed")));
         url = (await up.json()).url;
       }
+      // the catalogue filters by course length; a link that cannot be measured stays unknown
+      // until a student first watches it
+      const durationSeconds = file
+        ? await measureVideo(file)
+        : url
+          ? await measureVideo(url)
+          : null;
       const res = await fetch(`${API_BASE}/api/courses/${courseId}/lessons`, {
         method: "POST",
         headers: authHeaders(),
@@ -558,6 +566,7 @@ function LessonEditor({
           description: description || null,
           videoUrl: url,
           order: nextOrder,
+          durationSeconds,
         }),
       });
       if (!res.ok) throw new Error(await readError(res, t("lessons.saveFailed")));

@@ -649,7 +649,11 @@
       "level": "Seviye",
       "selectLevel": "Tüm seviyeler",
       "leaveConfirmTitle": "Kurstan ayrılmak istiyor musunuz?",
-      "leaveConfirmBody": "„{{course}}” kursundaki kaydınız kaldırılacak ve kurs Kurslarım listesinden çıkacak. Ders ilerlemeniz saklanır; satın aldığınız bir kursa daha sonra ücretsiz olarak yeniden katılabilirsiniz."
+      "leaveConfirmBody": "„{{course}}” kursundaki kaydınız kaldırılacak ve kurs Kurslarım listesinden çıkacak. Ders ilerlemeniz saklanır; satın aldığınız bir kursa daha sonra ücretsiz olarak yeniden katılabilirsiniz.",
+      "topic": "Konu",
+      "topicPlaceholder": "ör. Python, Figma",
+      "language": "Anlatım dili",
+      "subtitles": "Altyazılar"
     },
     "students": {
       "breadcrumb": "/ öğrenciler",
@@ -1080,6 +1084,7 @@
       "cannotFriendSelf": "Kendinize arkadaşlık isteği gönderemezsiniz.",
       "friendRequestExists": "Bu kişiyle zaten bir arkadaşlık isteği var.",
       "friendsOnlyMessages": "Yalnızca arkadaşlarınıza mesaj gönderebilirsiniz.",
+      "topicTooLong": "Konu en fazla {{count}} karakter olabilir.",
       "rateOwnCourseOnly": "Yalnızca kayıtlı olduğunuz veya bitirdiğiniz kursu puanlayabilirsiniz.",
       "ratingRange": "Puan 1 ile 5 yıldız arasında olmalı."
     },
@@ -1806,6 +1811,14 @@
         "refundRate": "İade oranı",
         "earned": "Kazanç"
       }
+    },
+    "languages": {
+      "tr": "Türkçe",
+      "en": "İngilizce",
+      "de": "Almanca",
+      "fr": "Fransızca",
+      "es": "İspanyolca",
+      "ar": "Arapça"
     },
     "rating": {
       "none": "Henüz puan yok",

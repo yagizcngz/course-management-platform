@@ -64,11 +64,38 @@ export interface CourseData {
   subCategory?: string | null;
   SubCategory?: string | null;
   level?: string | null;
+  /** Free tag under the sub-category, such as "Python". */
+  topic?: string | null;
+  /** Teaching language and comma separated subtitle languages (ISO codes, see lib/courseFilters). */
+  language?: string | null;
+  subtitleLanguages?: string | null;
   /** When the course was added (the API sends it; the catalogue's "new" row uses it). */
   createdAt?: string;
   CreatedAt?: string;
   Level?: string | null;
 }
+
+/** Topic, teaching language and subtitles as the course forms edit them. */
+export interface CourseExtras {
+  topic: string;
+  language: string;
+  subtitles: string[];
+}
+
+export const emptyExtras: CourseExtras = { topic: "", language: "tr", subtitles: [] };
+
+export const extrasOf = (c: CourseData): CourseExtras => ({
+  topic: c.topic ?? "",
+  language: c.language || "tr",
+  subtitles: (c.subtitleLanguages ?? "").split(",").filter(Boolean),
+});
+
+/** The request fields; the API drops unknown codes and a subtitle in the teaching language. */
+export const extrasBody = (e: CourseExtras) => ({
+  Topic: e.topic.trim() || null,
+  Language: e.language,
+  SubtitleLanguages: e.subtitles.filter((s) => s !== e.language).join(",") || null,
+});
 
 export interface EnrollmentDto {
   id?: string | number;

@@ -251,6 +251,10 @@ namespace EdTechApi.API.Controllers
             if (!string.IsNullOrWhiteSpace(course.Level) && course.Level is not ("Beginner" or "Intermediate" or "Advanced"))
                 return (false, "Geçersiz seviye. Beginner, Intermediate veya Advanced olmalı.");
             if (string.IsNullOrWhiteSpace(course.Level)) course.Level = null;
+            course.Language = CourseLanguages.Normalize(course.Language) ?? CourseLanguages.Default;
+            course.SubtitleLanguages = CourseLanguages.NormalizeList(course.SubtitleLanguages, course.Language);
+            course.Topic = string.IsNullOrWhiteSpace(course.Topic) ? null : course.Topic.Trim();
+            if (course.Topic?.Length > 60) return (false, "Konu en fazla 60 karakter olabilir.");
 
             if (course.TeacherId == null)
             {

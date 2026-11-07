@@ -1,3 +1,4 @@
+﻿using EdTechApi.Core.Constants;
 using System.ComponentModel.DataAnnotations;
 
 namespace EdTechApi.Core.Entities
@@ -23,6 +24,14 @@ namespace EdTechApi.Core.Entities
         // BranchOptions.SubCategories içinden, kategorisine ait bir alt kategori; boşsa "genel"
         [MaxLength(100)]
         public string? SubCategory { get; set; }
+        // Alt kategorinin altında serbest konu etiketi (örn. "Python", "Figma"); katalogdaki Konu süzgeci
+        [MaxLength(60)]
+        public string? Topic { get; set; }
+        // Anlatım dili ve virgülle ayrılmış altyazı dilleri (CourseLanguages kodları)
+        [MaxLength(8)]
+        public string Language { get; set; } = CourseLanguages.Default;
+        [MaxLength(64)]
+        public string? SubtitleLanguages { get; set; }
 
         // --- YENİ EKLENEN SÜTUN ---
         // Kurs kapak fotoğrafının göreli URL'i (örn. /uploads/course-images/xxx.png).

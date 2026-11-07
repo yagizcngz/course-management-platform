@@ -9,6 +9,8 @@ import { CourseDetailModal } from "../components/CourseDetailModal";
 import { CourseShowcase } from "../components/CourseShowcase";
 import { useNavigate } from "@tanstack/react-router";
 import {
+  emptyExtras,
+  extrasBody,
   getCourseImage,
   getTeacherFullName,
   getTeachersInBranch,
@@ -66,6 +68,7 @@ function CoursesPage() {
   const [newCategory, setNewCategory] = useState("");
   const [newSubCategory, setNewSubCategory] = useState("");
   const [newLevel, setNewLevel] = useState("");
+  const [newExtras, setNewExtras] = useState(emptyExtras);
   // newTeacherId: teachers listesinden seçilen öğretmenin id'si (string olarak, select
   // elemanının value'su için). Boş string = "henüz öğretmen seçilmedi".
   const [newTeacherId, setNewTeacherId] = useState("");
@@ -184,6 +187,7 @@ function CoursesPage() {
     setNewCategory("");
     setNewSubCategory("");
     setNewLevel("");
+    setNewExtras(emptyExtras);
     setNewTeacherId("");
     setIsModalOpen(false);
   };
@@ -225,6 +229,7 @@ function CoursesPage() {
           Category: newCategory,
           SubCategory: newSubCategory || null,
           Level: newLevel || null,
+          ...extrasBody(newExtras),
           Instructor: instructorName,
           TeacherId: Number(newTeacherId),
           MaxCapacity: Number(newCapacity) || 0,
@@ -687,6 +692,8 @@ function CoursesPage() {
                 onSubCategoryChange={setNewSubCategory}
                 level={newLevel}
                 onLevelChange={setNewLevel}
+                extras={newExtras}
+                onExtrasChange={setNewExtras}
                 selectClassName="w-full p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-foreground transition-colors"
               />
 

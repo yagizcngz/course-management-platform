@@ -1,4 +1,4 @@
-using EdTechApi.API.Helpers;
+﻿using EdTechApi.API.Helpers;
 using EdTechApi.Business.Interfaces;
 using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
@@ -50,7 +50,7 @@ namespace EdTechApi.API.Controllers
                 .GroupBy(l => l.CourseId)
                 .ToDictionary(g => g.Key.ToString(), g => g.Select(l => new { l.Title, l.Description }).ToList()));
 
-        public record LessonRequest(string Title, string? Description, string? VideoUrl, int? Order);
+        public record LessonRequest(string Title, string? Description, string? VideoUrl, int? Order, int? DurationSeconds = null);
 
         // Herkes ders başlıklarını görür; video bağlantısı yalnızca kayıtlı öğrenci, kursun öğretmeni ve yöneticiye döner.
         [AllowAnonymous]
@@ -71,7 +71,7 @@ namespace EdTechApi.API.Controllers
                 .ToListAsync())
                 .Select(l => new
                 {
-                    l.Id, l.Title, l.Description, l.Order,
+                    l.Id, l.Title, l.Description, l.Order, l.DurationSeconds,
                     VideoUrl = !hasAccess || l.VideoUrl == null ? null
                         : l.VideoUrl.StartsWith(VideoUrlSigner.Prefix) ? VideoUrlSigner.Sign(l.VideoUrl, key) : l.VideoUrl,
                     // Düzenleme formu için saklanan ham değer
@@ -108,6 +108,7 @@ namespace EdTechApi.API.Controllers
                 Title = request.Title.Trim(),
                 Description = request.Description,
                 VideoUrl = request.VideoUrl,
+                DurationSeconds = ValidDuration(request.DurationSeconds),
                 Order = nextOrder
             };
             _context.Lessons.Add(lesson);
@@ -130,6 +131,10 @@ namespace EdTechApi.API.Controllers
             var devOverride = request?.DevOverride == true && _env.IsDevelopment();
             if (hasVideo && !devOverride && (request == null || request.DurationSeconds <= 0 || request.WatchedSeconds < request.DurationSeconds * WatchedShare))
                 return BadRequest("Dersi tamamlamak için videonun en az %85'ini izleyin.");
+            // süresi bilinmeyen eski videolu derse oynatıcının ölçtüğü süre bir kez yazılır (katalog süre süzgeci için)
+            if (hasVideo && request != null && ValidDuration((int)request.DurationSeconds) is int measured)
+                await _context.Lessons.Where(l => l.Id == id && l.DurationSeconds == null)
+                    .ExecuteUpdateAsync(u => u.SetProperty(l => l.DurationSeconds, measured));
             try
             {
                 var p = await _enrollments.CompleteLessonAsync(studentId.Value, courseId, id);
@@ -153,6 +158,9 @@ namespace EdTechApi.API.Controllers
 
             lesson.Title = request.Title.Trim();
             lesson.Description = request.Description;
+            // yeni video eski süreyi geçersiz kılar; form ölçtüyse yenisi yazılır
+            if (lesson.VideoUrl != request.VideoUrl || request.DurationSeconds != null)
+                lesson.DurationSeconds = ValidDuration(request.DurationSeconds);
             lesson.VideoUrl = request.VideoUrl;
             if (request.Order.HasValue) lesson.Order = request.Order.Value;
             await _context.SaveChangesAsync();
@@ -172,6 +180,9 @@ namespace EdTechApi.API.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
+
+        // 1 saniye - 6 saat dışındaki süre ölçüm hatasıdır, kaydedilmez
+        private static int? ValidDuration(int? seconds) => seconds is > 0 and <= 6 * 3600 ? seconds : null;
 
         private async Task<bool> CanEditAsync(Course course)
         {

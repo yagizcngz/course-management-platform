@@ -41,6 +41,7 @@ const RULES: Rule[] = [
   [/İade süresi \((\d+) gün\) doldu/i, "refundWindowPassed", (m) => ({ days: m[1] })],
   [/^Geçersiz kategori/i, "invalidCategory"],
   [/^Geçersiz branş/i, "invalidBranch"],
+  [/^Konu en fazla (\d+) karakter/i, "topicTooLong", (m) => ({ count: m[1] })],
 
   // ratings
   [/kursu puanlayabilirsiniz/i, "rateOwnCourseOnly"],

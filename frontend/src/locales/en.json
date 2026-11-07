@@ -722,7 +722,11 @@
       "level": "Level",
       "selectLevel": "All levels",
       "leaveConfirmTitle": "Leave this course?",
-      "leaveConfirmBody": "Your enrolment in “{{course}}” will be removed and it will leave My Courses. Your lesson progress is kept, and you can rejoin a course you bought later at no cost."
+      "leaveConfirmBody": "Your enrolment in “{{course}}” will be removed and it will leave My Courses. Your lesson progress is kept, and you can rejoin a course you bought later at no cost.",
+      "topic": "Topic",
+      "topicPlaceholder": "e.g. Python, Figma",
+      "language": "Teaching language",
+      "subtitles": "Subtitles"
     },
     "students": {
       "breadcrumb": "/ students",
@@ -1153,6 +1157,7 @@
       "cannotFriendSelf": "You cannot send yourself a friend request.",
       "friendRequestExists": "There is already a friend request with this person.",
       "friendsOnlyMessages": "You can only message your friends.",
+      "topicTooLong": "A topic can be at most {{count}} characters.",
       "rateOwnCourseOnly": "You can only rate a course you are enrolled in or have finished.",
       "ratingRange": "A rating is between 1 and 5 stars."
     },
@@ -1910,6 +1915,14 @@
         "refundRate": "Refund rate",
         "earned": "Earnings"
       }
+    },
+    "languages": {
+      "tr": "Turkish",
+      "en": "English",
+      "de": "German",
+      "fr": "French",
+      "es": "Spanish",
+      "ar": "Arabic"
     },
     "rating": {
       "none": "No ratings yet",

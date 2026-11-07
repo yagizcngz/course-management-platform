@@ -117,6 +117,13 @@ namespace EdTechApi.API.Helpers
                 // alt kategori boşsa veya artık kategorisine ait değilse seed'dekiyle doldurulur; geçerli seçim korunur
                 if (BranchOptions.NormalizeSubCategory(c.Category, c.SubCategory) == null)
                     c.SubCategory = SubCategoryOf.TryGetValue(s.Title, out var sub) ? sub : null;
+                if (c.Topic == null) c.Topic = TopicOf(s.Title);
+                // dil ve altyazı bir kez yazılır: her seed kursunun altyazısı olduğundan boş altyazı "hiç ayarlanmamış" demektir
+                if (c.SubtitleLanguages == null)
+                {
+                    c.Language = LanguageOf.TryGetValue(s.Title, out var lang) ? lang : CourseLanguages.Default;
+                    c.SubtitleLanguages = CourseLanguages.NormalizeList(i % 4 == 1 ? "en,de" : "tr,en", c.Language);
+                }
                 seeded.Add(c);
 
                 // müfredat: seed derslerinden eksik olanlar eklenir, silinmiş olanlar geri yüklenir
@@ -136,6 +143,8 @@ namespace EdTechApi.API.Helpers
                         l.IsDeleted = false;
                         l.DeletedAt = null;
                     }
+                    // ders uzunluğu 6-28 dakika; katalogdaki süre süzgeci için (gerçek ölçüm varsa korunur)
+                    l.DurationSeconds ??= (6 + (i * 37 + j * 53) % 23) * 60;
                 }
             }
             db.SaveChanges();
@@ -249,6 +258,26 @@ namespace EdTechApi.API.Helpers
             }
             db.SaveChanges();
         }
+
+        // Başlığı belli bir araç veya sınavı anan kurslar için konu etiketi; diğerleri konusuz kalır
+        private static string? TopicOf(string title) =>
+            Topics.FirstOrDefault(t => title.Contains(t.Key, StringComparison.OrdinalIgnoreCase)).Value;
+
+        private static readonly KeyValuePair<string, string>[] Topics =
+        [
+            new("C#", "C# / .NET"), new("Java", "Java"), new("React", "React"), new("Python", "Python"),
+            new("SQL", "SQL"), new("Flutter", "Flutter"), new("Docker", "Docker"), new("Unity", "Unity"),
+            new("Figma", "Figma"), new("Blender", "Blender"), new("Arduino", "Arduino"), new("ROS ", "ROS"),
+            new("SolidWorks", "SolidWorks"), new("Ableton", "Ableton Live"), new("IELTS", "IELTS"),
+            new("TYT", "YKS"), new("YKS", "YKS"), new("LGS", "LGS"), new("KVKK", "KVKK"),
+        ];
+
+        // Dil kursları hedef dilde anlatılır; geri kalanı Türkçe
+        private static readonly Dictionary<string, string> LanguageOf = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["İngilizce A1-A2"] = "en", ["İngilizce"] = "en", ["IELTS ve Akademik İngilizce"] = "en",
+            ["Almanca A1"] = "de", ["İspanyolca A1"] = "es",
+        };
 
         // Kayıtların bir kısmı bitmiş, kalanı %25-75 ilerlemiş olur (en eski kayıt ilk yüzdeyi alır). Öğrencinin hiç
         // tamamladığı ders yoksa yazılır; gerçek ilerleme ezilmez.

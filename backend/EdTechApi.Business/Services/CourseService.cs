@@ -127,6 +127,9 @@ namespace EdTechApi.Business.Services
             course.Price = updatedCourse.Price;
             course.Category = updatedCourse.Category;
             course.SubCategory = updatedCourse.SubCategory;
+            course.Topic = updatedCourse.Topic;
+            course.Language = updatedCourse.Language;
+            course.SubtitleLanguages = updatedCourse.SubtitleLanguages;
             course.Level = updatedCourse.Level;
             course.Description = updatedCourse.Description;
             course.ImageUrl = updatedCourse.ImageUrl;

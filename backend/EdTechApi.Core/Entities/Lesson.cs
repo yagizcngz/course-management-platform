@@ -10,6 +10,8 @@ namespace EdTechApi.Core.Entities
         public string? Description { get; set; }
         public string? VideoUrl { get; set; }
         public int Order { get; set; }
+        // Video süresi (saniye); öğretmenin formu videodan ölçer, eski derslerde ilk tam izlemede yazılır. Katalogdaki süre süzgeci.
+        public int? DurationSeconds { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
