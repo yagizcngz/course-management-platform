@@ -158,7 +158,7 @@ export function AppSidebar() {
         currentRole = translateRole(rawRole || "user", t);
 
         if (!storedUsername) {
-          currentName = payload.name || payload.unique_name || payload.sub || currentName;
+          currentName = payload.name || payload.unique_name || payload.username || currentName;
         }
       }
 

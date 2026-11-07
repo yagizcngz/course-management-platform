@@ -170,7 +170,7 @@ export function CourseDetailModal({
     payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] ||
     payload.name ||
     payload.unique_name ||
-    payload.sub ||
+    payload.username ||
     "";
 
   const isTeacherRole = isTeacher(currentUserRole);

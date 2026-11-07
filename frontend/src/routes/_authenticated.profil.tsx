@@ -102,7 +102,7 @@ function ProfilePage() {
           payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] ||
           payload.name ||
           payload.unique_name ||
-          payload.sub;
+          payload.username;
 
         // YENİ KOD BURADA OLMALI (payload tanımlandıktan sonra)
         const tokenRole = getRoleFromToken() || "user";

@@ -81,7 +81,7 @@ namespace EdTechApi.API.Controllers
             // hesabı olmayan (yöneticinin eklediği) öğrenci herkese açık değildir; eğitmen zaten /egitmenler'de görünür
             if (user == null && teacher == null && !User.IsAdmin()) return NotFound();
 
-            var full = User.IsAdmin() || (user != null && (user.IsProfilePublic || user.Username == User.GetUsername()));
+            var full = User.IsAdmin() || (user != null && (user.IsProfilePublic || user.Id == User.GetUserId()));
             var studentRow = studentId == null ? null : await _context.Students.AsNoTracking().FirstOrDefaultAsync(x => x.Id == studentId);
             var taught = teacher == null ? null : await _context.Courses.AsNoTracking().Where(c => c.TeacherId == teacher.Id)
                 .Select(c => new { c.Id, c.Title, c.Category, c.ImageUrl }).ToListAsync();

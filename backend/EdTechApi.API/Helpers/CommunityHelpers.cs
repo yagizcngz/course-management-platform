@@ -9,11 +9,9 @@ namespace EdTechApi.API.Helpers
     // Forum, arkadaşlık ve mesajlaşmanın ortak parçaları
     public static class CommunityHelpers
     {
-        public static Task<int?> CurrentUserIdAsync(this AppDbContext db, ClaimsPrincipal principal)
-        {
-            var username = principal.GetUsername();
-            return db.Users.Where(u => u.Username == username).Select(u => (int?)u.Id).FirstOrDefaultAsync();
-        }
+        // hesabın varlığı ve rolü OnTokenValidated'da (Program.cs) denetlenir
+        public static Task<int?> CurrentUserIdAsync(this AppDbContext db, ClaimsPrincipal principal) =>
+            Task.FromResult(principal.GetUserId());
 
         // Profil kartının küçük hâli: forumda yazar, mesajlarda karşı taraf
         public record UserCard(int Id, string Username, string FirstName, string LastName, string Role, string? ProfilePictureUrl);

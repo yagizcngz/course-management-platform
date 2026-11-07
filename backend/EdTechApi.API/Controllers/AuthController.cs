@@ -272,7 +272,9 @@ namespace EdTechApi.API.Controllers
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Username),
+                // kimlik değişmez Id'dir; kullanıcı adı yalnızca arayüzde gösterim için taşınır
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(ClaimsPrincipalExtensions.DisplayUsernameClaim, user.Username),
                 new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}".Trim()),
                 new Claim(ClaimTypes.Email, user.Email ?? ""),
                 new Claim(ClaimTypes.Role, user.Role),

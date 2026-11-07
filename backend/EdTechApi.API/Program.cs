@@ -77,18 +77,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
         };
-        // Süresi dolmamış token'ı olsa da kapatılmış (veya kullanıcı adı değişmiş) hesabın istekleri reddedilir. Rol de
-        // veritabanıyla eşleşmeli: yetkisi alınan yönetici/eğitmen eski token'ıyla 3 saat daha o rolde kalamaz.
+        // Kullanıcı token'daki değişmez Id ile bulunur; süresi dolmamış token'ı olsa da kapatılmış hesabın istekleri
+        // reddedilir. Rol de veritabanıyla eşleşmeli: yetkisi alınan yönetici/eğitmen eski token'ıyla 3 saat daha o rolde kalamaz.
         options.Events = new JwtBearerEvents
         {
             OnTokenValidated = async ctx =>
             {
-                var username = EdTechApi.API.Helpers.ClaimsPrincipalExtensions.GetUsername(ctx.Principal!);
-                var role = ctx.Principal!.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
                 var db = ctx.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
-                if (username == null || role == null
-                    || !await db.Users.AnyAsync(u => u.Username == username && u.Role == role && u.Role != AccountRetirement.DeletedRole))
-                    ctx.Fail("Hesap kapatılmış.");
+                if (!await EdTechApi.API.Helpers.ClaimsPrincipalExtensions.AttachCurrentUserAsync(ctx.Principal!, db))
+                    ctx.Fail("Geçersiz token veya kapatılmış hesap.");
             }
         };
     });
@@ -103,11 +100,11 @@ builder.Services.AddRateLimiter(options =>
         _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1) }));
     // Topluluk yazma uçları (forum, beğeni, arkadaşlık, mesaj): kullanıcı başına dakikada 30 istek, spam'i keser
     options.AddPolicy("community", http => System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
-        EdTechApi.API.Helpers.ClaimsPrincipalExtensions.GetUsername(http.User) ?? http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        EdTechApi.API.Helpers.ClaimsPrincipalExtensions.GetUserId(http.User)?.ToString() ?? http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions { PermitLimit = 30, Window = TimeSpan.FromMinutes(1) }));
     // Dosya yükleme (profil fotoğrafı, kurs görseli, video): kullanıcı başına 10 dakikada 20 dosya; diski doldurmayı yavaşlatır
     options.AddPolicy("uploads", http => System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
-        EdTechApi.API.Helpers.ClaimsPrincipalExtensions.GetUsername(http.User) ?? http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        EdTechApi.API.Helpers.ClaimsPrincipalExtensions.GetUserId(http.User)?.ToString() ?? http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
         _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions { PermitLimit = 20, Window = TimeSpan.FromMinutes(10) }));
     // Herkese açık yardım formu: IP başına saatte 5 talep, tabloyu doldurmayı ve e-posta bildirimini taşırmayı keser
     options.AddPolicy("support", http => System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(

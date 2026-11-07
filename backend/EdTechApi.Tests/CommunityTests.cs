@@ -1,3 +1,4 @@
+using EdTechApi.API.Helpers;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using EdTechApi.API.Controllers;
@@ -48,16 +49,42 @@ namespace EdTechApi.Tests
             _connection.Dispose();
         }
 
-        private static ControllerContext As(string username, string role = "User") => new()
+        // OnTokenValidated'ın ürettiği principal: sub = Id, güncel kullanıcı adı veritabanından
+        private ControllerContext As(string username, string role = "User") => new()
         {
             HttpContext = new DefaultHttpContext
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(new[]
                 {
-                    new Claim(JwtRegisteredClaimNames.Sub, username), new Claim(ClaimTypes.Role, role)
+                    new Claim(JwtRegisteredClaimNames.Sub, (_db.Users.FirstOrDefault(u => u.Username == username)?.Id ?? 0).ToString()),
+                    new Claim(ClaimsPrincipalExtensions.UsernameClaim, username), new Claim(ClaimTypes.Role, role)
                 }, "test"))
             }
         };
+
+        private static ClaimsPrincipal Token(params (string Type, string Value)[] claims) =>
+            new(new ClaimsIdentity(claims.Select(c => new Claim(c.Type, c.Value)), "jwt"));
+
+        [Fact]
+        public async Task Token_identity_is_the_user_id_not_a_reusable_username()
+        {
+            // ali renames; a newcomer takes "ali": ali's token still resolves to ali, never to the newcomer
+            _db.Users.Single(u => u.Id == _ali.Id).Username = "ali2";
+            var newcomer = new User { Username = "ali", Email = "new@test", FirstName = "N", Role = "User" };
+            _db.Users.Add(newcomer);
+            _db.SaveChanges();
+            var aliToken = Token((ClaimTypes.NameIdentifier, _ali.Id.ToString()), ("username", "ali"), (ClaimTypes.Role, "User"));
+            Assert.True(await aliToken.AttachCurrentUserAsync(_db));
+            Assert.Equal(_ali.Id, aliToken.GetUserId());
+            Assert.Equal("ali2", aliToken.GetUsername());
+
+            // an old-format token (sub = username) is refused, even when the username looks like an id
+            var legacy = Token((ClaimTypes.NameIdentifier, newcomer.Id.ToString()), (ClaimTypes.Role, "User"));
+            Assert.False(await legacy.AttachCurrentUserAsync(_db));
+            // a role the database no longer grants is refused
+            var demoted = Token((ClaimTypes.NameIdentifier, _ali.Id.ToString()), ("username", "ali"), (ClaimTypes.Role, "Admin"));
+            Assert.False(await demoted.AttachCurrentUserAsync(_db));
+        }
 
         private sealed class NoEmail : IEmailService
         {

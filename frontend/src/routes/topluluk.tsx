@@ -78,12 +78,12 @@ interface ThreadDetail {
 
 /** Who is reading: read after mount, since the server cannot see the token. */
 function useViewer() {
-  const [viewer, setViewer] = useState<{ username: string; admin: boolean } | null>(null);
+  const [viewer, setViewer] = useState<{ id: number; admin: boolean } | null>(null);
   useEffect(() => {
     const token = getToken();
     if (token)
       setViewer({
-        username: parseJwt(token)?.sub ?? "",
+        id: Number(parseJwt(token)?.sub),
         admin: isAdminRole(getRoleFromToken(token)),
       });
   }, []);
@@ -507,7 +507,7 @@ function ThreadView({
       </h2>
       <ol className="space-y-4">
         {thread.posts.map((p, i) => {
-          const mine = !!viewer && p.author?.username === viewer.username;
+          const mine = !!viewer && p.author?.id === viewer.id;
           return (
             <li
               key={p.id}

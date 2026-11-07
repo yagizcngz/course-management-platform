@@ -27,7 +27,7 @@ namespace EdTechApi.API.Controllers
         [HttpGet("me")]
         public async Task<IActionResult> GetMine()
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == User.GetUsername());
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == User.GetUserId());
             if (user == null) return Unauthorized();
             var transactions = await _walletService.GetTransactionsAsync(user.Id);
             var ownedCourseIds = await _walletService.GetOwnedCourseIdsAsync(user.Id);
@@ -47,7 +47,7 @@ namespace EdTechApi.API.Controllers
         [HttpPost("top-up")]
         public async Task<IActionResult> TopUp([FromBody] TopUpRequest request)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == User.GetUsername());
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == User.GetUserId());
             if (user == null) return Unauthorized();
             var role = user.Role.ToLower();
             if (role != "user" && role != "student" && role != "teacher")
@@ -59,7 +59,7 @@ namespace EdTechApi.API.Controllers
         [HttpPost("purchase/{courseId}")]
         public async Task<IActionResult> Purchase(int courseId)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == User.GetUsername());
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == User.GetUserId());
             if (user == null) return Unauthorized();
             var role = user.Role.ToLower();
             if (role != "user" && role != "student" && role != "teacher")
@@ -71,7 +71,7 @@ namespace EdTechApi.API.Controllers
         [HttpPost("refund/{courseId}")]
         public async Task<IActionResult> Refund(int courseId)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == User.GetUsername());
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == User.GetUserId());
             if (user == null) return Unauthorized();
             var balance = await _walletService.RefundCourseAsync(user, courseId);
             return Ok(new { balance, message = "İade edildi." });

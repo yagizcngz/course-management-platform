@@ -101,7 +101,7 @@ namespace EdTechApi.API.Controllers
         [HttpGet("me/analytics")]
         public async Task<IActionResult> GetMyAnalytics()
         {
-            var userId = await _context.Users.Where(u => u.Username == User.GetUsername()).Select(u => (int?)u.Id).FirstOrDefaultAsync();
+            var userId = User.GetUserId();
             if (userId == null) return Unauthorized();
             var rows = await _teacherService.GetAnalyticsForUserAsync(userId.Value);
             return rows == null ? NotFound() : Ok(rows);
@@ -112,7 +112,7 @@ namespace EdTechApi.API.Controllers
         [HttpGet("me/analytics/{courseId}/students")]
         public async Task<IActionResult> GetMyCourseStudents(int courseId)
         {
-            var userId = await _context.Users.Where(u => u.Username == User.GetUsername()).Select(u => (int?)u.Id).FirstOrDefaultAsync();
+            var userId = User.GetUserId();
             if (userId == null) return Unauthorized();
             var rows = await _teacherService.GetCourseStudentsForUserAsync(userId.Value, courseId);
             return rows == null ? NotFound("Kurs bulunamadı.") : Ok(rows);
