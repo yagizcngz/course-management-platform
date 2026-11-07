@@ -35,6 +35,17 @@ namespace EdTechApi.DataAccess.Context
         public DbSet<Friendship> Friendships { get; set; }
         public DbSet<DirectMessage> DirectMessages { get; set; }
 
+        // Bütün tarihler UTC yazılır (DateTime.UtcNow) ama SQL Server datetime2 türü bilgisini saklamaz; okunan değer
+        // Unspecified olur ve JSON'a "Z"siz çıkınca tarayıcı yerel saat sanır (Türkiye'de 3 saat kayma). Okurken UTC işaretlenir.
+        protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+        {
+            configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
+            configurationBuilder.Properties<DateTime?>().HaveConversion<UtcDateTimeConverter>();
+        }
+
+        private sealed class UtcDateTimeConverter() : Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<DateTime, DateTime>(
+            v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // 1. Öğrenci numarasının benzersiz (Unique) olması kuralı:
