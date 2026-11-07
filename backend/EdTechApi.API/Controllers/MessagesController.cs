@@ -70,7 +70,9 @@ namespace EdTechApi.API.Controllers
             var me = await _context.CurrentUserIdAsync(User);
             return Ok(new
             {
-                count = await _context.DirectMessages.CountAsync(m => m.RecipientId == me && m.ReadAt == null),
+                // the conversation list hides closed accounts, so their messages are not counted either
+                count = await _context.DirectMessages.CountAsync(m => m.RecipientId == me && m.ReadAt == null
+                    && _context.Users.Any(u => u.Id == m.SenderId && u.Role != AccountRetirement.DeletedRole)),
                 friendRequests = await _context.Friendships.CountAsync(f => f.AddresseeId == me && f.Status == FriendsController.Pending)
             });
         }

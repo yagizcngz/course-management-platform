@@ -43,6 +43,9 @@ namespace EdTechApi.API.Controllers
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == User.GetUsername());
             if (user == null) return Unauthorized();
+            var role = user.Role.ToLower();
+            if (role != "user" && role != "student" && role != "teacher")
+                return StatusCode(403, "Sadece katılımcılar cüzdan kullanabilir.");
             var balance = await _walletService.TopUpAsync(user.Id, request.Amount);
             return Ok(new { balance });
         }

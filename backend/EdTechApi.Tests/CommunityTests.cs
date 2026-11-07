@@ -189,6 +189,37 @@ namespace EdTechApi.Tests
         }
 
         [Fact]
+        public async Task Unread_count_skips_messages_from_closed_accounts()
+        {
+            _db.DirectMessages.Add(new DirectMessage { SenderId = _ali.Id, RecipientId = _ayse.Id, Body = "x" });
+            _db.SaveChanges();
+            var ayseMessages = new MessagesController(_db) { ControllerContext = As("ayse", "Teacher") };
+            async Task<int> Unread()
+            {
+                var value = ((OkObjectResult)await ayseMessages.UnreadCount()).Value!;
+                return (int)value.GetType().GetProperty("count")!.GetValue(value)!;
+            }
+
+            Assert.Equal(1, await Unread());
+            _ali.Role = AccountRetirement.DeletedRole;
+            _db.SaveChanges();
+            Assert.Equal(0, await Unread());
+        }
+
+        [Fact]
+        public async Task Admins_have_no_wallet_to_top_up()
+        {
+            _db.Users.Add(new User { Username = "boss", Email = "b@test", Role = "Admin" });
+            _db.SaveChanges();
+            var wallet = new WalletService(_db, new EnrollmentService(_db));
+            var asAdmin = new WalletController(wallet, _db) { ControllerContext = As("boss", "Admin") };
+            var asStudent = new WalletController(wallet, _db) { ControllerContext = As("ali") };
+
+            Assert.Equal(403, Assert.IsType<ObjectResult>(await asAdmin.TopUp(new(50))).StatusCode);
+            Assert.IsType<OkObjectResult>(await asStudent.TopUp(new(50)));
+        }
+
+        [Fact]
         public async Task A_video_lesson_needs_most_of_the_video_watched()
         {
             var course = new Course { Title = "C", Category = "Genel", MaxCapacity = 5 };

@@ -75,7 +75,10 @@ const RULES: Rule[] = [
 
   // permissions
   [/yetkiniz yok|Admin access required|^Forbidden$/i, "noPermission"],
-  [/Only participants can|Sadece katılımcılar (kurs satın alabilir|önerilen)/i, "participantsOnly"],
+  [
+    /Only participants can|Sadece katılımcılar (kurs satın alabilir|önerilen|cüzdan kullanabilir)/i,
+    "participantsOnly",
+  ],
   [/Only teachers can/i, "teachersOnly"],
   [/Sadece kendi kurslarınızı düzenleyebilirsiniz/i, "ownCoursesEditOnly"],
   [/Sadece kendi kurslarınızı silebilirsiniz/i, "ownCoursesDeleteOnly"],

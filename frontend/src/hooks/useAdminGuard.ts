@@ -39,5 +39,8 @@ function withRoleGuard<P extends object>(
 
 export const adminOnly = <P extends object>(Page: ComponentType<P>) =>
   withRoleGuard(Page, isAdminRole);
+/** Students and teachers: the roles that hold a wallet. */
+export const participantOnly = <P extends object>(Page: ComponentType<P>) =>
+  withRoleGuard(Page, (role) => !isAdminRole(role));
 export const teacherOnly = <P extends object>(Page: ComponentType<P>) =>
   withRoleGuard(Page, isTeacherRole);

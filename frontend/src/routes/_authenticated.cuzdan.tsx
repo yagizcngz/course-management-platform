@@ -9,9 +9,10 @@ import { Input } from "@/components/ui/input";
 import { API_BASE } from "@/components/courseHelpers";
 import { formatDateTime, formatTry } from "@/lib/utils";
 import { authHeaders, getRoleFromToken, isTeacherRole, readError } from "@/lib/auth";
+import { participantOnly } from "@/hooks/useAdminGuard";
 
 export const Route = createFileRoute("/_authenticated/cuzdan")({
-  component: WalletPage,
+  component: participantOnly(WalletPage),
 });
 
 interface WalletTransaction {
