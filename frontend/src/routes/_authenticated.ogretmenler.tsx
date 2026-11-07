@@ -11,6 +11,7 @@ import { fetchCategories } from "../components/courseHelpers";
 
 import { ProfileRecord } from "@/components/ProfileModal";
 import { API_BASE } from "@/components/courseHelpers";
+import { matchesSearch } from "@/lib/search";
 export const Route = createFileRoute("/_authenticated/ogretmenler")({
   component: adminOnly(TeachersPage),
 });
@@ -252,17 +253,14 @@ function TeachersPage() {
     }
   };
 
-  const searchLower = searchTerm.toLowerCase();
-  const filteredTeachers = dbTeachers.filter((teacher) => {
-    const fName = `${teacher.firstName || teacher.FirstName || ""} ${teacher.lastName || teacher.LastName || ""}`;
-    const fEmail = teacher.email || teacher.Email || "";
-    const fBranch = teacher.branch || teacher.Branch || "";
-    return (
-      fName.toLowerCase().includes(searchLower) ||
-      fEmail.toLowerCase().includes(searchLower) ||
-      fBranch.toLowerCase().includes(searchLower)
-    );
-  });
+  const filteredTeachers = dbTeachers.filter((teacher) =>
+    matchesSearch(
+      searchTerm,
+      `${teacher.firstName || teacher.FirstName || ""} ${teacher.lastName || teacher.LastName || ""}`,
+      teacher.email || teacher.Email || "",
+      teacher.branch || teacher.Branch || "",
+    ),
+  );
 
   // Öğretmenin güncel olarak bir kursta eğitmen olarak görünüp görünmediğine göre
   // aktif/pasif durumunu hesaplar (kurs listesindeki "instructor" alanına göre eşleştirme)

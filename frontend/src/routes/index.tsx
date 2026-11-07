@@ -4,7 +4,8 @@ import { ReactLenis, useLenis } from "lenis/react";
 import "lenis/dist/lenis.css";
 import { API_BASE } from "../components/courseHelpers";
 import { GuestCourseModal, PublicPage } from "../components/PublicPage";
-import { matchesQuery } from "../components/landing/catalog";
+import { courseRank } from "../components/landing/catalog";
+import { rankBy } from "@/lib/search";
 import {
   type GuestStats,
   type LandingCourse,
@@ -73,9 +74,9 @@ function Landing({ variant }: { variant: Variant }) {
   const matches = useMemo(
     () =>
       filtering && courses
-        ? courses.filter(
-            (c) =>
-              (!category || c.category === category) && matchesQuery(c, query, label, extra(c)),
+        ? rankBy(
+            courses.filter((c) => !category || c.category === category),
+            (c) => courseRank(c, query, label, extra(c)),
           )
         : null,
     [filtering, courses, category, query, label, extra],

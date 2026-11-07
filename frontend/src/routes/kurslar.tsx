@@ -5,7 +5,8 @@ import { LayoutGrid, List, Search, X } from "lucide-react";
 import { GuestCourseModal, PageIntro, PublicPage } from "../components/PublicPage";
 import { Stagger, StaggerItem } from "../components/motion";
 import { CourseCard } from "../components/landing/VariantAtelier";
-import { matchesQuery, price } from "../components/landing/catalog";
+import { courseRank, price } from "../components/landing/catalog";
+import { rankBy } from "@/lib/search";
 import { usePublicCatalog } from "../components/landing/usePublicCatalog";
 import type { LandingCourse } from "../components/landing/shared";
 
@@ -74,15 +75,17 @@ function CoursesCatalog() {
 
   const results = useMemo(() => {
     if (!courses) return null;
-    const list = courses.filter(
-      (c) =>
-        (!search.category || c.category === search.category) &&
-        (!search.subCategory || c.subCategory === search.subCategory) &&
-        (!search.level || c.level === search.level) &&
-        inBand(Number(c.price), search.price) &&
-        matchesQuery(c, search.q ?? "", label, extra(c)),
+    // best matches first; with no query every course ranks the same, so the API's popular order stays
+    const list = rankBy(
+      courses.filter(
+        (c) =>
+          (!search.category || c.category === search.category) &&
+          (!search.subCategory || c.subCategory === search.subCategory) &&
+          (!search.level || c.level === search.level) &&
+          inBand(Number(c.price), search.price),
+      ),
+      (c) => courseRank(c, search.q ?? "", label, extra(c)),
     );
-    // the API already returns the most popular first
     if (sort === "newest")
       list.sort(
         (a, b) => Date.parse(b.createdAt ?? "") - Date.parse(a.createdAt ?? "") || b.id - a.id,

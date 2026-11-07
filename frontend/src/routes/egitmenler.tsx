@@ -6,7 +6,8 @@ import { GuestCourseModal, PageIntro, PublicPage } from "../components/PublicPag
 import { ProfileModal, type ProfileTarget } from "../components/ProfileModal";
 import { Stagger, StaggerItem } from "../components/motion";
 import { Portrait } from "../components/landing/VariantAtelier";
-import { fold, price } from "../components/landing/catalog";
+import { price } from "../components/landing/catalog";
+import { matchesSearch } from "@/lib/search";
 import { usePublicCatalog } from "../components/landing/usePublicCatalog";
 import type { LandingCourse, LandingProps } from "../components/landing/shared";
 import {
@@ -64,23 +65,18 @@ function FacultyDirectory() {
   }, [teachers, categories]);
 
   const list = useMemo(() => {
-    const words = fold(search.q ?? "")
-      .split(/\s+/)
-      .filter(Boolean);
     return (
       teachers
         .filter((tc) => {
           const own = getTeacherBranches(tc);
           if (search.branch && !own.includes(search.branch)) return false;
-          const hay = fold(
-            [
-              getTeacherFullName(tc),
-              tc.aboutMe ?? tc.AboutMe ?? "",
-              ...own,
-              ...own.map((b) => label("categories", b)),
-            ].join(" "),
+          return matchesSearch(
+            search.q ?? "",
+            getTeacherFullName(tc),
+            tc.aboutMe ?? tc.AboutMe ?? "",
+            ...own,
+            ...own.map((b) => label("categories", b)),
           );
-          return words.every((w) => hay.includes(w));
         })
         // teachers who give courses first; the sort is stable, so the API's A–Z order stays
         .sort((a, b) => Number(!!b.courses?.length) - Number(!!a.courses?.length))

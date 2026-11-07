@@ -32,6 +32,7 @@ import {
 import { API_BASE } from "@/components/courseHelpers";
 import { CourseTaxonomyFields } from "@/components/CourseTaxonomyFields";
 import { CourseStatusPill } from "@/components/CourseProgressBar";
+import { rankBy, searchRank } from "@/lib/search";
 export const Route = createFileRoute("/_authenticated/katalog")({
   component: CoursesPage,
   validateSearch: (search: Record<string, unknown>) => ({
@@ -363,21 +364,28 @@ function CoursesPage() {
   const canManage = isAdminRole(currentUser.role);
   const isStudent = isStudentRole(currentUser.role);
 
-  const searchLower = searchTerm.toLowerCase();
-  const filteredCourses = dbCourses.filter((c) => {
-    const fTitle = c.title || c.Title || "";
-    const fInstructor = c.instructor || c.Instructor || "";
-    const fCategory = c.category || c.Category || "";
-
-    const matchesSearch =
-      fTitle.toLowerCase().includes(searchLower) ||
-      fInstructor.toLowerCase().includes(searchLower) ||
-      fCategory.toLowerCase().includes(searchLower);
-
-    const matchesCategory = !selectedCategory || fCategory === selectedCategory;
-
-    return matchesSearch && matchesCategory;
-  });
+  // stored (Turkish) and translated names both match, so "Data Law" finds "KVKK ve Bilişim Hukuku"
+  const both = (kind: string, value?: string | null) =>
+    value
+      ? ["tr", "en"].map((lng) => t(`dynamic.${kind}.${value}`, { lng, defaultValue: value }))
+      : [];
+  const filteredCourses = rankBy(
+    dbCourses.filter((c) => !selectedCategory || (c.category || c.Category) === selectedCategory),
+    (c) => {
+      const title = c.title || c.Title || "";
+      return searchRank(
+        searchTerm,
+        [title, ...both("courses", title)],
+        [
+          c.instructor || c.Instructor || "",
+          ...both("categories", c.category || c.Category),
+          ...both("subCategories", c.subCategory || c.SubCategory),
+          c.description || c.Description || "",
+          ...both("descriptions", title),
+        ],
+      );
+    },
+  );
 
   const handleCategorySelect = (cat: string) => {
     const newCat = cat === selectedCategory ? "" : cat;

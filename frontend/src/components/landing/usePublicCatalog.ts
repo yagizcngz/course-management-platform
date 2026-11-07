@@ -67,7 +67,8 @@ export function usePublicCatalog() {
         `${m.branch ?? m.Branch ?? ""} ${m.aboutMe ?? m.AboutMe ?? ""}`,
       ]),
     );
-    // field names in both languages, so "calculus" and "kalkülüs" both match in either UI language
+    // titles, descriptions and field names in both languages, so "calculus" and "kalkülüs" both
+    // match in either UI language
     const both = (kind: string, value?: string | null) =>
       value
         ? ["tr", "en"]
@@ -75,7 +76,7 @@ export function usePublicCatalog() {
             .join(" ")
         : "";
     return (c: LandingCourse) =>
-      `${(outline[c.id] ?? []).map((l) => l.title).join(" ")} ${byTeacher.get(String(c.teacherId)) ?? ""} ${both("categories", c.category)} ${both("subCategories", c.subCategory)}`;
+      `${(outline[c.id] ?? []).map((l) => l.title).join(" ")} ${byTeacher.get(String(c.teacherId)) ?? ""} ${both("categories", c.category)} ${both("subCategories", c.subCategory)} ${both("courses", c.title)} ${both("descriptions", c.title)}`;
   }, [teachers, outline, t]);
 
   return { courses, categories, teachers, teachersLoaded, outline, label, describe, extra };

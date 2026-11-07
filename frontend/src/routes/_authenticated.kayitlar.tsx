@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import { adminOnly } from "../hooks/useAdminGuard";
 
 import { API_BASE } from "@/components/courseHelpers";
+import { matchesSearch } from "@/lib/search";
 export const Route = createFileRoute("/_authenticated/kayitlar")({
   head: () => ({
     meta: [
@@ -229,21 +230,14 @@ function EnrollmentsPage() {
   };
 
   const filteredEnrollments = useMemo(() => {
-    const query = searchTerm.trim().toLowerCase();
-
-    if (!query) return enrollments;
-
-    return enrollments.filter((enrollment) => {
-      const studentName = pick(enrollment.studentFullName, enrollment.StudentFullName) || "";
-      const studentNumber = pick(enrollment.studentNumber, enrollment.StudentNumber) || "";
-      const courseTitle = pick(enrollment.courseTitle, enrollment.CourseTitle) || "";
-
-      return (
-        studentName.toLowerCase().includes(query) ||
-        studentNumber.toLowerCase().includes(query) ||
-        courseTitle.toLowerCase().includes(query)
-      );
-    });
+    return enrollments.filter((enrollment) =>
+      matchesSearch(
+        searchTerm,
+        pick(enrollment.studentFullName, enrollment.StudentFullName) || "",
+        String(pick(enrollment.studentNumber, enrollment.StudentNumber) || ""),
+        pick(enrollment.courseTitle, enrollment.CourseTitle) || "",
+      ),
+    );
   }, [enrollments, searchTerm]);
 
   return (

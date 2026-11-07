@@ -10,6 +10,7 @@ import { adminOnly } from "../hooks/useAdminGuard";
 
 import { ProfileRecord } from "@/components/ProfileModal";
 import { API_BASE } from "@/components/courseHelpers";
+import { matchesSearch } from "@/lib/search";
 export const Route = createFileRoute("/_authenticated/ogrenciler")({
   component: adminOnly(StudentsPage),
 });
@@ -249,17 +250,14 @@ function StudentsPage() {
     }
   };
 
-  const searchLower = searchTerm.toLowerCase();
-  const filteredStudents = dbStudents.filter((s) => {
-    const fName = s.name || `${s.firstName || s.FirstName || ""} ${s.lastName || s.LastName || ""}`;
-    const fEmail = s.email || s.Email || "";
-    const fCourse = s.course || s.Course || "";
-    return (
-      fName.toLowerCase().includes(searchLower) ||
-      fEmail.toLowerCase().includes(searchLower) ||
-      fCourse.toLowerCase().includes(searchLower)
-    );
-  });
+  const filteredStudents = dbStudents.filter((s) =>
+    matchesSearch(
+      searchTerm,
+      s.name || `${s.firstName || s.FirstName || ""} ${s.lastName || s.LastName || ""}`,
+      s.email || s.Email || "",
+      s.course || s.Course || "",
+    ),
+  );
 
   const handleStartEditProfile = () => {
     if (!selectedProfileStudent) return;
