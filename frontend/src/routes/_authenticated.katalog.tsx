@@ -136,22 +136,13 @@ function CoursesPage() {
 
     const fetchTeachers = async () => {
       try {
-        const res = await fetch(`${API_BASE}/api/teachers`, { headers });
+        const [res, meRes] = await Promise.all([
+          fetch(`${API_BASE}/api/teachers`, { headers }),
+          fetch(`${API_BASE}/api/profile/me`, { headers }),
+        ]);
+        if (meRes.ok) setMyTeacherId((await meRes.json()).teacherId ?? null);
         if (res.ok) {
-          const teachers = await res.json();
-          setDbTeachers(teachers);
-
-          const token = localStorage.getItem("jwt_token");
-          const payload = token ? parseJwt(token) : null;
-          const email =
-            payload?.["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] ||
-            payload?.email;
-          const selfTeacher = teachers.find(
-            (t: TeacherLiteDto) => email && (t.email === email || t.Email === email),
-          );
-          if (selfTeacher) {
-            setMyTeacherId(selfTeacher.id || selfTeacher.Id);
-          }
+          setDbTeachers(await res.json());
         } else {
           toast.error(t("common.loadFailed"));
         }

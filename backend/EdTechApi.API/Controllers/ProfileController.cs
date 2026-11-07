@@ -198,12 +198,14 @@ namespace EdTechApi.API.Controllers
             if (user == null) return NotFound();
 
             string? branch = null;
+            int? teacherId = null; // the same row the course endpoints treat as "my teacher profile"
             if (user.Role == "Teacher" || user.Role == "Eğitmen")
             {
                 var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == user.Id);
                 if (teacher != null)
                 {
                     branch = teacher.Branch;
+                    teacherId = teacher.Id;
                 }
             }
 
@@ -219,6 +221,7 @@ namespace EdTechApi.API.Controllers
                 isProfilePublic = user.IsProfilePublic,
                 receiveEmailNotifications = user.ReceiveEmailNotifications,
                 branch = branch,
+                teacherId = teacherId,
                 id = user.Id,
                 featuredBadges = SplitBadges(user.FeaturedBadges)
             };

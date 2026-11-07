@@ -73,23 +73,11 @@ function TaughtCoursesPage() {
 
       if (cRes.ok) {
         const allCourses = await cRes.json();
-        let myTeacherId = null;
-
-        if (tRes.ok) {
-          const allTeachers = await tRes.json();
-          setDbTeachers(allTeachers);
-          // Find the teacher profile that belongs to the current user
-          const me = allTeachers.find(
-            (t: TeacherLiteDto) => t.email === profile.email || t.Email === profile.email,
-          );
-          if (me) {
-            myTeacherId = me.id || me.Id;
-          }
-        }
+        if (tRes.ok) setDbTeachers(await tRes.json());
 
         const instructorName = `${profile.firstName || ""} ${profile.lastName || ""}`.trim();
         const myCourses = allCourses.filter((c: CourseData) =>
-          isTaughtBy(c, myTeacherId, instructorName),
+          isTaughtBy(c, profile.teacherId, instructorName),
         );
         setCourses(myCourses);
       }
