@@ -40,7 +40,7 @@ namespace EdTechApi.API.Controllers
 
             var studentId = await _context.Students.Where(s => s.UserId == userId).Select(s => (int?)s.Id).FirstOrDefaultAsync();
             var teacher = await _context.Teachers.AsNoTracking().FirstOrDefaultAsync(t => t.UserId == userId);
-            return Ok(new { learning = await LearningAsync(studentId), teaching = await TeachingAsync(teacher) });
+            return Ok(new { learning = await LearningAsync(studentId), teaching = await TeachingAsync(teacher), social = await SocialAsync(userId.Value) });
         }
 
         // Herkese açık profil kartı (forum, mesajlar, eğitmenler) ve yönetici görünümü. kind: user | student | teacher.
@@ -100,6 +100,7 @@ namespace EdTechApi.API.Controllers
                 isPrivate = !full,
                 featuredBadges = full ? SplitBadges(user?.FeaturedBadges) : null,
                 learning = full ? await LearningAsync(studentId) : null,
+                social = full && user != null ? await SocialAsync(user.Id) : null,
                 teaching = await TeachingAsync(teacher),
                 taughtCourses = taught
             });
@@ -143,6 +144,17 @@ namespace EdTechApi.API.Controllers
                 })
             };
         }
+
+        // Topluluk rozetleri için: açtığı başlıkların ve katıldığı (başkasının açtığı) tartışmalara ilk yanıtının
+        // tarihleri, kabul edilmiş arkadaş sayısı. Sayılar kayıtlardan türediği için rozetler geriye dönük de açılır.
+        private async Task<object> SocialAsync(int userId) => new
+        {
+            Threads = await _context.ForumThreads.Where(t => t.AuthorId == userId).Select(t => t.CreatedAt).ToListAsync(),
+            Joined = await _context.ForumPosts.Where(p => p.AuthorId == userId && p.Thread!.AuthorId != userId)
+                .GroupBy(p => p.ThreadId).Select(g => g.Min(p => p.CreatedAt)).ToListAsync(),
+            Friends = await _context.Friendships.CountAsync(f => f.Status == FriendsController.Accepted
+                && (f.RequesterId == userId || f.AddresseeId == userId))
+        };
 
         private async Task<object?> TeachingAsync(Teacher? teacher)
         {
