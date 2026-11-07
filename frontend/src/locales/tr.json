@@ -1063,7 +1063,12 @@
         "Approved": "Onaylandı",
         "Rejected": "Reddedildi",
         "Cancelled": "Geri çekildi"
-      }
+      },
+      "pendingCount_one": "{{count}} karar bekliyor",
+      "pendingCount_other": "{{count}} karar bekliyor",
+      "newPending_one": "{{count}} yeni istek onayınızı bekliyor",
+      "newPending_other": "{{count}} yeni istek onayınızı bekliyor",
+      "viewPending": "İncele"
     },
     "backendErrors": {
       "emailInUse": "Bu e-posta adresi zaten kullanımda.",

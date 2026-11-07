@@ -276,6 +276,45 @@ export function AppSidebar() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
+  // admins: requests waiting for a decision, on the same 20 s rhythm and after each decision;
+  // a rise since the last check shows a toast unless the admin is already on the Requests page
+  const isAdmin = isAdminRole(currentUser.rawRole);
+  const [pending, setPending] = useState(0);
+  const lastPending = useRef<number | null>(null);
+  useEffect(() => {
+    if (!isAdmin || !getToken()) return;
+    let alive = true;
+    const load = () =>
+      fetch(`${API_BASE}/api/dashboard/pending-requests`, { headers: authHeaders() })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (!d || !alive) return;
+          const n: number = d.total ?? 0;
+          const prev = lastPending.current;
+          lastPending.current = n;
+          setPending(n);
+          if (prev !== null && n > prev && location.pathname !== "/istekler")
+            toast(t("requests.newPending", { count: n - prev }), {
+              id: "pending-requests",
+              action: {
+                label: t("requests.viewPending"),
+                onClick: () => navigate({ to: "/istekler" }),
+              },
+            });
+        })
+        .catch(() => {});
+    load();
+    const id = window.setInterval(load, 20_000);
+    window.addEventListener("requests-changed", load);
+    return () => {
+      alive = false;
+      window.clearInterval(id);
+      window.removeEventListener("requests-changed", load);
+    };
+    // t and navigate are stable enough; reload on navigation like the message count
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin, location.pathname]);
+
   useEffect(() => {
     const onProfileUpdated = (e: Event) => {
       const detail = (e as CustomEvent).detail as { name?: string; photoUrl?: string } | undefined;
@@ -346,6 +385,12 @@ export function AppSidebar() {
                 <span className="rounded-full bg-gold px-1.5 font-mono text-[10px] text-night tabular-nums">
                   {unread}
                   <span className="sr-only"> {t("community.unread")}</span>
+                </span>
+              )}
+              {item.url === "/istekler" && pending > 0 && (
+                <span className="rounded-full bg-gold px-1.5 font-mono text-[10px] text-night tabular-nums">
+                  {pending}
+                  <span className="sr-only"> {t("requests.pendingCount", { count: pending })}</span>
                 </span>
               )}
               {item.url === "/mesajlar" && requests > 0 && (

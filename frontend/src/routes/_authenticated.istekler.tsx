@@ -1,4 +1,4 @@
-import { formatDate, formatDateTime, pillButton } from "@/lib/utils";
+import { decisionButton, formatDate, formatDateTime, pillButton } from "@/lib/utils";
 import { authHeaders, readError } from "@/lib/auth";
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
@@ -44,8 +44,42 @@ interface SupportRequest {
   userRole: string;
 }
 
+/** Pending counts from GET /api/dashboard/pending-requests, one per tab. */
+interface PendingCounts {
+  teaching: number;
+  applications: number;
+  branches: number;
+  support: number;
+  total: number;
+}
+
+/** Tells the sidebar badge and this page's tab counts that a request was decided. */
+const announce = () => window.dispatchEvent(new Event("requests-changed"));
+
 function RequestsPage() {
   const { t, i18n } = useTranslation();
+  const [pending, setPending] = useState<PendingCounts | null>(null);
+  const [tab, setTab] = useState<string>();
+  const [busyId, setBusyId] = useState<number | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    const load = () =>
+      fetch(`${API_BASE}/api/dashboard/pending-requests`, { headers: authHeaders() })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d: PendingCounts | null) => alive && d && setPending(d))
+        .catch(() => {});
+    load();
+    window.addEventListener("requests-changed", load);
+    return () => {
+      alive = false;
+      window.removeEventListener("requests-changed", load);
+    };
+  }, []);
+  // open on the first tab with something to decide, until the admin picks one
+  const firstPending = pending
+    ? (["teaching", "applications", "branches", "support"] as const).find((k) => pending[k] > 0)
+    : undefined;
   const [teachingRequests, setTeachingRequests] = useState<TeachingRequest[]>([]);
   const [supportRequests, setSupportRequests] = useState<SupportRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,6 +118,7 @@ function RequestsPage() {
   }, [fetchRequests]);
 
   const handleApprove = async (id: number) => {
+    setBusyId(id);
     try {
       const res = await fetch(`${API_BASE}/api/teachingrequests/${id}/approve`, {
         method: "POST",
@@ -92,15 +127,19 @@ function RequestsPage() {
       if (res.ok) {
         toast.success(t("requests.approvedToast"));
         fetchRequests();
+        announce();
       } else {
         toast.error(await readError(res, t("requests.serverError")));
       }
     } catch {
       toast.error(t("requests.serverError"));
+    } finally {
+      setBusyId(null);
     }
   };
 
   const handleReject = async (id: number) => {
+    setBusyId(id);
     try {
       const res = await fetch(`${API_BASE}/api/teachingrequests/${id}/reject`, {
         method: "POST",
@@ -109,11 +148,14 @@ function RequestsPage() {
       if (res.ok) {
         toast.success(t("requests.rejectedToast"));
         fetchRequests();
+        announce();
       } else {
         toast.error(await readError(res, t("requests.serverError")));
       }
     } catch {
       toast.error(t("requests.serverError"));
+    } finally {
+      setBusyId(null);
     }
   };
 
@@ -131,6 +173,7 @@ function RequestsPage() {
         toast.success(t("requests.replySent", "Yanıt gönderildi."));
         setReplyText((prev) => ({ ...prev, [id]: "" }));
         fetchRequests();
+        announce();
       } else {
         toast.error(t("requests.replyFailed", "Yanıt gönderilemedi."));
       }
@@ -199,6 +242,7 @@ function RequestsPage() {
       setSelectedTeachingIds((prev) => prev.filter((id) => !teachingDeleted.includes(id)));
       setSelectedSupportIds((prev) => prev.filter((id) => !supportDeleted.includes(id)));
       fetchRequests();
+      announce();
     } catch {
       toast.error(t("requests.serverError", "Sunucu hatası."));
     }
@@ -253,15 +297,23 @@ function RequestsPage() {
       />
 
       <div className="p-4 md:p-8 animate-reveal max-w-5xl mx-auto w-full">
-        <Tabs defaultValue="teaching" className="w-full">
+        <Tabs value={tab ?? firstPending ?? "teaching"} onValueChange={setTab} className="w-full">
           <TabsList className="grid h-auto w-full grid-cols-2 mb-8 sm:grid-cols-4">
-            <TabsTrigger value="teaching">
+            <TabsTrigger value="teaching" className="gap-2">
               {t("requests.teachingRequests", "Ders Verme İstekleri")}
+              <PendingBadge count={pending?.teaching} />
             </TabsTrigger>
-            <TabsTrigger value="applications">{t("requests.applications")}</TabsTrigger>
-            <TabsTrigger value="branches">{t("requests.branchChanges")}</TabsTrigger>
-            <TabsTrigger value="support">
+            <TabsTrigger value="applications" className="gap-2">
+              {t("requests.applications")}
+              <PendingBadge count={pending?.applications} />
+            </TabsTrigger>
+            <TabsTrigger value="branches" className="gap-2">
+              {t("requests.branchChanges")}
+              <PendingBadge count={pending?.branches} />
+            </TabsTrigger>
+            <TabsTrigger value="support" className="gap-2">
               {t("requests.supportRequests", "Yardım Talepleri")}
+              <PendingBadge count={pending?.support} />
             </TabsTrigger>
           </TabsList>
 
@@ -345,25 +397,11 @@ function RequestsPage() {
                                 </div>
                                 <div className="flex items-center gap-3">
                                   {request.status === "Pending" ? (
-                                    <>
-                                      <Button
-                                        size="sm"
-                                        variant="default"
-                                        className="bg-success hover:bg-success/90"
-                                        onClick={() => handleApprove(request.id)}
-                                      >
-                                        <Check className="h-4 w-4 mr-1" />{" "}
-                                        {t("requests.approve", "Kabul Et")}
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="destructive"
-                                        onClick={() => handleReject(request.id)}
-                                      >
-                                        <X className="h-4 w-4 mr-1" />{" "}
-                                        {t("requests.reject", "Reddet")}
-                                      </Button>
-                                    </>
+                                    <DecisionButtons
+                                      busy={busyId === request.id}
+                                      onApprove={() => handleApprove(request.id)}
+                                      onReject={() => handleReject(request.id)}
+                                    />
                                   ) : (
                                     <Badge
                                       variant={
@@ -534,10 +572,48 @@ interface InstructorApplication {
   createdAt: string;
 }
 
+/** A tab's pending count; nothing while loading or when none wait. */
+function PendingBadge({ count }: { count?: number }) {
+  const { t } = useTranslation();
+  if (!count) return null;
+  return (
+    <span className="rounded-full bg-gold px-1.5 font-mono text-[10px] leading-4 text-night tabular-nums">
+      {count}
+      <span className="sr-only"> {t("requests.pendingCount", { count })}</span>
+    </span>
+  );
+}
+
+/** Approve and reject for one pending request; both lock while its decision is on the way. */
+function DecisionButtons({
+  busy,
+  onApprove,
+  onReject,
+}: {
+  busy: boolean;
+  onApprove: () => void;
+  onReject: () => void;
+}) {
+  const { t } = useTranslation();
+  return (
+    <div className="flex shrink-0 items-center gap-2" aria-busy={busy}>
+      <button type="button" disabled={busy} onClick={onApprove} className={decisionButton.approve}>
+        <Check className="size-4" aria-hidden="true" />
+        {t("requests.approve")}
+      </button>
+      <button type="button" disabled={busy} onClick={onReject} className={decisionButton.reject}>
+        <X className="size-4" aria-hidden="true" />
+        {t("requests.reject")}
+      </button>
+    </div>
+  );
+}
+
 /** Instructor applications sent from the sign-up form without an invite code. */
 function InstructorApplications() {
   const { t, i18n } = useTranslation();
   const [items, setItems] = useState<InstructorApplication[] | null>(null);
+  const [busy, setBusy] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -555,16 +631,22 @@ function InstructorApplications() {
   }, [load]);
 
   const decide = async (id: number, action: "approve" | "reject") => {
+    setBusy(id);
     const res = await fetch(`${API_BASE}/api/TeacherApplications/${id}/${action}`, {
       method: "POST",
       headers: authHeaders(),
     }).catch(() => null);
+    setBusy(null);
     if (res?.ok) {
       toast.success(
         t(action === "approve" ? "requests.applicationApproved" : "requests.applicationRejected"),
       );
       load();
-    } else toast.error(t("requests.serverError"));
+      announce();
+    } else
+      toast.error(
+        res ? await readError(res, t("requests.serverError")) : t("requests.serverError"),
+      );
   };
 
   if (items === null)
@@ -601,18 +683,11 @@ function InstructorApplications() {
             </div>
             <div className="flex shrink-0 items-center gap-3">
               {a.status === "Pending" ? (
-                <>
-                  <Button
-                    size="sm"
-                    className="bg-success hover:bg-success/90"
-                    onClick={() => decide(a.id, "approve")}
-                  >
-                    <Check className="mr-1 h-4 w-4" /> {t("requests.approve")}
-                  </Button>
-                  <Button size="sm" variant="destructive" onClick={() => decide(a.id, "reject")}>
-                    <X className="mr-1 h-4 w-4" /> {t("requests.reject")}
-                  </Button>
-                </>
+                <DecisionButtons
+                  busy={busy === a.id}
+                  onApprove={() => decide(a.id, "approve")}
+                  onReject={() => decide(a.id, "reject")}
+                />
               ) : (
                 <Badge variant={a.status === "Approved" ? "default" : "destructive"}>
                   {a.status === "Approved" ? t("requests.accepted") : t("requests.rejected")}
@@ -681,6 +756,7 @@ function BranchChangeRequests() {
         t(action === "approve" ? "requests.branchApproved" : "requests.branchRejected"),
       );
       load();
+      announce();
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -744,24 +820,11 @@ function BranchChangeRequests() {
               </div>
               <div className="flex shrink-0 items-center gap-3">
                 {r.status === "Pending" ? (
-                  <>
-                    <Button
-                      size="sm"
-                      className="bg-success hover:bg-success/90"
-                      disabled={busy === r.id}
-                      onClick={() => decide(r.id, "approve")}
-                    >
-                      <Check className="mr-1 h-4 w-4" /> {t("requests.approve")}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      disabled={busy === r.id}
-                      onClick={() => decide(r.id, "reject")}
-                    >
-                      <X className="mr-1 h-4 w-4" /> {t("requests.reject")}
-                    </Button>
-                  </>
+                  <DecisionButtons
+                    busy={busy === r.id}
+                    onApprove={() => decide(r.id, "approve")}
+                    onReject={() => decide(r.id, "reject")}
+                  />
                 ) : (
                   <Badge
                     variant={

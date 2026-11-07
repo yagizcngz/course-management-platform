@@ -1136,7 +1136,12 @@
         "Approved": "Approved",
         "Rejected": "Rejected",
         "Cancelled": "Withdrawn"
-      }
+      },
+      "pendingCount_one": "{{count}} waiting for a decision",
+      "pendingCount_other": "{{count}} waiting for a decision",
+      "newPending_one": "{{count}} new request is waiting for you",
+      "newPending_other": "{{count}} new requests are waiting for you",
+      "viewPending": "Review"
     },
     "backendErrors": {
       "emailInUse": "This email address is already in use.",

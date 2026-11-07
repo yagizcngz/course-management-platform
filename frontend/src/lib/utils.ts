@@ -53,6 +53,22 @@ export const pillButton = {
   danger: `${pill} bg-destructive text-white hover:bg-destructive/90 animate-in fade-in`,
 };
 
+/**
+ * Approve / reject on review cards: approving is the filled primary pill of the app's other main
+ * actions, rejecting a quiet outline that only turns red on hover, so a list of pending requests
+ * does not read as a wall of green and red.
+ */
+export const decisionButton = {
+  approve: cn(
+    pill,
+    "h-8 px-3.5 bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80",
+  ),
+  reject: cn(
+    pill,
+    "h-8 px-3.5 border border-border bg-card text-muted-foreground hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive active:bg-destructive/15",
+  ),
+};
+
 /** A filter chip; the active one is filled. */
 export const chip = (active: boolean) =>
   `inline-flex h-8 items-center gap-2 rounded-full border px-3.5 text-xs font-medium transition-colors ${
