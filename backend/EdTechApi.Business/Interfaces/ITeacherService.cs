@@ -1,4 +1,4 @@
-using EdTechApi.Core.Entities;
+﻿using EdTechApi.Core.Entities;
 
 namespace EdTechApi.Business.Interfaces
 {
@@ -12,5 +12,8 @@ namespace EdTechApi.Business.Interfaces
 
         // Soft-delete edilmiş (silinmiş) öğretmenlerin listesini döner — Raporlar sayfası için
         Task<IEnumerable<Teacher>> GetDeletedTeachersAsync();
+
+        // Eğitmen paneli: giriş yapan eğitmenin kursları için öğrenci, mezun, satış, iade ve kazanç; eğitmen değilse null
+        Task<List<EdTechApi.Business.Services.CourseAnalytics>?> GetAnalyticsForUserAsync(int userId);
     }
 }

@@ -294,5 +294,23 @@ namespace EdTechApi.Tests
             Assert.Single(_db.CourseCompletions);
             Assert.Equal(new[] { _course.Id }, await enrollments.GetCompletedCourseIdsAsync(student.Id));
         }
+
+        [Fact]
+        public async Task Teacher_analytics_count_sales_refunds_earnings_and_graduates_per_course()
+        {
+            await _wallet.TopUpAsync(_studentUser.Id, 200m);
+            await _wallet.PurchaseCourseAsync(_studentUser, _course.Id);
+            await CompleteCourseAsync();
+            var teachers = new TeacherService(_db);
+
+            var row = (await teachers.GetAnalyticsForUserAsync(_teacherUser.Id))!.Single();
+            Assert.Equal((1, 1, 1, 0, 70m, 1), (row.Students, row.Sales, row.Graduates, row.Refunds, row.Earned, row.Lessons));
+
+            await _wallet.RefundCourseAsync(_studentUser, _course.Id);
+            row = (await teachers.GetAnalyticsForUserAsync(_teacherUser.Id))!.Single();
+            // the refund takes the share back and the student out; the finished course still counts
+            Assert.Equal((0, 1, 1, 1, 0m, 1), (row.Students, row.EverEnrolled, row.Graduates, row.Refunds, row.Earned, row.Lessons));
+            Assert.Null(await teachers.GetAnalyticsForUserAsync(_studentUser.Id));
+        }
     }
 }

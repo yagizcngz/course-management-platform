@@ -1,4 +1,4 @@
-using EdTechApi.API.Helpers;
+﻿using EdTechApi.API.Helpers;
 using EdTechApi.Business.Interfaces;
 using EdTechApi.Core.Constants;
 using EdTechApi.Core.Entities;
@@ -35,6 +35,17 @@ namespace EdTechApi.API.Controllers
         // Misafirlerin de görebildiği eğitmen vitrini: e-posta, numara ve hesap bilgisi dönmez.
         // Profilini gizli yapan (IsProfilePublic=false) öğretmenin biyografisi ve fotoğrafı gösterilmez.
         [AllowAnonymous]
+        // Giriş yapan eğitmenin kurs bazında panel verisi (Eğitmen Paneli sayfası)
+        [Authorize(Roles = "Teacher")]
+        [HttpGet("me/analytics")]
+        public async Task<IActionResult> GetMyAnalytics()
+        {
+            var userId = await _context.Users.Where(u => u.Username == User.GetUsername()).Select(u => (int?)u.Id).FirstOrDefaultAsync();
+            if (userId == null) return Unauthorized();
+            var rows = await _teacherService.GetAnalyticsForUserAsync(userId.Value);
+            return rows == null ? NotFound() : Ok(rows);
+        }
+
         [HttpGet("public")]
         public async Task<IActionResult> GetPublic()
         {
