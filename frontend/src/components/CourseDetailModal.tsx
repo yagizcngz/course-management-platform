@@ -28,7 +28,15 @@ import { CourseTaxonomyFields } from "./CourseTaxonomyFields";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { useLenis } from "lenis/react";
-import { authHeaders, readError } from "@/lib/auth";
+import {
+  authHeaders,
+  getRoleFromToken,
+  getToken,
+  isAdminRole as isAdmin,
+  isTeacherRole as isTeacher,
+  parseJwt,
+  readError,
+} from "@/lib/auth";
 
 type SyllabusLesson = { id: number; title: string; description?: string | null; order: number };
 
@@ -142,55 +150,26 @@ export function CourseDetailModal({
 
   const imageUrl = getCourseImage(course, 0);
 
-  const [currentUserRole, setCurrentUserRole] = useState("");
-  const [currentUserId, setCurrentUserId] = useState<string | number>("");
-  const [currentUserEmail, setCurrentUserEmail] = useState("");
-  const [currentUserName, setCurrentUserName] = useState("");
+  // the viewer, from the token (lib/auth): decides the teacher and admin controls
+  const payload = parseJwt(getToken() ?? "") ?? {};
+  const currentUserRole = getRoleFromToken();
+  const currentUserId: string =
+    payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ||
+    payload.sub ||
+    "";
+  const currentUserEmail: string =
+    payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] ||
+    payload.email ||
+    "";
+  const currentUserName: string =
+    payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] ||
+    payload.name ||
+    payload.unique_name ||
+    payload.sub ||
+    "";
 
-  useEffect(() => {
-    const token = localStorage.getItem("jwt_token");
-    if (token) {
-      try {
-        const base64Url = token.split(".")[1];
-        const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-        const jsonPayload = decodeURIComponent(
-          atob(base64)
-            .split("")
-            .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-            .join(""),
-        );
-        const payload = JSON.parse(jsonPayload);
-        const r = (
-          payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
-          payload.role ||
-          ""
-        ).toLowerCase();
-        setCurrentUserRole(r);
-        const id =
-          payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ||
-          payload.sub ||
-          "";
-        setCurrentUserId(id);
-        const email =
-          payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] ||
-          payload.email ||
-          "";
-        setCurrentUserEmail(email);
-        const name =
-          payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] ||
-          payload.name ||
-          payload.unique_name ||
-          payload.sub ||
-          "";
-        setCurrentUserName(name);
-      } catch (e) {
-        // ignore
-      }
-    }
-  }, []);
-
-  const isTeacherRole = currentUserRole === "teacher" || currentUserRole === "eğitmen";
-  const isAdminRole = currentUserRole === "admin" || currentUserRole === "superadmin";
+  const isTeacherRole = isTeacher(currentUserRole);
+  const isAdminRole = isAdmin(currentUserRole);
 
   const myTeacherProfile = teachers.find((t) => {
     const idMatch =
