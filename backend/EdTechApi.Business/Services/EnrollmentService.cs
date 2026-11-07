@@ -1,4 +1,4 @@
-using EdTechApi.Business.Interfaces;
+﻿using EdTechApi.Business.Interfaces;
 using EdTechApi.Core.DTOs;
 using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
@@ -154,14 +154,34 @@ namespace EdTechApi.Business.Services
                 done.TryGetValue(id, out var d) ? d.Count : 0, totals.GetValueOrDefault(id), d?.Last));
         }
 
-        public async Task<List<int>> GetCompletedCourseIdsAsync(int studentId)
+        public async Task<List<int>> GetCompletedCourseIdsAsync(int studentId) =>
+            (await GetCompletionsAsync(studentId)).Select(c => c.CourseId).ToList();
+
+        // Kayıt tablosundan önceki bitişleri DataSanitizer başlangıçta yazar
+        public async Task<List<CourseCompletion>> GetCompletionsAsync(int studentId) =>
+            await _context.CourseCompletions.AsNoTracking().Where(c => c.StudentId == studentId).ToListAsync();
+
+        // Bitişi bir kez yazar; eşzamanlı ikinci yazım benzersiz indekse takılır ve yok sayılır
+        private async Task RecordCompletionAsync(int studentId, int courseId, DateTime? at)
         {
-            // ilerleme öğrenciye bağlı (LessonCompletion), kayda değil; silinmiş dersler sayılmaz
-            var touched = await _context.LessonCompletions
-                .Where(c => c.StudentId == studentId && c.Lesson != null)
-                .Select(c => c.Lesson!.CourseId).Distinct().ToListAsync();
-            var progress = await GetProgressAsync(studentId, touched);
-            return progress.Where(p => p.Value.IsComplete).Select(p => p.Key).ToList();
+            if (await _context.CourseCompletions.AnyAsync(c => c.StudentId == studentId && c.CourseId == courseId)) return;
+            var course = await _context.Courses.IgnoreQueryFilters().Where(c => c.Id == courseId)
+                .Select(c => new { c.Category, c.Title }).FirstOrDefaultAsync();
+            if (course == null) return;
+            var row = new CourseCompletion
+            {
+                StudentId = studentId, CourseId = courseId, Category = course.Category, Title = course.Title,
+                CompletedAt = at ?? DateTime.UtcNow
+            };
+            _context.CourseCompletions.Add(row);
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException)
+            {
+                _context.Entry(row).State = EntityState.Detached;
+            }
         }
 
         public async Task<CourseProgress> CompleteLessonAsync(int studentId, int courseId, int lessonId)
@@ -177,6 +197,7 @@ namespace EdTechApi.Business.Services
             var progress = (await GetProgressAsync(studentId, new[] { courseId }))[courseId];
             enrollment.Status = progress.IsComplete ? Completed : InProgress;
             await _context.SaveChangesAsync();
+            if (progress.IsComplete) await RecordCompletionAsync(studentId, courseId, progress.LastCompletedAt);
             return progress;
         }
 

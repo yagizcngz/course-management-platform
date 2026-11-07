@@ -1,4 +1,4 @@
-using EdTechApi.Core.DTOs;
+﻿using EdTechApi.Core.DTOs;
 
 namespace EdTechApi.Business.Interfaces
 {
@@ -19,8 +19,9 @@ namespace EdTechApi.Business.Interfaces
         // Dersi bitmiş sayar; tüm dersler bitince kaydın durumu "Tamamlandı" olur
         Task<CourseProgress> CompleteLessonAsync(int studentId, int courseId, int lessonId);
 
-        // Öğrencinin tüm derslerini bitirdiği kurslar; kurstan ayrılmış olsa da sayılır
+        // Öğrencinin bitirdiği kurslar (CourseCompletion): ayrılmak, iade veya sonradan eklenen ders bunu geri almaz
         Task<List<int>> GetCompletedCourseIdsAsync(int studentId);
+        Task<List<EdTechApi.Core.Entities.CourseCompletion>> GetCompletionsAsync(int studentId);
 
         // Kullanıcının Student kaydını döner; öğretmense ilk seferde oluşturur. Yoksa null.
         Task<EdTechApi.Core.Entities.Student?> GetOrCreateStudentForUserAsync(EdTechApi.Core.Entities.User user);

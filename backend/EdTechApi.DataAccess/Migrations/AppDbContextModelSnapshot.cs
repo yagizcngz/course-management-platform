@@ -132,6 +132,39 @@ namespace EdTechApi.DataAccess.Migrations
                     b.ToTable("Courses");
                 });
 
+            modelBuilder.Entity("EdTechApi.Core.Entities.CourseCompletion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CourseId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId", "CourseId")
+                        .IsUnique();
+
+                    b.ToTable("CourseCompletions");
+                });
+
             modelBuilder.Entity("EdTechApi.Core.Entities.DirectMessage", b =>
                 {
                     b.Property<int>("Id")
@@ -748,6 +781,15 @@ namespace EdTechApi.DataAccess.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Teacher");
+                });
+
+            modelBuilder.Entity("EdTechApi.Core.Entities.CourseCompletion", b =>
+                {
+                    b.HasOne("EdTechApi.Core.Entities.Student", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("EdTechApi.Core.Entities.DirectMessage", b =>

@@ -1,4 +1,4 @@
-using EdTechApi.Core.Entities;
+﻿using EdTechApi.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace EdTechApi.DataAccess.Context
@@ -28,6 +28,7 @@ namespace EdTechApi.DataAccess.Context
         public DbSet<Lesson> Lessons { get; set; }
         public DbSet<TeacherApplication> TeacherApplications { get; set; }
         public DbSet<LessonCompletion> LessonCompletions { get; set; }
+        public DbSet<CourseCompletion> CourseCompletions { get; set; }
         public DbSet<ForumThread> ForumThreads { get; set; }
         public DbSet<ForumPost> ForumPosts { get; set; }
         public DbSet<ForumPostLike> ForumPostLikes { get; set; }
@@ -72,6 +73,10 @@ namespace EdTechApi.DataAccess.Context
             // Bir ders öğrenci başına bir kez tamamlanır
             modelBuilder.Entity<LessonCompletion>().HasIndex(c => new { c.StudentId, c.LessonId }).IsUnique();
             modelBuilder.Entity<LessonCompletion>().HasOne<Student>().WithMany().HasForeignKey(c => c.StudentId);
+
+            // Bitirilen kurs öğrenci başına bir kez sayılır; Course'a FK yok, kurs kalıcı silinse de kayıt kalır
+            modelBuilder.Entity<CourseCompletion>().HasIndex(c => new { c.StudentId, c.CourseId }).IsUnique();
+            modelBuilder.Entity<CourseCompletion>().HasOne<Student>().WithMany().HasForeignKey(c => c.StudentId);
 
             // 3. Course - Teacher ilişkisi (Course.TeacherId nullable FK):
             //    Bir öğretmen (hard-delete ile) silinirse buna bağlı kursların TeacherId'si

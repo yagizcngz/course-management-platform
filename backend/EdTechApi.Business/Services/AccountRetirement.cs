@@ -1,4 +1,4 @@
-using EdTechApi.Core.Entities;
+﻿using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,6 +20,7 @@ namespace EdTechApi.Business.Services
             var teacherIds = await db.Teachers.IgnoreQueryFilters().Where(t => t.UserId == user.Id).Select(t => t.Id).ToListAsync();
 
             db.LessonCompletions.RemoveRange(await db.LessonCompletions.Where(c => studentIds.Contains(c.StudentId)).ToListAsync());
+            db.CourseCompletions.RemoveRange(await db.CourseCompletions.Where(c => studentIds.Contains(c.StudentId)).ToListAsync());
             db.TeacherApplications.RemoveRange(await db.TeacherApplications.Where(a => a.UserId == user.Id && a.Status == "Pending").ToListAsync());
             db.TeachingRequests.RemoveRange(await db.TeachingRequests.Where(r => teacherIds.Contains(r.TeacherId) && r.Status == "Pending").ToListAsync());
             db.Friendships.RemoveRange(await db.Friendships.Where(f => f.RequesterId == user.Id || f.AddresseeId == user.Id).ToListAsync());
