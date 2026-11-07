@@ -165,6 +165,42 @@ namespace EdTechApi.DataAccess.Migrations
                     b.ToTable("CourseCompletions");
                 });
 
+            modelBuilder.Entity("EdTechApi.Core.Entities.CourseRating", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CourseId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Stars")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("StudentId", "CourseId")
+                        .IsUnique();
+
+                    b.ToTable("CourseRatings", t =>
+                        {
+                            t.HasCheckConstraint("CK_CourseRatings_Stars", "[Stars] BETWEEN 1 AND 5");
+                        });
+                });
+
             modelBuilder.Entity("EdTechApi.Core.Entities.DirectMessage", b =>
                 {
                     b.Property<int>("Id")
@@ -785,6 +821,21 @@ namespace EdTechApi.DataAccess.Migrations
 
             modelBuilder.Entity("EdTechApi.Core.Entities.CourseCompletion", b =>
                 {
+                    b.HasOne("EdTechApi.Core.Entities.Student", null)
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("EdTechApi.Core.Entities.CourseRating", b =>
+                {
+                    b.HasOne("EdTechApi.Core.Entities.Course", null)
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("EdTechApi.Core.Entities.Student", null)
                         .WithMany()
                         .HasForeignKey("StudentId")

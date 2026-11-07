@@ -1079,7 +1079,9 @@
       "cannotDeletePost": "Bu mesajı silemezsiniz.",
       "cannotFriendSelf": "Kendinize arkadaşlık isteği gönderemezsiniz.",
       "friendRequestExists": "Bu kişiyle zaten bir arkadaşlık isteği var.",
-      "friendsOnlyMessages": "Yalnızca arkadaşlarınıza mesaj gönderebilirsiniz."
+      "friendsOnlyMessages": "Yalnızca arkadaşlarınıza mesaj gönderebilirsiniz.",
+      "rateOwnCourseOnly": "Yalnızca kayıtlı olduğunuz veya bitirdiğiniz kursu puanlayabilirsiniz.",
+      "ratingRange": "Puan 1 ile 5 yıldız arasında olmalı."
     },
     "validation": {
       "required": "Lütfen bu alanı doldurun."
@@ -1804,6 +1806,18 @@
         "refundRate": "İade oranı",
         "earned": "Kazanç"
       }
+    },
+    "rating": {
+      "none": "Henüz puan yok",
+      "summary": "{{count}} kişi 5 üzerinden {{average}} puan verdi",
+      "rateThis": "Bu kursu puanlayın",
+      "stars": "{{count}} yıldız",
+      "title": "Puan",
+      "yours": "Puanınız",
+      "remove": "Puanımı kaldır",
+      "saved": "Teşekkürler, puanınız kaydedildi.",
+      "removed": "Puanınız kaldırıldı.",
+      "saveFailed": "Puan kaydedilemedi."
     }
   }
 }

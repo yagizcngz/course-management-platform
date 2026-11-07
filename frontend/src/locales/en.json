@@ -1152,7 +1152,9 @@
       "cannotDeletePost": "You cannot delete this message.",
       "cannotFriendSelf": "You cannot send yourself a friend request.",
       "friendRequestExists": "There is already a friend request with this person.",
-      "friendsOnlyMessages": "You can only message your friends."
+      "friendsOnlyMessages": "You can only message your friends.",
+      "rateOwnCourseOnly": "You can only rate a course you are enrolled in or have finished.",
+      "ratingRange": "A rating is between 1 and 5 stars."
     },
     "validation": {
       "required": "Please fill out this field."
@@ -1908,6 +1910,19 @@
         "refundRate": "Refund rate",
         "earned": "Earnings"
       }
+    },
+    "rating": {
+      "none": "No ratings yet",
+      "summary": "Rated {{average}} out of 5 by {{count}} people",
+      "rateThis": "Rate this course",
+      "stars_one": "{{count}} star",
+      "stars_other": "{{count}} stars",
+      "title": "Rating",
+      "yours": "Your rating",
+      "remove": "Remove my rating",
+      "saved": "Thanks, your rating is saved.",
+      "removed": "Your rating is removed.",
+      "saveFailed": "The rating could not be saved."
     }
   }
 }

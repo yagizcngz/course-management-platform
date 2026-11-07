@@ -61,6 +61,47 @@ namespace EdTechApi.Business.Services
                 .ToListAsync();
         }
 
+        public async Task<CourseRatingSummary> GetRatingAsync(int courseId, int? studentId)
+        {
+            var q = _context.CourseRatings.AsNoTracking().Where(r => r.CourseId == courseId);
+            var count = await q.CountAsync();
+            var average = count == 0 ? 0 : Math.Round(await q.AverageAsync(r => r.Stars), 2);
+            int? mine = studentId == null ? null
+                : await q.Where(r => r.StudentId == studentId).Select(r => (int?)r.Stars).FirstOrDefaultAsync();
+            var canRate = studentId != null && await OwnsCourseAsync(studentId.Value, courseId);
+            return new CourseRatingSummary(average, count, mine, canRate);
+        }
+
+        public async Task<CourseRatingSummary> RateAsync(int studentId, int courseId, int stars)
+        {
+            if (stars is < 1 or > 5) throw new ArgumentException("Puan 1 ile 5 arasında olmalı.");
+            if (!await _context.Courses.AnyAsync(c => c.Id == courseId)) throw new KeyNotFoundException("Kurs bulunamadı.");
+            if (!await OwnsCourseAsync(studentId, courseId))
+                throw new InvalidOperationException("Yalnızca kayıtlı olduğunuz veya bitirdiğiniz kursu puanlayabilirsiniz.");
+
+            var rating = await _context.CourseRatings.FirstOrDefaultAsync(r => r.StudentId == studentId && r.CourseId == courseId);
+            if (rating == null)
+                _context.CourseRatings.Add(new CourseRating { StudentId = studentId, CourseId = courseId, Stars = stars });
+            else
+            {
+                rating.Stars = stars;
+                rating.UpdatedAt = DateTime.UtcNow;
+            }
+            await _context.SaveChangesAsync();
+            return await GetRatingAsync(courseId, studentId);
+        }
+
+        public async Task<CourseRatingSummary> RemoveRatingAsync(int studentId, int courseId)
+        {
+            await _context.CourseRatings.Where(r => r.StudentId == studentId && r.CourseId == courseId).ExecuteDeleteAsync();
+            return await GetRatingAsync(courseId, studentId);
+        }
+
+        // Kayıtlı (aktif kayıt) veya bitirmiş öğrenci puan verebilir; iade edip ayrılan veremez
+        private async Task<bool> OwnsCourseAsync(int studentId, int courseId) =>
+            await _context.Enrollments.AnyAsync(e => e.StudentId == studentId && e.CourseId == courseId)
+            || await _context.CourseCompletions.AnyAsync(c => c.StudentId == studentId && c.CourseId == courseId);
+
         public async Task<Course?> GetCourseByIdAsync(int id)
         {
             return await _context.Courses.FindAsync(id);
@@ -161,4 +202,7 @@ namespace EdTechApi.Business.Services
 
     // Aktif kayıtlar: toplam, son 7 gün, ondan önceki 7 gün ve son 30 gün
     public record CourseStats(int CourseId, int Students, int Last7, int Prev7, int Last30);
+
+    // Ortalama 0-5 (puan yoksa 0); Mine oturumdaki öğrencinin puanı, CanRate kursa sahip olup olmadığı
+    public record CourseRatingSummary(double Average, int Count, int? Mine, bool CanRate);
 }

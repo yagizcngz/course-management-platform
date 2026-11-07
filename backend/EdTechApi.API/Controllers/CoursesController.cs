@@ -71,6 +71,51 @@ namespace EdTechApi.API.Controllers
             return Ok(course);
         }
 
+        // Puan özeti herkese açık; oturum açmış öğrenci kendi puanını ve puan verip veremeyeceğini de görür
+        [HttpGet("{id}/rating")]
+        public async Task<IActionResult> GetRating(int id)
+        {
+            if (!await _context.Courses.AnyAsync(c => c.Id == id)) return NotFound("Kurs bulunamadı.");
+            return Ok(await _courseService.GetRatingAsync(id, await OwnStudentIdAsync()));
+        }
+
+        public record RatingRequest(int Stars);
+
+        [Authorize]
+        [HttpPut("{id}/rating")]
+        public async Task<IActionResult> Rate(int id, [FromBody] RatingRequest request)
+        {
+            var studentId = await OwnStudentIdAsync();
+            if (studentId == null) return StatusCode(403, "Yalnızca kayıtlı olduğunuz veya bitirdiğiniz kursu puanlayabilirsiniz.");
+            try
+            {
+                return Ok(await _courseService.RateAsync(studentId.Value, id, request.Stars));
+            }
+            catch (KeyNotFoundException ex) { return NotFound(ex.Message); }
+            catch (ArgumentException ex) { return BadRequest(ex.Message); }
+            catch (InvalidOperationException ex) { return StatusCode(403, ex.Message); }
+        }
+
+        [Authorize]
+        [HttpDelete("{id}/rating")]
+        public async Task<IActionResult> RemoveRating(int id)
+        {
+            var studentId = await OwnStudentIdAsync();
+            if (studentId == null) return NoContent();
+            return Ok(await _courseService.RemoveRatingAsync(studentId.Value, id));
+        }
+
+        // Oturumdaki kullanıcının öğrenci kaydı (öğretmenler kurs alınca oluşur); yönetici ve misafirde null
+        private async Task<int?> OwnStudentIdAsync()
+        {
+            var username = User.GetUsername();
+            if (string.IsNullOrEmpty(username) || User.IsAdmin()) return null;
+            return await _context.Students
+                .Where(s => s.User != null && s.User.Username == username)
+                .Select(s => (int?)s.Id)
+                .FirstOrDefaultAsync();
+        }
+
         // NOT: Önceden sadece "Admin" idi. Frontend'de (kurslar.tsx) canManage kontrolü
         // "Eğitmen", "Admin" ve "superadmin" rollerine izin veriyordu; bu yüzden Eğitmen
         // veya superadmin ile giriş yapan biri kurs oluşturma butonunu görüyor ama backend

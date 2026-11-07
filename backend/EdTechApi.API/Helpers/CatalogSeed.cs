@@ -224,6 +224,30 @@ namespace EdTechApi.API.Helpers
             foreach (var st in students)
                 SeedProgress(db, st.Id, enrollments.Where(e => e.StudentId == st.Id && !e.IsDeleted).ToList(), new[] { 100, 75, 25, 100, 50 });
             db.SaveChanges();
+            SeedRatings(db, students, enrollments);
+        }
+
+        // Kayıtlı öğrencilerin beşte dördü kursunu 2-5 yıldızla puanlamış. Hiç puanı olmayan öğrenciye yazılır; gerçek puan ezilmez.
+        private static void SeedRatings(AppDbContext db, List<Student> students, List<Enrollment> enrollments)
+        {
+            int[] stars = [5, 4, 5, 4, 3, 5, 4, 5, 2, 4];
+            var rated = db.CourseRatings.Select(r => r.StudentId).Distinct().ToHashSet();
+            for (var i = 0; i < students.Count; i++)
+            {
+                if (rated.Contains(students[i].Id)) continue;
+                var own = enrollments.Where(e => e.StudentId == students[i].Id && !e.IsDeleted).OrderBy(e => e.CourseId).ToList();
+                for (var k = 0; k < own.Count; k++)
+                {
+                    if ((i + k) % 5 == 4) continue;
+                    var at = own[k].EnrollmentDate.AddDays(1 + (i + k) % 6);
+                    db.CourseRatings.Add(new CourseRating
+                    {
+                        StudentId = students[i].Id, CourseId = own[k].CourseId, Stars = stars[(i * 3 + k * 7) % stars.Length],
+                        CreatedAt = at, UpdatedAt = at
+                    });
+                }
+            }
+            db.SaveChanges();
         }
 
         // Kayıtların bir kısmı bitmiş, kalanı %25-75 ilerlemiş olur (en eski kayıt ilk yüzdeyi alır). Öğrencinin hiç

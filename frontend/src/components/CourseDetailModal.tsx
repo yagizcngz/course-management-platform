@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useEffect, useState } from "react";
 import { CourseTaxonomyFields } from "./CourseTaxonomyFields";
+import { CourseRatingCard } from "./CourseRatingCard";
 import { useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { useLenis } from "lenis/react";
@@ -892,6 +893,8 @@ export function CourseDetailModal({
                   {description || t("courseModal.noDescription", { category })}
                 </p>
               </div>
+
+              {courseId && <CourseRatingCard key={relation} courseId={courseId} />}
 
               <div>
                 <h3 className="text-sm font-bold text-foreground/80 mb-3 flex items-center gap-2">

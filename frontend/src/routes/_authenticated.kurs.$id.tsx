@@ -25,6 +25,7 @@ import { authHeaders, getToken, parseJwt, readError } from "@/lib/auth";
 import { TrackedVideo } from "@/components/TrackedVideo";
 import { REQUIRED_SHARE, watchedSeconds, watchedShare, type WatchState } from "@/lib/watchProgress";
 import { formatDate, formatTry } from "@/lib/utils";
+import { CourseRatingCard } from "@/components/CourseRatingCard";
 
 // development and testing: "Mark complete" works at once, whatever the video did (the API honours
 // devOverride only in its Development environment)
@@ -361,6 +362,9 @@ function CoursePage() {
               )}
             </p>
           )}
+
+          {/* re-read on joining, so a new student can rate right away */}
+          <CourseRatingCard key={String(isEnrolled)} courseId={course.id} />
 
           {canEdit && (
             <LessonEditor courseId={id} onChanged={load} nextOrder={lessons.length + 1} />

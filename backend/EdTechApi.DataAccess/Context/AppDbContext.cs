@@ -29,6 +29,7 @@ namespace EdTechApi.DataAccess.Context
         public DbSet<TeacherApplication> TeacherApplications { get; set; }
         public DbSet<LessonCompletion> LessonCompletions { get; set; }
         public DbSet<CourseCompletion> CourseCompletions { get; set; }
+        public DbSet<CourseRating> CourseRatings { get; set; }
         public DbSet<ForumThread> ForumThreads { get; set; }
         public DbSet<ForumPost> ForumPosts { get; set; }
         public DbSet<ForumPostLike> ForumPostLikes { get; set; }
@@ -92,6 +93,12 @@ namespace EdTechApi.DataAccess.Context
             // 3. Course - Teacher ilişkisi (Course.TeacherId nullable FK):
             //    Bir öğretmen (hard-delete ile) silinirse buna bağlı kursların TeacherId'si
             //    otomatik olarak null'a çekilir, kurs kaydı etkilenmez.
+            modelBuilder.Entity<CourseRating>().HasIndex(r => new { r.StudentId, r.CourseId }).IsUnique();
+            modelBuilder.Entity<CourseRating>().HasIndex(r => r.CourseId);
+            modelBuilder.Entity<CourseRating>().HasOne<Student>().WithMany().HasForeignKey(r => r.StudentId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<CourseRating>().HasOne<Course>().WithMany().HasForeignKey(r => r.CourseId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<CourseRating>().ToTable(t => t.HasCheckConstraint("CK_CourseRatings_Stars", "[Stars] BETWEEN 1 AND 5"));
+
             modelBuilder.Entity<Course>()
                 .HasOne(c => c.Teacher)
                 .WithMany(t => t.Courses)
