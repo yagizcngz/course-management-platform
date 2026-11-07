@@ -553,7 +553,7 @@ function CoursesPage() {
                       {isTeacherRole(currentUser.role) &&
                         myTeacherId &&
                         String(c.teacherId || c.TeacherId) !== String(myTeacherId) &&
-                        !myCourses.some((enc) => (enc.courseId || enc.CourseId) === currentId) && (
+                        !findEnrollment(myCourses, currentId) && (
                           <button
                             onClick={(e) =>
                               handleTeachCourseRequest(e, currentId as string | number)
