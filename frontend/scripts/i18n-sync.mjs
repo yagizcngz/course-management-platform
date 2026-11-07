@@ -82,7 +82,8 @@ const walk = (dir) => {
     const p = join(dir, name);
     if (statSync(p).isDirectory()) {
       if (!/^(bin|obj|Migrations|\.vs|EdTechApi\.Tests)$/.test(name)) walk(p);
-    } else if (p.endsWith(".cs")) csFiles.push(p);
+      // Program.cs only throws at startup (bad configuration); those messages never reach the UI
+    } else if (p.endsWith(".cs") && name !== "Program.cs") csFiles.push(p);
   }
 };
 if (existsSync(backend)) walk(backend);

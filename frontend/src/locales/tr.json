@@ -1168,7 +1168,8 @@
       "rateOwnCourseOnly": "Yalnızca kayıtlı olduğunuz veya bitirdiğiniz kursu puanlayabilirsiniz.",
       "ratingRange": "Puan 1 ile 5 yıldız arasında olmalı.",
       "branchUnchanged": "Seçtiğiniz branşlar zaten mevcut branşlarınız.",
-      "requestAlreadyReviewed": "Bu talep zaten sonuçlandırılmış."
+      "requestAlreadyReviewed": "Bu talep zaten sonuçlandırılmış.",
+      "codeCooldown": "Bu adrese az önce kod gönderildi. Lütfen bir dakika sonra tekrar deneyin."
     },
     "validation": {
       "required": "Lütfen bu alanı doldurun."

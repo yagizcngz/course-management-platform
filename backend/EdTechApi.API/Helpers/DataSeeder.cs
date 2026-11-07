@@ -11,6 +11,8 @@ namespace EdTechApi.API.Helpers
         {
             var adminUser = config["Seed:AdminUsername"];
             var adminPass = config["Seed:AdminPassword"];
+            // örnek ayardaki yer tutucu parola herkesin bildiği bir yönetici hesabı açardı
+            if (adminPass?.StartsWith("CHANGE_ME") == true) adminPass = null;
             if (!string.IsNullOrWhiteSpace(adminUser) && !string.IsNullOrWhiteSpace(adminPass)
                 && !db.Users.Any(u => u.Role == "Admin") && !db.Users.Any(u => u.Username == adminUser))
             {

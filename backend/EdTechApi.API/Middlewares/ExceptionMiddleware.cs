@@ -21,6 +21,8 @@ namespace EdTechApi.API.Middlewares
             }
             catch (Exception ex)
             {
+                // yanıt yazılmaya başlandıysa durum kodu artık değişmez; bağlantıyı sunucu kessin
+                if (context.Response.HasStarted) throw;
                 // Bir hata fırlatıldığında burası devreye girer
                 // Düz metin: diğer uç noktaların BadRequest("...") cevaplarıyla aynı biçim, frontend doğrudan gösterebilir
                 context.Response.ContentType = "text/plain; charset=utf-8";
@@ -35,7 +37,14 @@ namespace EdTechApi.API.Middlewares
                 // 500'lerde iç hata ayrıntısını istemciye sızdırma; sadece logla
                 if (context.Response.StatusCode == StatusCodes.Status500InternalServerError)
                     Console.Error.WriteLine(ex);
-                await context.Response.WriteAsync(ex is ArgumentException ? ex.Message : "Beklenmeyen bir hata oluştu.");
+                // iş kuralı mesajları gösterilir; çerçevenin null/aralık hataları ("Value cannot be null. (Parameter 'key')") iç ayrıntıdır
+                var message = ex switch
+                {
+                    ArgumentNullException or ArgumentOutOfRangeException => "Geçersiz istek.",
+                    ArgumentException => ex.Message,
+                    _ => "Beklenmeyen bir hata oluştu."
+                };
+                await context.Response.WriteAsync(message);
             }
         }
     }

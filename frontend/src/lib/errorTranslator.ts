@@ -56,6 +56,7 @@ const RULES: Rule[] = [
   [/Bu e-posta adresi zaten kullanımda/i, "emailInUse"],
   [/Bu kullanıcı adı zaten alınmış/i, "usernameInUse"],
   [/Geçerli bir e-posta adresi/i, "invalidEmail"],
+  [/az önce kod gönderildi/i, "codeCooldown"],
   [/Geçerli bir kullanıcı adı/i, "invalidUsername"],
   [/Kullanıcı adı zorunludur/i, "usernameRequired"],
   [/(geçersiz|hatalı).*doğrulama kodu|doğrulama kodu.*(hatalı|geçersiz)/i, "invalidCode"],

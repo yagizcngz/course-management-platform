@@ -171,6 +171,7 @@ function HelpPage() {
               id="help-message"
               name="message"
               required
+              maxLength={4000}
               rows={6}
               placeholder={t("help.formMessage")}
               className="w-full resize-none rounded-lg border border-border bg-background p-3 text-sm outline-none transition-[border-color,box-shadow] focus:border-gold focus:ring-4 focus:ring-gold/15"

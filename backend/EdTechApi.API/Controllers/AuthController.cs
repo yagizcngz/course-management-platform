@@ -51,6 +51,12 @@ namespace EdTechApi.API.Controllers
             if (emailExists)
                 return BadRequest("Bu e-posta adresi zaten kullanımda.");
 
+            // aynı adrese dakikada bir kod: IP başına sınır, farklı IP'lerden bir kişinin kutusunu doldurmayı durdurmaz
+            var cooldownKey = $"otp-sent:{request.Email.ToLowerInvariant()}";
+            if (_memoryCache.TryGetValue(cooldownKey, out _))
+                return StatusCode(429, "Bu adrese az önce kod gönderildi. Lütfen bir dakika sonra tekrar deneyin.");
+            _memoryCache.Set(cooldownKey, true, TimeSpan.FromMinutes(1));
+
             var code = System.Security.Cryptography.RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
 
             _memoryCache.Set(request.Email, code, TimeSpan.FromMinutes(5));
@@ -202,7 +208,8 @@ namespace EdTechApi.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var lockKey = $"login-fail:{request.Username?.ToLowerInvariant()}";
+            // kilit hesap + IP başına: başka bir IP'den yanlış parola denemek gerçek sahibini hesabından atamaz
+            var lockKey = $"login-fail:{request.Username?.ToLowerInvariant()}:{HttpContext.Connection.RemoteIpAddress}";
             if (_memoryCache.TryGetValue(lockKey, out int failures) && failures >= MaxLoginFailures)
                 return StatusCode(429, "Çok fazla hatalı giriş denemesi. Lütfen 5 dakika sonra tekrar deneyin.");
 

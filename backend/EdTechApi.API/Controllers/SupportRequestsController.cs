@@ -5,6 +5,8 @@ using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
@@ -25,17 +27,19 @@ namespace EdTechApi.API.Controllers
             _logger = logger;
         }
 
+        // Herkese açık form: alanlar sınırlı, aşan istek [ApiController] doğrulamasıyla 400 döner
         public class CreateSupportRequestDto
         {
-            public string Name { get; set; } = string.Empty;
-            public string Email { get; set; } = string.Empty;
-            public string? Phone { get; set; }
-            public string Message { get; set; } = string.Empty;
+            [StringLength(100)] public string Name { get; set; } = string.Empty;
+            [StringLength(200)] public string Email { get; set; } = string.Empty;
+            [StringLength(30)] public string? Phone { get; set; }
+            [StringLength(4000)] public string Message { get; set; } = string.Empty;
         }
 
         // POST /api/supportrequests
         // Herkes (Guest dahil) form gönderebilir. Giriş yaptıysa UserId eklenir.
         [HttpPost]
+        [EnableRateLimiting("support")]
         public async Task<IActionResult> CreateSupportRequest([FromBody] CreateSupportRequestDto dto)
         {
             int? userId = null;

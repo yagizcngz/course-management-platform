@@ -1241,7 +1241,8 @@
       "rateOwnCourseOnly": "You can only rate a course you are enrolled in or have finished.",
       "ratingRange": "A rating is between 1 and 5 stars.",
       "branchUnchanged": "Those are already your disciplines.",
-      "requestAlreadyReviewed": "This request has already been answered."
+      "requestAlreadyReviewed": "This request has already been answered.",
+      "codeCooldown": "A code was just sent to this address. Please try again in a minute."
     },
     "validation": {
       "required": "Please fill out this field."
