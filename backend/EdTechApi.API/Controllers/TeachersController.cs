@@ -96,9 +96,6 @@ namespace EdTechApi.API.Controllers
                 .Select(t => (int?)t.Id).FirstOrDefaultAsync();
         }
 
-        // Misafirlerin de görebildiği eğitmen vitrini: e-posta, numara ve hesap bilgisi dönmez.
-        // Profilini gizli yapan (IsProfilePublic=false) öğretmenin biyografisi ve fotoğrafı gösterilmez.
-        [AllowAnonymous]
         // Giriş yapan eğitmenin kurs bazında panel verisi (Eğitmen Paneli sayfası)
         [Authorize(Roles = "Teacher")]
         [HttpGet("me/analytics")]
@@ -121,6 +118,9 @@ namespace EdTechApi.API.Controllers
             return rows == null ? NotFound("Kurs bulunamadı.") : Ok(rows);
         }
 
+        // Misafirlerin de görebildiği eğitmen vitrini: e-posta, numara ve hesap bilgisi dönmez.
+        // Profilini gizli yapan (IsProfilePublic=false) öğretmenin biyografisi ve fotoğrafı gösterilmez.
+        [AllowAnonymous]
         [HttpGet("public")]
         public async Task<IActionResult> GetPublic()
         {
