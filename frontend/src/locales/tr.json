@@ -29,9 +29,7 @@
       "wallet": "Cüzdan",
       "messages": "Mesajlar",
       "community": "Topluluk",
-      "achievements": "Başarımlar",
-      "instructorAnalytics": "Eğitmen paneli",
-      "helpCenter": "Yardım merkezi"
+      "instructorAnalytics": "Eğitmen paneli"
     },
     "settings": {
       "title": "Ayarlar",
@@ -1183,10 +1181,22 @@
     "help": {
       "title": "Yardım",
       "heroTitle": "Takıldığınız yerde",
-      "heroSubtitle": "Kurslar, cüzdan ve iadeler, rozetler, eğitmenlik ve hesabınızla ilgili cevapları aşağıda arayın. Cevap orada yoksa destek ekibine yazın ve talebinizi Yardım Taleplerim'den takip edin.",
+      "heroSubtitle": "Kayıt, cüzdan ve iade, ders ilerlemesi, rozetler ve eğitmen başvurusu hakkında en sık sorulanlar aşağıda. Cevabı bulamazsanız destek ekibine yazın; talebinizi Yardım Taleplerim sayfasından takip edersiniz.",
       "freeEstimate": "Destek talebi yaz",
       "faqTitle": "Sıkça sorulan sorular",
       "faqDesc": "Platformun bugünkü işleyişine göre güncel cevaplar.",
+      "questions": {
+        "q1": "Bir kursa nasıl kayıt olurum, ödemeyi nasıl yaparım?",
+        "a1": "Kurslar sayfasından bir kurs açın. Ücretsiz kurslara tek tıkla katılırsınız. Ücretli kurslar cüzdan bakiyesiyle alınır: Cüzdan sayfasından bakiye yükleyin, sonra kurs sayfasındaki satın al düğmesine basın. Ücret bakiyenizden düşer ve kurs hemen Kurslarım listenize eklenir.",
+        "q2": "Satın aldığım bir kursu iade edebilir miyim?",
+        "a2": "Evet. Satın almadan sonraki 7 gün içinde, kursu bitirmiş olsanız da, kurs sayfasındaki veya cüzdanınızdaki Satın almalar ve iadeler bölümündeki \"İade et\" bağlantısıyla ücretin tamamı cüzdanınıza geri yüklenir. Kursa erişiminiz kapanır, kursu bitirerek kazandığınız rozetler kalır. Her kurs bir kez iade edilebilir; 7 gün dolduktan sonra iade yapılamaz.",
+        "q3": "Kurs ilerlemem ve rozetlerim nasıl hesaplanıyor?",
+        "a3": "Bir dersi kurs sayfasındaki \"Dersi Tamamla\" düğmesiyle ya da videosunu sonuna kadar izleyerek bitirirsiniz. Kursun ilerleme çubuğu bitirdiğiniz derslerin oranını (%0-100) gösterir; tüm dersler bitince kurs \"Tamamlanan Kurslar\" bölümüne geçer. Tamamladığınız kurslar ve dersler profilinizdeki rozetleri açar: ilk mezuniyet, bir alanda uzmanlık, farklı alanlarda kurs ve toplam ders sayısı gibi.",
+        "q4": "Eğitmen olmak için nasıl başvururum?",
+        "a4": "Kayıt olurken eğitmen başvurusunu işaretleyin, alanınızı seçip kendinizi anlatan kısa bir özgeçmiş yazın. Başvurunuzu bir yönetici inceler; onaylandığında eğitmen olarak oturum açarsınız. Yöneticiler eğitmen hesabını doğrudan da açabilir.",
+        "q5": "Kullanıcı adımı, e-postamı veya şifremi nasıl değiştiririm?",
+        "a5": "Ayarlar → Hesap kullanıcı adınızı ve e-postanızı değiştirir; yeni kullanıcı adından sonra yeniden giriş yapmanız istenir. Şifrenizi (mevcut şifreniz gerekir) değiştirmek ve hesabınızı kapatmak Ayarlar → Güvenlik'tedir."
+      },
       "offices": "İletişim Bilgileri",
       "hq": "Merkez Ofis",
       "hqAddr": "Teknopark İstanbul, Pendik, Türkiye",
@@ -1209,96 +1219,7 @@
       "emailLabel": "E-posta",
       "responseLabel": "Yanıt süresi",
       "responseTime": "İş günlerinde genellikle 24 saat içinde",
-      "formMessageLabel": "Mesajınız",
-      "searchLabel": "Yardım merkezinde ara",
-      "searchPlaceholder": "Arayın, ör. iade, rozet, parola",
-      "topicsLabel": "Konular",
-      "noResults": "Bu aramaya uyan bir cevap yok. Başka kelimeler deneyin ya da aşağıdan bize yazın.",
-      "topics": {
-        "all": "Tümü",
-        "courses": "Kurslar",
-        "wallet": "Cüzdan ve iadeler",
-        "badges": "Rozetler",
-        "teaching": "Eğitmenlik",
-        "account": "Hesap ve gizlilik"
-      },
-      "links": {
-        "title": "Hızlı bağlantılar",
-        "settings": "Ayarlar",
-        "purchases": "Satın almalar ve iadeler",
-        "achievements": "Başarımlar",
-        "requests": "Yardım taleplerim"
-      },
-      "faq": {
-        "enroll": {
-          "q": "Bir kursa nasıl kaydolur ve ödeme yaparım?",
-          "a": "Kurslar sayfasından bir kurs açın. Ücretsiz kurslara tek tıkla katılırsınız. Ücretli kurslar cüzdan bakiyesiyle alınır: Cüzdan sayfasından bakiye yükleyin, ardından kurs sayfasındaki satın al düğmesine basın. Ücret bakiyenizden düşer ve kurs hemen Kurslarım'a eklenir."
-        },
-        "progress": {
-          "q": "Kurs ilerlemem nasıl hesaplanır?",
-          "a": "Bir ders, \"Tamamlandı olarak işaretle\" düğmesiyle ya da videosunun büyük kısmını gerçekten izleyerek biter (sona atlamak sayılmaz). İlerleme, biten derslerin oranıdır. Bütün dersler bitince kurs kalıcı olarak bitmiş sayılır: kurstan ayrılmak, iade ya da eğitmenin sonradan eklediği bir ders bunu geri almaz."
-        },
-        "leave": {
-          "q": "Bir kurstan ayrılırsam ne olur?",
-          "a": "İlerlemeniz kalır. Satın aldığınız (ve iade etmediğiniz) ya da bitirdiğiniz kurs sizin kalır: sayfasından ücretsiz olarak yeniden katılırsınız; iki kez satın alınamaz."
-        },
-        "catalogRows": {
-          "q": "En popüler, En sıcak, Yükselenler ve Yeni ne demek?",
-          "a": "En popüler toplamda en çok öğrencisi olan, En sıcak son 30 günde en çok katılınan, Yükselenler bu hafta yeni öğrencisi bir önceki haftaya göre en çok artan, Yeni ise en son eklenen kurslardır. Satırlar seçtiğiniz kategori ve filtrelere göre hesaplanır; metinle arama yalnızca eşleşen listeyi gösterir."
-        },
-        "topUp": {
-          "q": "Cüzdan gerçek para mı?",
-          "a": "Hayır, cüzdan simülasyondur ve gerçek ödeme alınmaz. Cüzdan sayfasından tek seferde ₺0,01 ile ₺10.000 arası yükleme yapabilirsiniz. Her yükleme, satın alma ve iade cüzdan geçmişinde listelenir."
-        },
-        "refund": {
-          "q": "Satın aldığım bir kursu iade edebilir miyim?",
-          "a": "Evet. Satın almadan sonraki 7 gün içinde, kursu bitirmiş olsanız da, kurs sayfasındaki veya cüzdanınızdaki Satın almalar ve iadeler bölümündeki \"İade et\" bağlantısıyla ücretin tamamı cüzdanınıza döner. Kursa erişiminiz kapanır, kursu bitirerek kazandığınız rozetler kalır."
-        },
-        "refundClosed": {
-          "q": "Bir kursu neden iade edemiyorum?",
-          "a": "Ya satın almanın üzerinden 7 günden fazla geçmiştir ya da aynı kursu daha önce bir kez iade etmişsinizdir; bu durumda yeniden satın alma kesindir. Hangisinin geçerli olduğunu kurs sayfası ve Satın almalar ve iadeler bölümü (Cüzdan veya Ayarlar) gösterir."
-        },
-        "badgesHow": {
-          "q": "Rozetleri nasıl kazanırım?",
-          "a": "Öğrenciler dersler, bitirilen kurslar, farklı alanlardaki kurslar, tek alandaki en çok kurs, art arda ders bitirilen günler ve başladıktan sonraki 7 gün içinde bitirilen kurslar için rozet kazanır. Eğitmenler kurslar, öğrenciler, dersler, platformdaki süre, satışlar, mezunlar ve birkaç alanda ders vermek için kazanır. Herkes başlattığı ve katıldığı tartışmalar, arkadaşlar ve beğeniler için topluluk rozetleri kazanır. Bir roldeki her hesabın rozet kataloğu aynıdır; en yakın olanları Başarımlar sayfası gösterir."
-        },
-        "badgesKeep": {
-          "q": "Bir kurstan ayrılır veya iade edersem rozetlerimi kaybeder miyim?",
-          "a": "Hayır. Bitirilen kurs bir kez kaydedilir ve saklanır; ayrılsanız, iade etseniz ya da yeni ders eklense de rozetleri kalır. Aynı kursu yeniden bitirmek iki kez sayılmaz."
-        },
-        "badgesFeature": {
-          "q": "Rozetlerimi profilimde nasıl gösteririm?",
-          "a": "Profil sayfanızda kazandığınız en fazla beş rozeti sabitleyin. Diğer üyeler yalnızca sabitlenen rozetleri görür; profiliniz gizliyken yalnızca sabitlenen eğitmenlik rozetleri görünür."
-        },
-        "apply": {
-          "q": "Nasıl eğitmen olurum?",
-          "a": "Kaydolurken eğitmenlik başvurusunu işaretleyin, alanınızı seçin ve kısa bir biyografi yazın (en az 40 karakter). Başvurunuzu bir yönetici inceler; onaylanınca eğitmen olarak giriş yaparsınız. Yöneticiler eğitmen hesabını doğrudan da açabilir."
-        },
-        "earnings": {
-          "q": "Eğitmenler satışlardan nasıl kazanır?",
-          "a": "Her satışta fiyatın eğitmen payı cüzdana eklenir (yönetici başka bir oran belirlemediyse %70). Öğrenci 7 gün içinde iade ederse bu pay geri alınır."
-        },
-        "analytics": {
-          "q": "Kurslarımın durumunu nerede görürüm?",
-          "a": "Yan menüdeki Eğitmen paneli, verdiğiniz her kursu güncel öğrenciler, son 30 gündeki katılımlar, mezunlar ve bitirme oranı, satışlar, iade oranı ve iadeler düşülmüş kazancınızla listeler."
-        },
-        "credentials": {
-          "q": "Kullanıcı adımı, e-postamı veya parolamı nasıl değiştiririm?",
-          "a": "Ayarlar → Hesap kullanıcı adınızı ve e-postanızı değiştirir; yeni kullanıcı adından sonra yeniden giriş yapmanız istenir. Ayarlar → Güvenlik parolanızı değiştirir (mevcut parolanız gerekir) ve hesabınızı kapatabileceğiniz yerdir."
-        },
-        "privacy": {
-          "q": "Profilimi kimler görebilir?",
-          "a": "Herkese açık profilde diğer üyeler öğrenme ilerlemenizi, bitirdiğiniz kursları, rozetlerinizi ve topluluk istatistiklerinizi görür. Ayarlar → Gizlilik profili gizli yapar; eğitmenlik bilgileri açık kalır ve yöneticiler her şeyi görür."
-        },
-        "emails": {
-          "q": "Hangi e-postaları gönderiyorsunuz?",
-          "a": "Kayıt doğrulama kodları her zaman gönderilir. Destek ekibi taleplerinizden birini yanıtladığında da e-posta göndeririz; bunu Ayarlar → Tercihler'den kapatabilirsiniz."
-        },
-        "motion": {
-          "q": "Animasyonları kapatabilir miyim?",
-          "a": "Evet. Ayarlar → Tercihler → Hareketi azalt, bu tarayıcıda sayfa animasyonlarını, hareketli sahneleri ve geçişleri durdurur. Sisteminizin hareketi azaltma ayarına her durumda uyulur."
-        }
-      }
+      "formMessageLabel": "Mesajınız"
     },
     "mySupportRequests": {
       "title": "Yardım Taleplerim",
@@ -1870,15 +1791,6 @@
         "title": "Yeni",
         "hint": "Son eklenenler"
       }
-    },
-    "achievements": {
-      "title": "Başarımlar",
-      "intro": "Rolünüzün kazanabileceği bütün rozetler, açılmaya en yakın olanlar ve bitirdiğiniz kurslar.",
-      "pinOnProfile": "Profilinizde öne çıkacak rozetleri seçin",
-      "next": "Açılmaya en yakın",
-      "finished": "{{count}} bitirilen kurs",
-      "finishedHint": "Kalıcıdır: kurstan ayrılmak, iade ya da sonradan eklenen dersler bunu silmez.",
-      "noneFinished": "Henüz bir kurs bitirmediniz."
     },
     "instructor": {
       "title": "Eğitmen paneli",

@@ -29,9 +29,7 @@
       "wallet": "Wallet",
       "messages": "Messages",
       "community": "Community",
-      "achievements": "Achievements",
-      "instructorAnalytics": "Instructor panel",
-      "helpCenter": "Help centre"
+      "instructorAnalytics": "Instructor panel"
     },
     "settings": {
       "title": "Settings",
@@ -1262,10 +1260,22 @@
     "help": {
       "title": "Help",
       "heroTitle": "Stuck somewhere?",
-      "heroSubtitle": "Search the answers on courses, the wallet and refunds, badges, teaching and your account below. If the answer is not there, write to the support team and follow your request on My Support Requests.",
+      "heroSubtitle": "The most common questions about enrolling, the wallet and refunds, lesson progress, badges and instructor applications are below. If the answer is not there, write to the support team and follow your request on My Support Requests.",
       "freeEstimate": "Write a support request",
       "faqTitle": "Frequently asked questions",
       "faqDesc": "Up-to-date answers that match how the platform works today.",
+      "questions": {
+        "q1": "How do I enrol in a course and pay for it?",
+        "a1": "Open a course from the Courses page. Free courses are one click away. Paid courses are bought with your wallet balance: top up on the Wallet page, then press the buy button on the course page. The price leaves your balance and the course is added to My Courses right away.",
+        "q2": "Can I get a refund for a course I bought?",
+        "a2": "Yes. Within 7 days of buying, the \"Refund\" link on the course page or under Purchases & refunds in your wallet returns the full price to your wallet, even if you have already finished the course. Access to the course closes, but the badges you earned by finishing it stay. Each course can be refunded once; after 7 days a refund is no longer possible.",
+        "q3": "How are my course progress and badges calculated?",
+        "a3": "You finish a lesson with the \"Mark Complete\" button on the course page or by watching its video to the end. The course progress bar shows the share of finished lessons (0-100%); once every lesson is done the course moves to \"Completed Courses\". Completed courses and lessons unlock the badges on your profile: your first graduation, a specialism in one field, courses across different fields and your total lesson count.",
+        "q4": "How do I apply to become an instructor?",
+        "a4": "Tick the instructor application when you sign up, pick your field and write a short biography. An admin reviews the application; once it is approved you sign in as an instructor. Admins can also create instructor accounts directly.",
+        "q5": "How do I change my username, email or password?",
+        "a5": "Settings → Account changes your username and email; after a new username you are asked to sign in again. Settings → Security changes your password (your current one is needed) and is where you can close your account."
+      },
       "offices": "Offices",
       "hq": "Headquarters",
       "hqAddr": "Teknopark Istanbul, Pendik, Turkey",
@@ -1288,96 +1298,7 @@
       "emailLabel": "Email",
       "responseLabel": "Response time",
       "responseTime": "Usually within 24 hours on working days",
-      "formMessageLabel": "Your message",
-      "searchLabel": "Search the help centre",
-      "searchPlaceholder": "Search, e.g. refund, badge, password",
-      "topicsLabel": "Topics",
-      "noResults": "No answer matches that search. Try other words or write to us below.",
-      "topics": {
-        "all": "All",
-        "courses": "Courses",
-        "wallet": "Wallet & refunds",
-        "badges": "Badges",
-        "teaching": "Teaching",
-        "account": "Account & privacy"
-      },
-      "links": {
-        "title": "Quick links",
-        "settings": "Settings",
-        "purchases": "Purchases & refunds",
-        "achievements": "Achievements",
-        "requests": "My support requests"
-      },
-      "faq": {
-        "enroll": {
-          "q": "How do I enrol in a course and pay for it?",
-          "a": "Open a course from the Courses page. Free courses are one click away. Paid courses are bought with your wallet balance: top up on the Wallet page, then press the buy button on the course page. The price leaves your balance and the course is added to My Courses right away."
-        },
-        "progress": {
-          "q": "How is my course progress calculated?",
-          "a": "A lesson is finished with its \"Mark Complete\" button or by really watching most of its video (skipping to the end does not count). Progress is the share of finished lessons. Once every lesson is done the course counts as finished for good: leaving it, a refund or a lesson the instructor adds later does not take that away."
-        },
-        "leave": {
-          "q": "What happens if I leave a course?",
-          "a": "Your progress stays. A course you bought (and did not refund) or finished stays yours: rejoin it for free from its page; it cannot be bought twice."
-        },
-        "catalogRows": {
-          "q": "What do Most popular, Hottest, Trending and New mean?",
-          "a": "Most popular has the most students overall, Hottest the most students who joined in the last 30 days, Trending the biggest rise in new students this week compared with the week before, and New the most recently added courses. The rows follow the category and filters you pick; a text search shows only the matching list."
-        },
-        "topUp": {
-          "q": "Is the wallet real money?",
-          "a": "No, the wallet is simulated and no real payment is taken. Top up between ₺0.01 and ₺10,000 at a time on the Wallet page. Every top-up, purchase and refund is listed in the wallet history."
-        },
-        "refund": {
-          "q": "Can I get a refund for a course I bought?",
-          "a": "Yes. Within 7 days of buying, the \"Refund\" link on the course page or under Purchases & refunds in your wallet returns the full price to your wallet, even if you have already finished the course. Access to the course closes, but the badges you earned by finishing it stay."
-        },
-        "refundClosed": {
-          "q": "Why can't I refund a course?",
-          "a": "Either more than 7 days have passed since you bought it, or you refunded the same course once before, in which case buying it again is final. The course page and Purchases & refunds (Wallet or Settings) show which one applies."
-        },
-        "badgesHow": {
-          "q": "How do I earn badges?",
-          "a": "Students earn badges for lessons, finished courses, courses in different fields, the most courses in one field, days in a row with a finished lesson and courses finished within 7 days of starting. Instructors earn them for courses, students, lessons, time on the platform, sales, graduates and teaching in several fields. Everyone earns community badges for discussions started and joined, friends and likes. Every account of a role has the same catalogue; the Achievements page shows what is closest."
-        },
-        "badgesKeep": {
-          "q": "Do I lose badges if I leave or refund a course?",
-          "a": "No. A finished course is recorded once and kept, so its badges stay after leaving, a refund or new lessons. Finishing the same course again does not count twice."
-        },
-        "badgesFeature": {
-          "q": "How do I show badges on my profile?",
-          "a": "Pin up to five earned badges on your profile page. Others see only pinned badges; while your profile is private, only pinned teaching badges show."
-        },
-        "apply": {
-          "q": "How do I become an instructor?",
-          "a": "Tick the instructor application when you sign up, pick your field and write a short biography (at least 40 characters). An admin reviews the application; once it is approved you sign in as an instructor. Admins can also create instructor accounts directly."
-        },
-        "earnings": {
-          "q": "How do instructors earn from sales?",
-          "a": "Each sale adds the instructor's share of the price to their wallet (70% unless an admin sets another share). If the student refunds within 7 days, that share is taken back."
-        },
-        "analytics": {
-          "q": "Where can I see how my courses are doing?",
-          "a": "The Instructor panel in the side menu lists every course you teach with current students, joins in the last 30 days, graduates and completion rate, sales, refund rate and your earnings after refunds."
-        },
-        "credentials": {
-          "q": "How do I change my username, email or password?",
-          "a": "Settings → Account changes your username and email; after a new username you are asked to sign in again. Settings → Security changes your password (your current one is needed) and is where you can close your account."
-        },
-        "privacy": {
-          "q": "Who can see my profile?",
-          "a": "With a public profile other members see your learning progress, finished courses, badges and community stats. Settings → Privacy makes it private; teaching details stay public and admins always see everything."
-        },
-        "emails": {
-          "q": "Which emails do you send?",
-          "a": "Sign-up verification codes are always sent. We also email you when support answers one of your requests, unless you turn that off in Settings → Preferences."
-        },
-        "motion": {
-          "q": "Can I turn off the animations?",
-          "a": "Yes. Settings → Preferences → Reduce motion stops page animations, moving scenes and transitions in this browser. Your system's reduced-motion setting is followed either way."
-        }
-      }
+      "formMessageLabel": "Your message"
     },
     "mySupportRequests": {
       "title": "My Support Requests",
@@ -1973,16 +1894,6 @@
         "title": "New",
         "hint": "Recently added"
       }
-    },
-    "achievements": {
-      "title": "Achievements",
-      "intro": "Every badge your role can earn, what is closest to unlocking and the courses you have finished.",
-      "pinOnProfile": "Choose which badges your profile features",
-      "next": "Closest to unlocking",
-      "finished_one": "{{count}} finished course",
-      "finished_other": "{{count}} finished courses",
-      "finishedHint": "Kept for good: leaving a course, a refund or lessons added later do not remove it.",
-      "noneFinished": "You have not finished a course yet."
     },
     "instructor": {
       "title": "Instructor panel",

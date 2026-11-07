@@ -22,9 +22,7 @@ import {
   MessageSquare,
   MessagesSquare,
   UserPlus,
-  Award,
   LineChart,
-  LifeBuoy,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -85,7 +83,6 @@ const getMenuItems = (t: TFunction) => [
     roles: ["admin"] as MenuRole[],
   },
   { title: t("sidebar.courses"), url: "/katalog", icon: BookOpen, roles: ALL },
-  { title: t("sidebar.achievements"), url: "/basarimlar", icon: Award, roles: LEARNERS },
   {
     title: t("sidebar.pendingRequests"),
     url: "/istekler",
@@ -115,7 +112,6 @@ const getMenuItems = (t: TFunction) => [
     icon: HelpCircle,
     roles: LEARNERS,
   },
-  { title: t("sidebar.helpCenter"), url: "/yardim", icon: LifeBuoy, roles: ALL },
 ];
 
 export function AppSidebar() {
