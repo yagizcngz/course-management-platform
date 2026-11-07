@@ -73,17 +73,23 @@ namespace EdTechApi.Tests
             var newcomer = new User { Username = "ali", Email = "new@test", FirstName = "N", Role = "User" };
             _db.Users.Add(newcomer);
             _db.SaveChanges();
-            var aliToken = Token((ClaimTypes.NameIdentifier, _ali.Id.ToString()), ("username", "ali"), (ClaimTypes.Role, "User"));
+            var stamp = ClaimsPrincipalExtensions.SecurityStamp(_ali.Password);
+            var aliToken = Token((ClaimTypes.NameIdentifier, _ali.Id.ToString()), ("username", "ali"), ("sst", stamp), (ClaimTypes.Role, "User"));
             Assert.True(await aliToken.AttachCurrentUserAsync(_db));
             Assert.Equal(_ali.Id, aliToken.GetUserId());
             Assert.Equal("ali2", aliToken.GetUsername());
 
             // an old-format token (sub = username) is refused, even when the username looks like an id
-            var legacy = Token((ClaimTypes.NameIdentifier, newcomer.Id.ToString()), (ClaimTypes.Role, "User"));
+            var legacy = Token((ClaimTypes.NameIdentifier, newcomer.Id.ToString()), ("sst", stamp), (ClaimTypes.Role, "User"));
             Assert.False(await legacy.AttachCurrentUserAsync(_db));
             // a role the database no longer grants is refused
-            var demoted = Token((ClaimTypes.NameIdentifier, _ali.Id.ToString()), ("username", "ali"), (ClaimTypes.Role, "Admin"));
+            var demoted = Token((ClaimTypes.NameIdentifier, _ali.Id.ToString()), ("username", "ali"), ("sst", stamp), (ClaimTypes.Role, "Admin"));
             Assert.False(await demoted.AttachCurrentUserAsync(_db));
+            // a password change ends every token issued before it
+            _db.Users.Single(u => u.Id == _ali.Id).Password = BCrypt.Net.BCrypt.HashPassword("new-password");
+            _db.SaveChanges();
+            var beforeChange = Token((ClaimTypes.NameIdentifier, _ali.Id.ToString()), ("username", "ali"), ("sst", stamp), (ClaimTypes.Role, "User"));
+            Assert.False(await beforeChange.AttachCurrentUserAsync(_db));
         }
 
         private sealed class CapturingEmail : IEmailService
@@ -149,13 +155,13 @@ namespace EdTechApi.Tests
             // even an admin's token does not turn the public form into a staff signup
             Assert.IsType<OkObjectResult>(await auth.Register(new RegisterRequest
             {
-                FirstName = "X", LastName = "Y", Username = "x", Email = "x@test", Password = "Pass-2026", VerificationCode = "111111"
+                FirstName = "X", LastName = "Y", Username = "xavier", Email = "x@test", Password = "Pass-2026", VerificationCode = "111111"
             }));
-            Assert.Equal("User", _db.Users.Single(u => u.Username == "x").Role);
+            Assert.Equal("User", _db.Users.Single(u => u.Username == "xavier").Role);
 
             Assert.IsType<BadRequestObjectResult>(await auth.AdminCreate(new AdminCreateUserRequest
             {
-                FirstName = "R", LastName = "R", Username = "r", Email = "r@test", Password = "Pass-2026", Role = "SuperAdmin"
+                FirstName = "R", LastName = "R", Username = "rooted", Email = "r@test", Password = "Pass-2026", Role = "SuperAdmin"
             }));
             Assert.IsType<OkObjectResult>(await auth.AdminCreate(new AdminCreateUserRequest
             {
@@ -342,6 +348,28 @@ namespace EdTechApi.Tests
             var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["Wallet:SimulatedTopUp"] = setting }).Build();
             Assert.Equal(expected, WalletController.SimulatedTopUpEnabled(config, new TestEnv(environment)));
         }
+
+        [Theory]
+        [InlineData("ali_2", true)]
+        [InlineData("Ayşe.K", true)]
+        [InlineData("ayse@test", false)] // someone's email as a username would clash at login
+        [InlineData("a b", false)]
+        [InlineData("ab", false)]
+        [InlineData(" ali", false)]
+        public void Usernames_are_short_plain_words(string username, bool ok) =>
+            Assert.Equal(ok, AuthController.UsernameError(username) == null);
+
+        [Theory]
+        [InlineData(null, true)]
+        [InlineData("/uploads/profile-pictures/a.png", true)]
+        [InlineData("https://cdn.example.com/a.png", true)]
+        [InlineData("data:image/png;base64,AAAA", true)]
+        [InlineData("javascript:alert(1)", false)]
+        [InlineData("http://tracker.example/pixel", false)]
+        [InlineData("/uploads/../appsettings.json", false)]
+        [InlineData("//evil.example/a.png", false)]
+        public void Saved_media_urls_are_https_or_our_own_uploads(string? url, bool ok) =>
+            Assert.Equal(ok, EdTechApi.Core.Constants.SafeUrl.IsAllowed(url, "/uploads/"));
 
         private sealed class TestEnv(string name) : IWebHostEnvironment
         {

@@ -62,7 +62,8 @@
         "profileTitle": "Profile details",
         "profileDesc": "Your name, photo, about text and featured badges are edited on your profile page.",
         "openProfile": "Open my profile",
-        "emailCodeSent": "We sent a 6-digit code to the new address. Enter it to confirm the change."
+        "emailCodeSent": "We sent a 6-digit code to the new address. Enter it to confirm the change.",
+        "passwordChangedRelogin": "Password changed. Please sign in again."
       },
       "profile": {
         "title": "Profile Settings",
@@ -1243,7 +1244,11 @@
       "ratingRange": "A rating is between 1 and 5 stars.",
       "branchUnchanged": "Those are already your disciplines.",
       "requestAlreadyReviewed": "This request has already been answered.",
-      "codeCooldown": "A code was just sent to this address. Please try again in a minute."
+      "codeCooldown": "A code was just sent to this address. Please try again in a minute.",
+      "nameTooLong": "First and last name can be at most {{count}} characters.",
+      "courseTitleTooLong": "The course title can be at most {{count}} characters.",
+      "courseDescriptionTooLong": "The course description can be at most {{count}} characters.",
+      "invalidUrl": "Invalid link. Use an https:// address or upload a file."
     },
     "validation": {
       "required": "Please fill out this field."

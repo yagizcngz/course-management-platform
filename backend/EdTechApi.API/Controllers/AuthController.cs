@@ -36,7 +36,7 @@ namespace EdTechApi.API.Controllers
         private const int MaxOtpAttempts = 5;
         public const int MinPasswordLength = 8; // kayıt ve şifre değiştirme aynı kuralı kullanır
         private const int MinTeacherBio = 40;
-        private const int MaxTeacherBio = 2000;
+        public const int MaxTeacherBio = 2000;
         private const int MaxLoginFailures = 5;
         private static readonly TimeSpan LoginLockout = TimeSpan.FromMinutes(5);
 
@@ -150,6 +150,8 @@ namespace EdTechApi.API.Controllers
                 return "Geçerli bir e-posta adresi giriniz.";
             if (string.IsNullOrWhiteSpace(username))
                 return "Kullanıcı adı zorunludur.";
+            if (UsernameError(username) is { } usernameError)
+                return usernameError;
             if ((password ?? "").Length < MinPasswordLength)
                 return $"Şifre en az {MinPasswordLength} karakter olmalıdır.";
             if (await _context.Users.AnyAsync(u => u.Username == username))
@@ -158,6 +160,15 @@ namespace EdTechApi.API.Controllers
                 return "Bu e-posta adresi zaten kullanımda.";
             return null;
         }
+
+        // Harf, rakam, _ . - ve 3-30 karakter. "@" yasak: giriş e-postayla da yapıldığından başkasının e-postası
+        // kullanıcı adı olursa iki hesap aynı girdiyle eşleşir.
+        public static string? UsernameError(string? username) =>
+            System.Text.RegularExpressions.Regex.IsMatch(username ?? "", @"^[\p{L}\p{N}_.\-]{3,30}$")
+                ? null : "Geçerli bir kullanıcı adı giriniz.";
+
+        // eşleşen kullanıcı yokken de BCrypt çalışır: yanıt süresi hesabın var olup olmadığını ele vermez
+        private static readonly string DummyHash = BCrypt.Net.BCrypt.HashPassword("timing-equaliser");
 
         // Giriş hesabı ve role uygun profil (öğrenci veya eğitmen) tek işlemde açılır
         private async Task<User> CreateAccountAsync(string firstName, string lastName, string username, string email,
@@ -216,8 +227,8 @@ namespace EdTechApi.API.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username || u.Email == request.Username);
 
             // kapatılmış hesabın parolası yoktur; doğrulamaya hiç girmez
-            if (user == null || user.Role == EdTechApi.Business.Services.AccountRetirement.DeletedRole
-                || !BCrypt.Net.BCrypt.Verify(request.Password ?? "", user.Password))
+            var passwordOk = BCrypt.Net.BCrypt.Verify(request.Password ?? "", user?.Password is { Length: > 0 } hash ? hash : DummyHash);
+            if (user == null || user.Role == EdTechApi.Business.Services.AccountRetirement.DeletedRole || !passwordOk)
             {
                 _memoryCache.Set(lockKey, failures + 1, LoginLockout);
                 return Unauthorized("Geçersiz kullanıcı adı veya şifre.");
@@ -248,23 +259,6 @@ namespace EdTechApi.API.Controllers
             });
         }
 
-        [Authorize]
-        [HttpPut("me")]
-        public async Task<IActionResult> UpdateMe([FromBody] UpdateUserProfileRequest request)
-        {
-            var username = GetCurrentUsername();
-            if (string.IsNullOrEmpty(username)) return Unauthorized();
-
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-            if (user == null) return NotFound();
-
-            user.AboutMe = request.AboutMe;
-            user.ProfilePictureUrl = request.ProfilePictureUrl;
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Profil güncellendi." });
-        }
-
         private string GenerateJwtToken(User user)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
@@ -275,6 +269,7 @@ namespace EdTechApi.API.Controllers
                 // kimlik değişmez Id'dir; kullanıcı adı yalnızca arayüzde gösterim için taşınır
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(ClaimsPrincipalExtensions.DisplayUsernameClaim, user.Username),
+                new Claim(ClaimsPrincipalExtensions.SecurityStampClaim, ClaimsPrincipalExtensions.SecurityStamp(user.Password)),
                 new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}".Trim()),
                 new Claim(ClaimTypes.Email, user.Email ?? ""),
                 new Claim(ClaimTypes.Role, user.Role),
@@ -301,12 +296,6 @@ namespace EdTechApi.API.Controllers
     {
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
-    }
-
-    public class UpdateUserProfileRequest
-    {
-        public string? AboutMe { get; set; }
-        public string? ProfilePictureUrl { get; set; }
     }
 
     public class RegisterRequest

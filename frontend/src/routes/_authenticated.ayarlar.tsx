@@ -86,6 +86,8 @@ function SettingsPage() {
   const [emailPassword, setEmailPassword] = useState("");
   const [emailCode, setEmailCode] = useState("");
   const [emailCodeSent, setEmailCodeSent] = useState(false);
+  // deleting the account asks for the password, so a stolen token alone cannot close it
+  const [deletePassword, setDeletePassword] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
@@ -188,9 +190,16 @@ function SettingsPage() {
         body: JSON.stringify({ currentPassword, newPassword }),
       });
       if (res.ok) {
-        showToast("success", t("settings.success"));
+        // the server ends every session on a password change, this one included
+        showToast("success", t("settings.account.passwordChangedRelogin"));
         setCurrentPassword("");
         setNewPassword("");
+        setTimeout(() => {
+          localStorage.removeItem("jwt_token");
+          localStorage.removeItem("username");
+          localStorage.removeItem("user_profile");
+          window.location.href = "/login";
+        }, 1500);
       } else {
         showToast("error", await readError(res, t("settings.errors.passwordFailed")));
       }
@@ -377,7 +386,9 @@ function SettingsPage() {
       const res = await fetch(`${API_BASE}/api/profile/me`, {
         method: "DELETE",
         headers: authHeaders(),
+        body: JSON.stringify({ currentPassword: deletePassword }),
       });
+      setDeletePassword("");
       if (!res.ok) throw new Error(await readError(res, t("settings.profile.deleteError")));
       localStorage.removeItem("jwt_token");
       window.location.href = "/";
@@ -584,7 +595,20 @@ function SettingsPage() {
                 </p>
                 <ConfirmDialog
                   title={t("settings.profile.deleteAccount")}
-                  description={t("settings.profile.deleteConfirm")}
+                  description={
+                    <>
+                      {t("settings.profile.deleteConfirm")}
+                      <input
+                        type="password"
+                        aria-label={t("settings.account.currentPassword")}
+                        placeholder={t("settings.account.currentPassword")}
+                        autoComplete="current-password"
+                        className={`${field} mt-3`}
+                        value={deletePassword}
+                        onChange={(e) => setDeletePassword(e.target.value)}
+                      />
+                    </>
+                  }
                   confirmLabel={t("settings.profile.deleteAccount")}
                   onConfirm={deleteAccount}
                 >

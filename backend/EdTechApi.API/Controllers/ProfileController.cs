@@ -1,6 +1,7 @@
 ﻿using EdTechApi.API.Helpers;
 using EdTechApi.Business.Interfaces;
 using EdTechApi.Business.Services;
+using EdTechApi.Core.Constants;
 using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
 using Microsoft.AspNetCore.Authorization;
@@ -219,8 +220,10 @@ namespace EdTechApi.API.Controllers
         }
 
         // Self-service account deletion; reuses the admin soft-delete so reports stay correct.
+        // Mevcut şifre istenir: çalınan bir token tek başına hesabı kapatamaz.
+        [EnableRateLimiting("auth")]
         [HttpDelete("me")]
-        public async Task<IActionResult> DeleteMe()
+        public async Task<IActionResult> DeleteMe([FromBody] DeleteAccountRequest request)
         {
             var username = GetCurrentUsername();
             if (string.IsNullOrEmpty(username)) return Unauthorized();
@@ -229,6 +232,8 @@ namespace EdTechApi.API.Controllers
             if (user == null) return NotFound();
             if (user.Role.ToLowerInvariant() is "admin" or "superadmin")
                 return BadRequest("Yönetici hesapları buradan silinemez.");
+            if (!BCrypt.Net.BCrypt.Verify(request?.CurrentPassword ?? "", user.Password))
+                return BadRequest("Mevcut şifre hatalı.");
 
             var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.UserId == user.Id);
             if (teacher != null)
@@ -298,6 +303,12 @@ namespace EdTechApi.API.Controllers
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
             if (user == null) return NotFound("Bu hesaba karşılık gelen bir kayıt bulunamadı.");
+            if (!SafeUrl.IsAllowed(request.ProfilePictureUrl, "/uploads/"))
+                return BadRequest(SafeUrl.Error);
+            if (request.AboutMe?.Length > AuthController.MaxTeacherBio)
+                return BadRequest($"Özgeçmiş en fazla {AuthController.MaxTeacherBio} karakter olabilir.");
+            if (request.FirstName?.Length > MaxNameLength || request.LastName?.Length > MaxNameLength)
+                return BadRequest($"Ad ve soyad en fazla {MaxNameLength} karakter olabilir.");
 
             // Update User table
             user.AboutMe = request.AboutMe;
@@ -334,6 +345,10 @@ namespace EdTechApi.API.Controllers
             return Ok(new { message = "Kullanıcı profili başarıyla güncellendi." });
         }
 
+        public const int MaxNameLength = 50;
+
+        // şifre değişince parola özetinden türeyen damga değişir; bu dahil tüm oturumlar kapanır (yeniden giriş gerekir)
+        [EnableRateLimiting("auth")]
         [HttpPut("change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
         {
@@ -444,6 +459,7 @@ namespace EdTechApi.API.Controllers
             return Ok(new { message = "E-posta adresiniz başarıyla güncellendi." });
         }
 
+        [EnableRateLimiting("auth")]
         [HttpPut("change-username")]
         public async Task<IActionResult> ChangeUsername([FromBody] ChangeUsernameRequest request)
         {
@@ -453,8 +469,9 @@ namespace EdTechApi.API.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == currentUsername);
             if (user == null) return NotFound("Kullanıcı bulunamadı.");
 
-            if (string.IsNullOrWhiteSpace(request.NewUsername))
-                return BadRequest("Geçerli bir kullanıcı adı giriniz.");
+            request.NewUsername = request.NewUsername?.Trim() ?? "";
+            if (AuthController.UsernameError(request.NewUsername) is { } usernameError)
+                return BadRequest(usernameError);
 
             var usernameExists = await _context.Users.AnyAsync(u => u.Username == request.NewUsername && u.Id != user.Id);
             if (usernameExists)
@@ -481,6 +498,11 @@ namespace EdTechApi.API.Controllers
         public string? ProfilePictureUrl { get; set; }
         public bool? IsProfilePublic { get; set; }
         public bool? ReceiveEmailNotifications { get; set; }
+    }
+
+    public class DeleteAccountRequest
+    {
+        public string CurrentPassword { get; set; } = string.Empty;
     }
 
     public class FeaturedBadgesRequest

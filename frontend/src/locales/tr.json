@@ -62,7 +62,8 @@
         "profileTitle": "Profil bilgileri",
         "profileDesc": "Adınız, fotoğrafınız, hakkınızda yazısı ve öne çıkan rozetleriniz profil sayfanızda düzenlenir.",
         "openProfile": "Profilimi aç",
-        "emailCodeSent": "Yeni adrese 6 haneli bir kod gönderdik. Değişikliği onaylamak için kodu girin."
+        "emailCodeSent": "Yeni adrese 6 haneli bir kod gönderdik. Değişikliği onaylamak için kodu girin.",
+        "passwordChangedRelogin": "Şifreniz değişti. Lütfen yeniden giriş yapın."
       },
       "profile": {
         "title": "Profil Ayarları",
@@ -1170,7 +1171,11 @@
       "ratingRange": "Puan 1 ile 5 yıldız arasında olmalı.",
       "branchUnchanged": "Seçtiğiniz branşlar zaten mevcut branşlarınız.",
       "requestAlreadyReviewed": "Bu talep zaten sonuçlandırılmış.",
-      "codeCooldown": "Bu adrese az önce kod gönderildi. Lütfen bir dakika sonra tekrar deneyin."
+      "codeCooldown": "Bu adrese az önce kod gönderildi. Lütfen bir dakika sonra tekrar deneyin.",
+      "nameTooLong": "Ad ve soyad en fazla {{count}} karakter olabilir.",
+      "courseTitleTooLong": "Kurs başlığı en fazla {{count}} karakter olabilir.",
+      "courseDescriptionTooLong": "Kurs açıklaması en fazla {{count}} karakter olabilir.",
+      "invalidUrl": "Geçersiz bağlantı. https:// ile başlayan bir adres girin veya dosya yükleyin."
     },
     "validation": {
       "required": "Lütfen bu alanı doldurun."
