@@ -91,18 +91,6 @@ export interface EnrollmentDto {
   completedAt?: string | null;
 }
 
-export interface StudentLiteDto {
-  name?: string;
-  firstName?: string;
-  FirstName?: string;
-  lastName?: string;
-  LastName?: string;
-  profilePictureUrl?: string;
-  ProfilePictureUrl?: string;
-  aboutMe?: string;
-  AboutMe?: string;
-}
-
 // --- YENİ EKLENEN TİP ---
 // /api/teachers'tan dönen öğretmen listesini karşılıyor. Kurs düzenleme formundaki
 // öğretmen seçim dropdown'ı ve "Eğitmen Profili" (foto + bio) eşleştirmesi bunu kullanır.

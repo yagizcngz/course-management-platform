@@ -25,7 +25,6 @@ export function useRoleGuard(allowed: (role: string) => boolean) {
 }
 
 export const useAdminGuard = () => useRoleGuard(isAdminRole);
-export const useTeacherGuard = () => useRoleGuard(isTeacherRole);
 
 // Sayfayı rol kontrolü geçene kadar mount etmez; böylece yetkisiz kullanıcı için
 // sayfanın veri istekleri hiç gönderilmez (önceden yönlendirmeden önce 403 alıyordu).
