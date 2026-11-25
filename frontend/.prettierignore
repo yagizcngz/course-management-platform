@@ -8,3 +8,4 @@ bun.lock
 routeTree.gen.ts
 # recorded API answers for the static demo (scripts/capture-demo.mjs), kept minified
 src/demo/snapshot/
+.vercel

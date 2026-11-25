@@ -24,7 +24,10 @@ export default defineConfig(({ command, mode }) => ({
       // src/server.ts is our SSR error wrapper
       server: { entry: "server" },
     }),
-    ...(command === "build" ? [nitro({ defaultPreset: "cloudflare-module" })] : []),
+    ...(command === "build"
+      ? // the demo is hosted on Vercel: *.workers.dev is blocked on some networks (e.g. in Turkey)
+        [nitro(mode === "demo" ? { preset: "vercel" } : { defaultPreset: "cloudflare-module" })]
+      : []),
     viteReact(),
   ],
 }));

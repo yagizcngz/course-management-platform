@@ -10,7 +10,7 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "build:demo": "vite build --mode demo",
-    "deploy:demo": "npm run build:demo && npx --yes wrangler@4 deploy -c .output/server/wrangler.json --name e-kurs-demo",
+    "deploy:demo": "npm run build:demo && npx --yes vercel@66 deploy --prebuilt --prod",
     "demo:capture": "node scripts/capture-demo.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
