@@ -38,19 +38,19 @@ export function AuthShell({
       </div>
       <div
         // pinned to the viewport: a long form (the instructor fields) scrolls past it instead of
-        // stretching the scene
-        className="relative m-3 hidden overflow-hidden rounded-3xl bg-[hsl(222_14%_16%)] text-[hsl(40_30%_93%)] lg:sticky lg:top-3 lg:block lg:h-[calc(100dvh-1.5rem)]"
+        // stretching the scene. On phones it sits above the form as a short band.
+        className="relative order-first m-3 mb-0 h-72 overflow-hidden rounded-3xl bg-[hsl(222_14%_16%)] text-[hsl(40_30%_93%)] lg:sticky lg:top-3 lg:order-none lg:mb-3 lg:h-[calc(100dvh-1.5rem)]"
         style={panelVars}
       >
         {panel}
-        <div className="absolute inset-x-10 top-9 flex items-center justify-between gap-6 font-mono text-[11px] uppercase tracking-[0.18em] text-[hsl(40_30%_93%/0.65)]">
-          <span>{eyebrow}</span>
+        <div className="absolute inset-x-6 top-6 flex lg:inset-x-10 lg:top-9 items-center justify-between gap-6 font-mono text-[11px] uppercase tracking-[0.18em] text-[hsl(40_30%_93%/0.65)]">
+          <span className="min-w-0 truncate">{eyebrow}</span>
           <span className="flex items-center gap-3 tabular-nums">
             <span aria-hidden="true" className="flex gap-1">
               {Array.from({ length: steps.total }, (_, i) => (
                 <span
                   key={i}
-                  className={`h-1 w-5 rounded-full transition-colors duration-500 ${i < steps.done ? "bg-[hsl(42_60%_62%)]" : "bg-[hsl(40_30%_93%/0.18)]"}`}
+                  className={`h-1 w-3 rounded-full lg:w-5 transition-colors duration-500 ${i < steps.done ? "bg-[hsl(42_60%_62%)]" : "bg-[hsl(40_30%_93%/0.18)]"}`}
                 />
               ))}
             </span>
@@ -60,13 +60,13 @@ export function AuthShell({
         {steps.next && (
           <p
             aria-live="polite"
-            className="absolute right-10 top-16 max-w-[60%] truncate text-right font-mono text-[11px] uppercase tracking-[0.18em] text-[hsl(42_60%_62%)]"
+            className="absolute right-6 top-12 lg:right-10 lg:top-16 max-w-[60%] truncate text-right font-mono text-[11px] uppercase tracking-[0.18em] text-[hsl(42_60%_62%)]"
           >
             {t("auth.nextStep", { step: steps.next })}
           </p>
         )}
-        <div className="absolute inset-x-10 bottom-10">
-          <p className="max-w-md font-serif text-4xl leading-[1.1]">
+        <div className="absolute inset-x-6 bottom-6 lg:inset-x-10 lg:bottom-10">
+          <p className="max-w-md font-serif text-2xl leading-[1.1] lg:text-4xl">
             <SplitHeadline text={caption} />
           </p>
         </div>
