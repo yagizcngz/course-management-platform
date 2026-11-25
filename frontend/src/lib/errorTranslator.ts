@@ -161,6 +161,7 @@ const RULES: Rule[] = [
   [/Sadece jpg, png, gif veya webp/i, "imageTypeOnly"],
   [/Sadece mp4 veya webm/i, "videoTypeOnly"],
   [/Beklenmeyen bir hata/i, "unexpected"],
+  [/Demo modunda değişiklikler kaydedilmez/i, "demoReadOnly"], // src/demo/api.ts
   [/Smtp yapılandırılmamış/i, "unexpected"], // the exception middleware sends the generic error instead
 ];
 

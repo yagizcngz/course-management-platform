@@ -1248,7 +1248,8 @@
       "nameTooLong": "First and last name can be at most {{count}} characters.",
       "courseTitleTooLong": "The course title can be at most {{count}} characters.",
       "courseDescriptionTooLong": "The course description can be at most {{count}} characters.",
-      "invalidUrl": "Invalid link. Use an https:// address or upload a file."
+      "invalidUrl": "Invalid link. Use an https:// address or upload a file.",
+      "demoReadOnly": "This is a demo: this change isn't saved."
     },
     "validation": {
       "required": "Please fill out this field."
@@ -2209,6 +2210,12 @@
       "saveFailed": "The rating could not be saved.",
       "count_one": "{{count}} rating",
       "count_other": "{{count}} ratings"
+    },
+    "demoBanner": {
+      "title": "Live demo.",
+      "text": "The data is a snapshot and nothing reaches a server: your changes reset when you reload. Sign in as a student, instructor or admin with any password.",
+      "source": "Source code",
+      "close": "Close"
     }
   }
 }
