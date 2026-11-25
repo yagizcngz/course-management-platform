@@ -9,7 +9,7 @@
 
 A modern, role-based educational management and online course platform built with an **ASP.NET Core Web API** backend and a **React + TypeScript + TanStack** frontend. The platform provides end-to-end workflows for students, teachers, and system administrators, featuring real-time enrollment validation, teacher branch eligibility matching, a course wallet with refunds, support ticketing, analytics dashboards, a community forum and messages, and seamless bilingual (EN / TR) localization.
 
-> **Live demo: [e-kurs-demo.yagizcngz.workers.dev](https://e-kurs-demo.yagizcngz.workers.dev)**. Open it as a [student](https://e-kurs-demo.yagizcngz.workers.dev/?demo=student), an [instructor](https://e-kurs-demo.yagizcngz.workers.dev/?demo=teacher) or an [admin](https://e-kurs-demo.yagizcngz.workers.dev/?demo=admin), or sign in with any password. The demo runs in the browser on a snapshot of sample data, so nothing you change is saved.
+> **Live demo: [e-kurs-demo.vercel.app](https://e-kurs-demo.vercel.app)**. Open it as a [student](https://e-kurs-demo.vercel.app/?demo=student), an [instructor](https://e-kurs-demo.vercel.app/?demo=teacher) or an [admin](https://e-kurs-demo.vercel.app/?demo=admin), or sign in with any password. The demo runs in the browser on a snapshot of sample data, so nothing you change is saved.
 
 ---
 
