@@ -24,3 +24,15 @@ test("courseRelation: enrollment progress first, then owned, else none", () => {
   assert.equal(courseRelation(4, mine, [3]), "none");
   assert.equal(courseRelation(undefined, mine, []), "none");
 });
+
+test("a teacher is active only through courses carrying their id, not through a name inside another name", () => {
+  const courses = [{ teacherId: 8, instructor: "Ali Can Demir" }, { instructor: "Ali Can" }];
+  assert.equal(
+    courses.some((c) => isTaughtBy(c, 3, "")),
+    false,
+  ); // "Ali Can" (id 3) teaches nothing
+  assert.equal(
+    courses.some((c) => isTaughtBy(c, 8, "")),
+    true,
+  );
+});

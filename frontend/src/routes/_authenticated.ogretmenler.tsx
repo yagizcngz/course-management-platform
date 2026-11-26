@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { adminOnly } from "../hooks/useAdminGuard";
-import { fetchCategories } from "../components/courseHelpers";
+import { fetchCategories, isTaughtBy } from "../components/courseHelpers";
 
 import { ProfileRecord } from "@/components/ProfileModal";
 import { API_BASE } from "@/components/courseHelpers";
@@ -262,22 +262,12 @@ function TeachersPage() {
     ),
   );
 
-  // Öğretmenin güncel olarak bir kursta eğitmen olarak görünüp görünmediğine göre
-  // aktif/pasif durumunu hesaplar (kurs listesindeki "instructor" alanına göre eşleştirme)
-  const getTeacherStatus = (teacher: TeacherData) => {
-    const fullName =
-      `${teacher.firstName || teacher.FirstName || ""} ${teacher.lastName || teacher.LastName || ""}`
-        .trim()
-        .toLowerCase();
-    if (!fullName) return t("teachers.inactive");
-
-    const isTeaching = dbCourses.some((c) => {
-      const instructor = String(c.instructor || c.Instructor || "").toLowerCase();
-      return instructor && instructor.includes(fullName);
-    });
-
-    return isTeaching ? t("teachers.active") : t("teachers.inactive");
-  };
+  // Aktif: en az bir kursun eğitmeni. Kurstaki TeacherId'ye bakılır; adla eşleştirme
+  // aynı adlı (veya adı başka bir adın içinde geçen) eğitmenleri karıştırıyordu.
+  const getTeacherStatus = (teacher: TeacherData) =>
+    dbCourses.some((c) => isTaughtBy(c, teacher.id ?? teacher.Id, ""))
+      ? t("teachers.active")
+      : t("teachers.inactive");
 
   const handleStartEditProfile = () => {
     if (!selectedProfileTeacher) return;
