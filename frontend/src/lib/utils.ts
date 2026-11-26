@@ -76,3 +76,6 @@ export const chip = (active: boolean) =>
       ? "border-primary bg-primary text-primary-foreground"
       : "border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground"
   }`;
+
+/** `pattern` for e-mail inputs; capitals are fine (the browser compiles it anchored, with the `v` flag). */
+export const EMAIL_PATTERN = String.raw`[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}`;

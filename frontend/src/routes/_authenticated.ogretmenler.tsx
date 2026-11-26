@@ -1,5 +1,5 @@
 import { authHeaders, readError } from "@/lib/auth";
-import { initialsOf, formatDate, pillButton } from "@/lib/utils";
+import { EMAIL_PATTERN, initialsOf, formatDate, pillButton } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageHeader } from "../components/PageHeader";
 import { Plus, X, Edit2, Trash2, Upload, Link2, Search } from "lucide-react";
@@ -914,7 +914,7 @@ function TeachersPage() {
                       input.setCustomValidity(t("validation.required"));
                   }}
                   onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
-                  pattern="[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}"
+                  pattern={EMAIL_PATTERN}
                   title={t("teachers.emailTitle")}
                   className="w-full p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-foreground transition-colors"
                   value={newEmail}
