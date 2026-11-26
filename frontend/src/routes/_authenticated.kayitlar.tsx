@@ -212,7 +212,13 @@ function EnrollmentsPage() {
       const deletedIds = results.filter((id): id is number => id !== null);
 
       if (deletedIds.length < results.length) {
-        showToast(t("enrollments.errors.serverError"), "error");
+        showToast(
+          t("enrollments.errors.partialDelete", {
+            failed: results.length - deletedIds.length,
+            total: results.length,
+          }),
+          "error",
+        );
       } else {
         showToast(t("enrollments.errors.deleteSuccess", { count: deletedIds.length }));
         setIsEditMode(false);

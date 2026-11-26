@@ -942,7 +942,8 @@
         "enrollSuccess": "Öğrenci kursa başarıyla kaydedildi!",
         "enrollFailed": "Kayıt başarısız. Zaten kayıtlı olabilir veya sunucu hatası oluştu.",
         "serverError": "Sunucuya ulaşılamıyor.",
-        "deleteSuccess": "{{count}} kayıt başarıyla silindi."
+        "deleteSuccess": "{{count}} kayıt başarıyla silindi.",
+        "partialDelete": "{{total}} kayıttan {{failed}} tanesi silinemedi."
       }
     },
     "reports": {

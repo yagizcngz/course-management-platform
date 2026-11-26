@@ -1015,7 +1015,8 @@
         "enrollSuccess": "Student successfully enrolled in the course!",
         "enrollFailed": "Enrollment failed. Already enrolled or a server error occurred.",
         "serverError": "Cannot connect to server.",
-        "deleteSuccess": "{{count}} enrollments deleted successfully."
+        "deleteSuccess": "{{count}} enrollments deleted successfully.",
+        "partialDelete": "{{failed}} of {{total}} enrollments could not be deleted."
       }
     },
     "reports": {

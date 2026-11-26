@@ -172,34 +172,25 @@ function StudentsPage() {
     if (selectedStudentIds.length === 0) return;
 
     try {
-      const headers = authHeaders();
-
-      const results = await Promise.all(
-        selectedStudentIds.map((id) =>
-          fetch(`${API_BASE}/api/students/${id}`, {
-            method: "DELETE",
-            headers,
-          })
-            .then((res) => (res.ok ? id : null))
-            .catch(() => null),
-        ),
-      );
-      const deleted = results.filter((id): id is string | number => id !== null);
-
-      setDbStudents((prevStudents) =>
-        prevStudents.filter((s) => !deleted.includes(s.id || (s.Id as string | number))),
-      );
-
-      if (deleted.length < selectedStudentIds.length)
-        showToast(t("students.errors.deleteFailed"), "error");
-      else showToast(t("students.errors.deleteSuccess", { count: deleted.length }));
-      setIsDeleteModalOpen(false);
-      setSelectedStudentIds([]);
-      setIsEditMode(false);
+      const res = await fetch(`${API_BASE}/api/students/bulk-delete`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(selectedStudentIds.map(Number)),
+      });
+      if (res.ok) {
+        showToast(t("students.errors.deleteSuccess", { count: selectedStudentIds.length }));
+        setSelectedStudentIds([]);
+        setIsEditMode(false);
+      } else {
+        showToast(await readError(res, t("students.errors.deleteFailed")), "error");
+      }
     } catch (error) {
       console.error("Silme hatası:", error);
       showToast(t("students.errors.deleteFailed"), "error");
     }
+    setIsDeleteModalOpen(false);
+    // the API deletes one by one, so after a failure some may be gone: show what the database holds
+    fetchStudents();
   };
 
   const cancelDelete = () => {
