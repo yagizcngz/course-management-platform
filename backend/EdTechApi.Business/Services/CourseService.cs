@@ -105,13 +105,27 @@ namespace EdTechApi.Business.Services
 
             var rating = await _context.CourseRatings.FirstOrDefaultAsync(r => r.StudentId == studentId && r.CourseId == courseId);
             if (rating == null)
-                _context.CourseRatings.Add(new CourseRating { StudentId = studentId, CourseId = courseId, Stars = stars });
+            {
+                var added = new CourseRating { StudentId = studentId, CourseId = courseId, Stars = stars };
+                _context.CourseRatings.Add(added);
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException)
+                {
+                    // eşzamanlı ikinci istek önce yazdı: o satır bu puanla güncellenir
+                    _context.Entry(added).State = EntityState.Detached;
+                    await _context.CourseRatings.Where(r => r.StudentId == studentId && r.CourseId == courseId)
+                        .ExecuteUpdateAsync(s => s.SetProperty(r => r.Stars, stars).SetProperty(r => r.UpdatedAt, DateTime.UtcNow));
+                }
+            }
             else
             {
                 rating.Stars = stars;
                 rating.UpdatedAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
             }
-            await _context.SaveChangesAsync();
             return await GetRatingAsync(courseId, studentId);
         }
 

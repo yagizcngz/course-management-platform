@@ -54,6 +54,8 @@ namespace EdTechApi.Business.Services
                     // aynı anahtarla eşzamanlı ikinci istek: benzersiz indeks reddetti, bakiye artışı geri alınır
                     await tx.RollbackAsync();
                     _context.Entry(entry).State = EntityState.Detached;
+                    // başka bir veritabanı hatası yükleme yapılmış gibi yanıtlanmaz
+                    if (!await _context.WalletTransactions.AnyAsync(t => t.UserId == userId && t.Reference == reference)) throw;
                 }
             }
 

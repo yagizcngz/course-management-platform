@@ -198,8 +198,19 @@ namespace EdTechApi.Business.Services
             if (!await _context.Lessons.AnyAsync(l => l.Id == lessonId && l.CourseId == courseId))
                 throw new ArgumentException("Ders bulunamadı.");
             if (!await _context.LessonCompletions.AnyAsync(c => c.StudentId == studentId && c.LessonId == lessonId))
-                _context.LessonCompletions.Add(new LessonCompletion { StudentId = studentId, LessonId = lessonId });
-            await _context.SaveChangesAsync();
+            {
+                var done = new LessonCompletion { StudentId = studentId, LessonId = lessonId };
+                _context.LessonCompletions.Add(done);
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateException)
+                {
+                    // eşzamanlı ikinci istek (çift tık): ilki dersi zaten işaretledi
+                    _context.Entry(done).State = EntityState.Detached;
+                }
+            }
 
             var progress = (await GetProgressAsync(studentId, new[] { courseId }))[courseId];
             enrollment.Status = progress.IsComplete ? Completed : InProgress;
