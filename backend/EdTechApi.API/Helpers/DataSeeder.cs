@@ -20,9 +20,7 @@ namespace EdTechApi.API.Helpers
                 db.SaveChanges();
             }
 
-            // yalnızca boş veritabanında: yöneticinin adını değiştirdiği veya sildiği varsayılan kategori geri gelmez
-            // (eksik varsayılanlar Ayarlar'daki "varsayılanları ekle" ile, POST api/categories/seed, eklenir)
-            if (!db.Categories.Any()) CatalogSeed.SeedCategories(db);
+            CatalogSeed.SeedNewDefaultCategories(db);
             var demo = isDevelopment && config["Seed:DemoUsers"] == "true";
             if (demo) SeedDemo(db, config);
             DataSanitizer.Run(db);

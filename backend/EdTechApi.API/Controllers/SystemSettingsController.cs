@@ -22,7 +22,8 @@ namespace EdTechApi.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllSettings()
         {
-            var settings = await _context.SystemSettings.ToListAsync();
+            // "_" ile başlayan anahtarlar sistemin kendi kayıtlarıdır (ör. CatalogSeed.OfferedDefaultsKey)
+            var settings = await _context.SystemSettings.Where(s => !s.SettingKey.StartsWith("_")).ToListAsync();
             return Ok(settings);
         }
 

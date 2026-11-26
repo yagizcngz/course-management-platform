@@ -18,6 +18,35 @@ namespace EdTechApi.API.Helpers
         private record SeedStudent(string Email, string First, string Last);
 
         /// <summary>Eksik kategorileri ekler, boş/eski kısa açıklamaları günceller. Eklenen kategori sayısını döner.</summary>
+        // varsayılan adların hangileri sunuldu; "_" ile başlayan anahtar Sistem Ayarları listesinde görünmez
+        public const string OfferedDefaultsKey = "_OFFERED_DEFAULT_CATEGORIES";
+
+        // Açılışta her varsayılan kategori bir kez eklenir: yöneticinin adını değiştirdiği veya sildiği geri gelmez,
+        // sonraki bir sürümde listeye eklenen yeni varsayılan bir sonraki açılışta eklenir.
+        public static void SeedNewDefaultCategories(AppDbContext db)
+        {
+            var marker = db.SystemSettings.FirstOrDefault(s => s.SettingKey == OfferedDefaultsKey);
+            // işaret yoksa: boş veritabanına hepsi eklenir; dolu veritabanında eski açılışlar hepsini zaten eklemişti
+            var offered = marker == null
+                ? (db.Categories.Any() ? BranchOptions.All : Array.Empty<string>())
+                : marker.SettingValue.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            var existing = db.Categories.Select(c => c.Name).ToList();
+            foreach (var (name, description) in BranchOptions.Defaults)
+            {
+                if (offered.Contains(name, StringComparer.OrdinalIgnoreCase)) continue;
+                if (!existing.Contains(name, StringComparer.OrdinalIgnoreCase))
+                    db.Categories.Add(new Category { Name = name, Description = description });
+            }
+            if (marker == null)
+                db.SystemSettings.Add(marker = new SystemSetting
+                {
+                    SettingKey = OfferedDefaultsKey,
+                    Description = "Sistem kaydı: eklenmiş varsayılan kategoriler (elle düzenlenmez)."
+                });
+            marker.SettingValue = string.Join('\n', offered.Union(BranchOptions.All, StringComparer.OrdinalIgnoreCase));
+            db.SaveChanges();
+        }
+
         public static int SeedCategories(AppDbContext db)
         {
             var existing = db.Categories.ToList();

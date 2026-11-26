@@ -1,5 +1,6 @@
 using EdTechApi.API.Controllers;
 using EdTechApi.API.Helpers;
+using EdTechApi.Core.Constants;
 using EdTechApi.Core.Entities;
 using EdTechApi.DataAccess.Context;
 using Microsoft.AspNetCore.Mvc;
@@ -76,6 +77,35 @@ namespace EdTechApi.Tests
             DataSeeder.Run(_db, config, isDevelopment: false);
 
             Assert.False(_db.Categories.Any(c => c.Name == "Matematik"));
+        }
+
+        [Fact]
+        public void A_new_default_from_a_later_version_is_added_once()
+        {
+            using var connection = new SqliteConnection("DataSource=:memory:");
+            connection.Open();
+            using var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>().UseSqlite(connection).Options);
+            db.Database.EnsureCreated();
+            var config = new ConfigurationBuilder().Build();
+
+            DataSeeder.Run(db, config, isDevelopment: false);
+            Assert.Equal(BranchOptions.All.Length, db.Categories.Count());
+
+            // pretend "Spor" arrived in a later version: it was never offered and does not exist yet
+            db.Categories.Remove(db.Categories.Single(c => c.Name == "Spor"));
+            var marker = db.SystemSettings.Single(s => s.SettingKey == CatalogSeed.OfferedDefaultsKey);
+            marker.SettingValue = string.Join('\n', BranchOptions.All.Where(n => n != "Spor"));
+            db.SaveChanges();
+
+            DataSeeder.Run(db, config, isDevelopment: false);
+            Assert.True(db.Categories.Any(c => c.Name == "Spor"));
+
+            // the admin deletes it: it stays deleted
+            db.Categories.Remove(db.Categories.Single(c => c.Name == "Spor"));
+            db.SaveChanges();
+            DataSeeder.Run(db, config, isDevelopment: false);
+            Assert.False(db.Categories.Any(c => c.Name == "Spor"));
+            Assert.Equal(BranchOptions.All.Length - 1, db.Categories.Count());
         }
     }
 }
