@@ -19,7 +19,7 @@ import {
 } from "@/components/courseHelpers";
 import { CourseDetailModal } from "@/components/CourseDetailModal";
 
-import { API_BASE, emptyExtras, extrasBody } from "@/components/courseHelpers";
+import { API_BASE, emptyExtras, extrasBody, parsePrice } from "@/components/courseHelpers";
 import { CourseTaxonomyFields } from "@/components/CourseTaxonomyFields";
 import { teacherOnly } from "@/hooks/useAdminGuard";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -106,6 +106,11 @@ function TaughtCoursesPage() {
 
   const handleAddCourse = async (e: React.FormEvent) => {
     e.preventDefault();
+    const price = parsePrice(newPrice);
+    if (price === null) {
+      toast.error(t("courses.errors.priceInvalid"));
+      return;
+    }
     try {
       const profileRes = await fetch(`${API_BASE}/api/profile/me`, { headers: authHeaders() });
       const profile = await profileRes.json();
@@ -122,7 +127,7 @@ function TaughtCoursesPage() {
           ...extrasBody(newExtras),
           Instructor: `${profile.firstName ?? ""} ${profile.lastName ?? ""}`.trim(),
           MaxCapacity: Number(newCapacity) || 0,
-          Price: Number(newPrice) || 0,
+          Price: price,
           Description: newDescription,
         }),
       });

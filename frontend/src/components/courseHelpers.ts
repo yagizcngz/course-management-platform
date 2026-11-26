@@ -262,3 +262,9 @@ export const refundNote = (p: ActivePurchase, days: number, date: (raw: string) 
     : p.refundedBefore
       ? { key: "lessons.refundUsed", values: {} }
       : { key: "lessons.refundClosed", values: { days, date: date(p.refundableUntil) } };
+
+// Form price text → number; blank, non-numeric or negative is null (never silently 0, which would make the course free)
+export const parsePrice = (text: string): number | null => {
+  const n = text.trim() === "" ? NaN : Number(text);
+  return Number.isFinite(n) && n >= 0 ? n : null;
+};

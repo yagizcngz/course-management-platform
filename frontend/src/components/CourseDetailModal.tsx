@@ -46,6 +46,7 @@ import {
   resolveImageSrc,
   emptyExtras,
   extrasBody,
+  parsePrice,
   extrasOf,
   getCourseImage,
   getCourseEnrollments,
@@ -209,13 +210,9 @@ export function CourseDetailModal({
 
   const handleTeachRequest = async () => {
     try {
-      const token = localStorage.getItem("jwt_token");
       const res = await fetch(`${API_BASE}/api/teachingrequests`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders(),
         body: JSON.stringify({ CourseId: courseId }),
       });
       if (res.ok) {
@@ -340,13 +337,14 @@ export function CourseDetailModal({
     setIsUploadingImage(true);
     setStatusMessage(null);
     try {
-      const token = localStorage.getItem("jwt_token");
       const formData = new FormData();
       formData.append("file", file);
 
+      // without Content-Type, so the browser sets the multipart boundary
+      const { Authorization } = authHeaders();
       const response = await fetch(`${API_BASE}/api/uploads/course-image`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: Authorization ? { Authorization } : {},
         body: formData,
       });
 
@@ -397,12 +395,15 @@ export function CourseDetailModal({
       showStatusToast("error", t("courseModal.errors.instructorEmpty"));
       return;
     }
+    const priceToSend = parsePrice(editPrice);
+    if (priceToSend === null) {
+      showStatusToast("error", t("courses.errors.priceInvalid"));
+      return;
+    }
 
     setIsSaving(true);
     setStatusMessage(null);
     try {
-      const token = localStorage.getItem("jwt_token");
-
       // Instructor metnini backend zaten senkronize edecek
       // (CourseService.SyncInstructorFromTeacherAsync), ama burada da doğru değeri
       // gönderiyoruz ki UI, sunucu yanıtı dönene kadar da tutarlı görünsün.
@@ -412,10 +413,7 @@ export function CourseDetailModal({
 
       const response = await fetch(`${API_BASE}/api/courses/${courseId}`, {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+        headers: authHeaders(),
         body: JSON.stringify({
           Title: editTitle,
           Category: editCategory,
@@ -425,7 +423,7 @@ export function CourseDetailModal({
           Instructor: instructorToSend,
           TeacherId: teacherIdToSend,
           MaxCapacity: Number(editCapacity) || 0,
-          Price: Number(editPrice) || 0,
+          Price: priceToSend,
           Description: editDescription,
           ImageUrl: editImageUrl,
         }),
@@ -451,8 +449,8 @@ export function CourseDetailModal({
           TeacherId: teacherIdToSend,
           maxCapacity: Number(editCapacity) || 0,
           MaxCapacity: Number(editCapacity) || 0,
-          price: Number(editPrice) || 0,
-          Price: Number(editPrice) || 0,
+          price: priceToSend,
+          Price: priceToSend,
           description: editDescription,
           Description: editDescription,
           imageUrl: editImageUrl,

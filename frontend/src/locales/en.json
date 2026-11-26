@@ -964,6 +964,7 @@
       "errors": {
         "categoryRequired": "Please select a category.",
         "instructorRequired": "Please select an instructor.",
+        "priceInvalid": "Enter a valid price (0 for a free course).",
         "createSuccess": "Course successfully created!",
         "createFailed": "Registration failed! Check the form.",
         "serverError": "Cannot connect to server.",

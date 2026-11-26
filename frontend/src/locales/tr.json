@@ -891,6 +891,7 @@
       "errors": {
         "categoryRequired": "Lütfen bir kategori seçin.",
         "instructorRequired": "Lütfen bir eğitmen seçin.",
+        "priceInvalid": "Geçerli bir ücret girin (ücretsiz kurs için 0).",
         "createSuccess": "Kurs başarıyla oluşturuldu!",
         "createFailed": "Kayıt başarısız! Formu kontrol edin.",
         "serverError": "Sunucuya ulaşılamıyor.",

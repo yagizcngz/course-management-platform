@@ -27,6 +27,7 @@ import { useNavigate } from "@tanstack/react-router";
 import {
   emptyExtras,
   extrasBody,
+  parsePrice,
   getCourseImage,
   getTeacherFullName,
   getTeachersInBranch,
@@ -245,6 +246,11 @@ function CoursesPage() {
       showToast(t("courses.errors.instructorRequired"), "error");
       return;
     }
+    const price = parsePrice(newPrice);
+    if (price === null) {
+      showToast(t("courses.errors.priceInvalid"), "error");
+      return;
+    }
 
     const selectedTeacher = dbTeachers.find((t) => String(t.id ?? t.Id) === newTeacherId);
     const instructorName = getTeacherFullName(selectedTeacher || {});
@@ -262,7 +268,7 @@ function CoursesPage() {
           Instructor: instructorName,
           TeacherId: Number(newTeacherId),
           MaxCapacity: Number(newCapacity) || 0,
-          Price: Number(newPrice) || 0,
+          Price: price,
           Description: newDescription,
         }),
       });
