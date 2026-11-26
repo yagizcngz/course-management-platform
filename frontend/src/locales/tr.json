@@ -175,6 +175,7 @@
       "registerNow": "Hemen Kaydol",
       "returnHome": "Ana Sayfaya Dön",
       "invalidCredentials": "Kullanıcı adı veya şifre hatalı!",
+      "tooManyRequests": "Çok fazla istek gönderildi. Lütfen bir dakika bekleyip tekrar deneyin.",
       "serverError": "Sunucuya ulaşılamıyor. Backend (C# API) çalışıyor mu?",
       "panelEyebrow": "Okuma odası",
       "demo": {

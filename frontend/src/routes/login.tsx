@@ -8,7 +8,8 @@ import { useLater } from "@/hooks/useLater";
 import { API_BASE } from "@/components/courseHelpers";
 import { AuthShell, authButtonClass, authInputClass, authLabelClass } from "@/components/AuthShell";
 import { LedgerScene } from "@/components/effects/three/LedgerScene";
-import { getRoleFromToken, isAdminRole, isTeacherRole } from "@/lib/auth";
+import { getRoleFromToken, isAdminRole, isTeacherRole, readError } from "@/lib/auth";
+import { loginFailureKey } from "@/lib/loginError";
 import type { SealKind } from "@/components/effects/three/sealEmblems";
 import { SplitHeadline } from "@/components/motion";
 
@@ -132,7 +133,7 @@ function LoginPage() {
         // long enough for the seal to land before the dashboard opens
         later(() => navigate({ to: "/dashboard" }), 1200);
       } else {
-        triggerError(t("login.invalidCredentials"));
+        triggerError(await readError(response, t(loginFailureKey(response.status))));
       }
     } catch {
       triggerError(t("login.serverError"));

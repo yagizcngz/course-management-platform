@@ -175,6 +175,7 @@
       "registerNow": "Register Now",
       "returnHome": "Return Home",
       "invalidCredentials": "Invalid username or password!",
+      "tooManyRequests": "Too many requests. Please wait a minute and try again.",
       "serverError": "Cannot connect to server. Is Backend (C# API) running?",
       "panelEyebrow": "Reading room",
       "demo": {
