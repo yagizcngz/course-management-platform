@@ -10,6 +10,7 @@ import {
   seekAllowed,
   type WatchState,
 } from "@/lib/watchProgress";
+import { loadYouTube, type YTPlayer } from "@/lib/youtubeApi";
 
 export interface TrackedVideoProps {
   src: string;
@@ -126,51 +127,7 @@ function TrackedFile(props: TrackedVideoProps) {
   return <Frame failed={failed}>{video}</Frame>;
 }
 
-// --- YouTube: the IFrame API is loaded once, on demand -----------------------------------------
-
-interface YTPlayer {
-  getCurrentTime(): number;
-  getDuration(): number;
-  getPlaybackRate(): number;
-  setPlaybackRate(rate: number): void;
-  getPlayerState(): number;
-  seekTo(seconds: number, allowSeekAhead: boolean): void;
-  destroy(): void;
-}
-interface YTNamespace {
-  Player: new (
-    el: HTMLElement,
-    opts: {
-      videoId: string;
-      playerVars?: Record<string, number>;
-      events?: {
-        onReady?: () => void;
-        onStateChange?: (e: { data: number }) => void;
-        onError?: () => void;
-      };
-    },
-  ) => YTPlayer;
-}
-declare global {
-  interface Window {
-    YT?: YTNamespace;
-    onYouTubeIframeAPIReady?: () => void;
-  }
-}
-
-let ytApi: Promise<YTNamespace> | null = null;
-const loadYouTube = () =>
-  (ytApi ??= new Promise((resolve) => {
-    if (window.YT?.Player) return resolve(window.YT);
-    const previous = window.onYouTubeIframeAPIReady;
-    window.onYouTubeIframeAPIReady = () => {
-      previous?.();
-      resolve(window.YT!);
-    };
-    const script = document.createElement("script");
-    script.src = "https://www.youtube.com/iframe_api";
-    document.head.appendChild(script);
-  }));
+// --- YouTube: the IFrame API is loaded once, on demand (lib/youtubeApi.ts) ----------------------
 
 const PLAYING = 1;
 const ENDED = 0;
@@ -188,43 +145,45 @@ function TrackedYouTube(props: TrackedVideoProps) {
     let poll = 0;
     let cancelled = false;
     let last = 0;
-    loadYouTube().then((YT) => {
-      if (cancelled || !host.current) return;
-      const mount = document.createElement("div");
-      host.current.appendChild(mount);
-      player = new YT.Player(mount, {
-        videoId,
-        playerVars: { rel: 0, modestbranding: 1 },
-        events: {
-          onReady: () => {
-            trackerRef.current.ready(player!.getDuration());
-            // the API has no time event: sample twice a second
-            poll = window.setInterval(() => {
-              const p = player!;
-              const now = p.getCurrentTime();
-              const rate = p.getPlaybackRate();
-              if (rate > MAX_RATE) {
-                p.setPlaybackRate(MAX_RATE);
-                trackerRef.current.rateTooHigh();
-              }
-              const back = trackerRef.current.clampSeek(now);
-              if (back !== null) {
-                p.seekTo(back, true);
-                last = back;
-                return;
-              }
-              if (p.getPlayerState() === PLAYING)
-                trackerRef.current.played(last, now, rate, p.getDuration());
-              last = now;
-            }, 500);
+    loadYouTube()
+      .then((YT) => {
+        if (cancelled || !host.current) return;
+        const mount = document.createElement("div");
+        host.current.appendChild(mount);
+        player = new YT.Player(mount, {
+          videoId,
+          playerVars: { rel: 0, modestbranding: 1 },
+          events: {
+            onReady: () => {
+              trackerRef.current.ready(player!.getDuration());
+              // the API has no time event: sample twice a second
+              poll = window.setInterval(() => {
+                const p = player!;
+                const now = p.getCurrentTime();
+                const rate = p.getPlaybackRate();
+                if (rate > MAX_RATE) {
+                  p.setPlaybackRate(MAX_RATE);
+                  trackerRef.current.rateTooHigh();
+                }
+                const back = trackerRef.current.clampSeek(now);
+                if (back !== null) {
+                  p.seekTo(back, true);
+                  last = back;
+                  return;
+                }
+                if (p.getPlayerState() === PLAYING)
+                  trackerRef.current.played(last, now, rate, p.getDuration());
+                last = now;
+              }, 500);
+            },
+            onStateChange: (e) => {
+              if (e.data === ENDED) trackerRef.current.ended(player!.getDuration());
+            },
+            onError: () => setFailed(true),
           },
-          onStateChange: (e) => {
-            if (e.data === ENDED) trackerRef.current.ended(player!.getDuration());
-          },
-          onError: () => setFailed(true),
-        },
-      });
-    });
+        });
+      })
+      .catch(() => !cancelled && setFailed(true));
     return () => {
       cancelled = true;
       window.clearInterval(poll);
