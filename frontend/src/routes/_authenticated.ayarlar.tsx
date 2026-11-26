@@ -24,6 +24,7 @@ import { authHeaders, getRoleFromToken, isAdminRole, readError } from "@/lib/aut
 import { API_BASE, refundNote, type ActivePurchase } from "@/components/courseHelpers";
 import { formatDate, formatTry } from "@/lib/utils";
 import { getReduceMotion, setReduceMotion } from "@/lib/motionPref";
+import { SETTINGS_TABS, tabOrDefault, tabsFor, type SettingsTab } from "@/lib/settingsTabs";
 interface SystemSettingData {
   settingKey: string;
   settingValue: string;
@@ -37,28 +38,19 @@ interface CategoryData {
   subCategories?: string[];
 }
 
-const TABS = [
-  "account",
-  "security",
-  "preferences",
-  "privacy",
-  "purchases",
-  "system",
-  "categories",
-] as const;
-type Tab = (typeof TABS)[number];
+type Tab = SettingsTab;
 
 export const Route = createFileRoute("/_authenticated/ayarlar")({
   component: SettingsPage,
   // ?tab= opens a section directly (links from the help centre and the wallet)
   validateSearch: (search: Record<string, unknown>): { tab?: Tab } =>
-    TABS.includes(search.tab as Tab) ? { tab: search.tab as Tab } : {},
+    SETTINGS_TABS.includes(search.tab as Tab) ? { tab: search.tab as Tab } : {},
 });
 
 function SettingsPage() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate({ from: "/ayarlar" });
-  const activeTab: Tab = Route.useSearch().tab ?? "account";
+  const requestedTab = Route.useSearch().tab;
   const setActiveTab = (tab: Tab) =>
     navigate({ search: tab === "account" ? {} : { tab }, replace: true, resetScroll: false });
   const [reduceMotion, setReduceMotionState] = useState(false);
@@ -364,20 +356,8 @@ function SettingsPage() {
     );
   }
 
-  const tabs: { id: Tab; label: string }[] = [
-    { id: "account", label: t("settings.tabs.account") },
-    { id: "security", label: t("settings.tabs.security") },
-    { id: "preferences", label: t("settings.tabs.preferences") },
-    { id: "privacy", label: t("settings.tabs.privacy") },
-    // admins have no wallet
-    ...(isAdmin ? [] : [{ id: "purchases" as const, label: t("settings.tabs.purchases") }]),
-    ...(isAdmin
-      ? [
-          { id: "system" as const, label: t("settings.tabs.system") },
-          { id: "categories" as const, label: t("settings.tabs.categories") },
-        ]
-      : []),
-  ];
+  const tabs = tabsFor(isAdmin).map((id) => ({ id, label: t(`settings.tabs.${id}`) }));
+  const activeTab = tabOrDefault(requestedTab, isAdmin);
   const label = (key: string, ns: "categories" | "subCategories") =>
     i18n.exists(`dynamic.${ns}.${key}`) ? t(`dynamic.${ns}.${key}`) : key;
 
