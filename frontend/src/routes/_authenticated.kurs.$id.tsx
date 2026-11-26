@@ -104,8 +104,8 @@ function CoursePage() {
       setActiveId((cur) => (json.lessons.some((l) => l.id === cur) ? cur : (resume?.id ?? null)));
       setError(null);
     } catch (e) {
-      if (stale()) return;
-      setError((e as Error).message);
+      if (!stale()) setError((e as Error).message);
+      return; // the page shows only the error, so the wallet is not needed
     }
     const w = await fetch(`${API_BASE}/api/wallet/me`, { headers: authHeaders() }).catch(
       () => null,
