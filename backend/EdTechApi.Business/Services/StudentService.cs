@@ -39,14 +39,15 @@ namespace EdTechApi.Business.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteStudentAsync(int id)
+        public async Task DeleteStudentsAsync(params int[] ids)
         {
             // Student kaydı hard-delete değil, soft-delete yapılıyor: satır DB'de kalır,
             // sadece IsDeleted=true işaretlenir. Böylece Raporlar sayfası gerçek
-            // "silinen öğrenci" sayısını gösterebiliyor.
-            var student = await _context.Students.FindAsync(id);
-            if (student != null)
+            // "silinen öğrenci" sayısını gösterebiliyor. Tek SaveChanges: ya hepsi silinir ya hiçbiri.
+            foreach (var id in ids)
             {
+                var student = await _context.Students.FindAsync(id);
+                if (student == null) continue;
                 student.IsDeleted = true;
                 student.DeletedAt = DateTime.UtcNow;
 
@@ -60,9 +61,8 @@ namespace EdTechApi.Business.Services
                         await AccountRetirement.RetireAsync(_context, user);
                     }
                 }
-
-                await _context.SaveChangesAsync();
             }
+            await _context.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<Student>> GetDeletedStudentsAsync()

@@ -79,3 +79,16 @@ export const chip = (active: boolean) =>
 
 /** `pattern` for e-mail inputs; capitals are fine (the browser compiles it anchored, with the `v` flag). */
 export const EMAIL_PATTERN = String.raw`[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}`;
+
+/** One DELETE per id; a rejected or non-OK request counts as failed, so one bad id never hides the others. */
+export const deleteEach = async <T>(ids: T[], del: (id: T) => Promise<Response>) => {
+  const ok = await Promise.all(
+    ids.map((id) =>
+      del(id).then(
+        (r) => r.ok,
+        () => false,
+      ),
+    ),
+  );
+  return { deleted: ids.filter((_, i) => ok[i]), failed: ok.filter((x) => !x).length };
+};

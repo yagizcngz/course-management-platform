@@ -189,7 +189,7 @@ function StudentsPage() {
       showToast(t("students.errors.deleteFailed"), "error");
     }
     setIsDeleteModalOpen(false);
-    // the API deletes one by one, so after a failure some may be gone: show what the database holds
+    // the API deletes all or none; reload either way so the table matches the database
     fetchStudents();
   };
 

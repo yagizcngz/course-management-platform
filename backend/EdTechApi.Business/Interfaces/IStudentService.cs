@@ -7,7 +7,7 @@ namespace EdTechApi.Business.Interfaces
         Task<IEnumerable<Student>> GetAllStudentsAsync();
         Task<Student?> GetStudentByIdAsync(int id);
         Task AddStudentAsync(Student student);
-        Task DeleteStudentAsync(int id);
+        Task DeleteStudentsAsync(params int[] ids);
 
         // Soft-delete edilmiş (silinmiş) öğrencilerin listesini döner — Raporlar sayfası için
         Task<IEnumerable<Student>> GetDeletedStudentsAsync();

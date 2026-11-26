@@ -245,7 +245,7 @@ namespace EdTechApi.API.Controllers
             var student = await _context.Students.FirstOrDefaultAsync(s => s.UserId == user.Id);
             if (student != null)
             {
-                await _studentService.DeleteStudentAsync(student.Id);
+                await _studentService.DeleteStudentsAsync(student.Id);
                 return NoContent();
             }
 

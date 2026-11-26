@@ -1,5 +1,5 @@
 import { authHeaders, readError } from "@/lib/auth";
-import { formatDate, pillButton } from "@/lib/utils";
+import { deleteEach, formatDate, pillButton } from "@/lib/utils";
 import { createFileRoute } from "@tanstack/react-router";
 import { Plus, X, AlertCircle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -199,23 +199,15 @@ function EnrollmentsPage() {
     setIsConfirmOpen(false);
 
     try {
-      const results = await Promise.all(
-        selectedEnrollmentIds.map((id) =>
-          fetch(`${API}/enrollments/${id}`, {
-            method: "DELETE",
-            headers: authHeaders(),
-          })
-            .then((res) => (res.ok ? id : null))
-            .catch(() => null),
-        ),
+      const { deleted: deletedIds, failed } = await deleteEach(selectedEnrollmentIds, (id) =>
+        fetch(`${API}/enrollments/${id}`, { method: "DELETE", headers: authHeaders() }),
       );
-      const deletedIds = results.filter((id): id is number => id !== null);
 
-      if (deletedIds.length < results.length) {
+      if (failed > 0) {
         showToast(
           t("enrollments.errors.partialDelete", {
-            failed: results.length - deletedIds.length,
-            total: results.length,
+            failed,
+            total: selectedEnrollmentIds.length,
           }),
           "error",
         );

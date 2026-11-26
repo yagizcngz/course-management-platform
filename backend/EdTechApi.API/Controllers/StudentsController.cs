@@ -100,7 +100,7 @@ namespace EdTechApi.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStudent(int id)
         {
-            await _studentService.DeleteStudentAsync(id);
+            await _studentService.DeleteStudentsAsync(id);
             return NoContent();
         }
 
@@ -118,12 +118,7 @@ namespace EdTechApi.API.Controllers
         {
             if (ids == null || !ids.Any()) return BadRequest("Silinecek öğrenci seçilmedi.");
 
-            foreach (var id in ids)
-            {
-                // Mevcut servis metodunu kullanarak seçili id'leri sırasıyla siliyoruz
-                await _studentService.DeleteStudentAsync(id);
-            }
-
+            await _studentService.DeleteStudentsAsync([.. ids]);
             return Ok();
         }
 

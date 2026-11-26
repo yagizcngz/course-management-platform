@@ -72,7 +72,7 @@ namespace EdTechApi.Tests
             await _wallet.PurchaseCourseAsync(_studentUser, _course.Id);
             var student = _db.Students.Single(s => s.UserId == _studentUser.Id);
 
-            await new StudentService(_db).DeleteStudentAsync(student.Id);
+            await new StudentService(_db).DeleteStudentsAsync(student.Id);
 
             Assert.Equal(3, _db.WalletTransactions.Count()); // top-up, purchase, teacher earning
             Assert.False(_db.Users.Any(u => u.Username == "s" || u.Email == "s@test"));

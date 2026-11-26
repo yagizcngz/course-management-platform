@@ -191,7 +191,7 @@ namespace EdTechApi.Tests
             _db.TeacherApplications.Add(new TeacherApplication { UserId = _ali.Id, Branch = "Genel", AboutMe = "x" });
             _db.SaveChanges();
 
-            await new StudentService(_db).DeleteStudentAsync(_aliStudent.Id);
+            await new StudentService(_db).DeleteStudentsAsync(_aliStudent.Id);
 
             var retired = _db.Users.Single(u => u.Id == _ali.Id);
             Assert.Equal(AccountRetirement.DeletedRole, retired.Role);
