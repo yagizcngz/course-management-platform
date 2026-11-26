@@ -371,6 +371,14 @@ namespace EdTechApi.Tests
         public void Saved_media_urls_are_https_or_our_own_uploads(string? url, bool ok) =>
             Assert.Equal(ok, EdTechApi.Core.Constants.SafeUrl.IsAllowed(url, "/uploads/"));
 
+        [Fact]
+        public void An_embedded_image_has_a_size_cap()
+        {
+            var max = EdTechApi.Core.Constants.SafeUrl.MaxDataImageLength;
+            Assert.True(EdTechApi.Core.Constants.SafeUrl.IsAllowed("data:image/png;base64," + new string('A', max - 22)));
+            Assert.False(EdTechApi.Core.Constants.SafeUrl.IsAllowed("data:image/png;base64," + new string('A', max)));
+        }
+
         private sealed class TestEnv(string name) : IWebHostEnvironment
         {
             public string EnvironmentName { get; set; } = name;
