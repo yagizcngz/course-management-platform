@@ -50,6 +50,8 @@ namespace EdTechApi.API.Controllers
             if (app == null) return NotFound();
             if (app.Status != "Pending") return BadRequest("Başvuru zaten sonuçlandırılmış.");
 
+            // yeni profil numarası için iki kayıt gerekir; arada hata olursa yarım onay kalmaz
+            await using var tx = await _context.Database.BeginTransactionAsync();
             var user = app.User;
             if (user.Role == "User") user.Role = "Teacher";
             if (string.IsNullOrWhiteSpace(user.AboutMe)) user.AboutMe = app.AboutMe;
@@ -88,6 +90,7 @@ namespace EdTechApi.API.Controllers
             app.Status = "Approved";
             app.ReviewedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
+            await tx.CommitAsync();
             return Ok(new { message = "Başvuru onaylandı; kullanıcı bir sonraki girişinde eğitmen olarak oturum açar." });
         }
 
