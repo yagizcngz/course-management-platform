@@ -82,6 +82,7 @@ namespace EdTechApi.API.Controllers
             var requests = await _context.TeachingRequests
                 .Include(r => r.Course)
                 .Where(r => r.TeacherId == teacher.Id)
+                .OrderByDescending(r => r.CreatedAt)
                 .Select(r => new {
                     r.Id,
                     r.CourseId,
@@ -196,7 +197,7 @@ namespace EdTechApi.API.Controllers
             if (user == null || (user.Role.ToLower() != "admin" && user.Role.ToLower() != "superadmin")) return StatusCode(403, "Admin access required.");
 
             var resolvedRequests = await _context.TeachingRequests
-                .Where(r => r.Status != "Pending")
+                .Where(r => r.Status != "Pending" && !r.IsDeletedByAdmin)
                 .ToListAsync();
 
             if (resolvedRequests.Any())

@@ -88,10 +88,12 @@ namespace EdTechApi.API.Controllers
                 .OrderByDescending(m => m.Id).Take(HistoryLimit)
                 .Select(m => new { m.Id, m.Body, m.CreatedAt, m.ReadAt, fromMe = m.SenderId == me })
                 .ToListAsync();
+            var now = DateTime.UtcNow;
             await _context.DirectMessages.Where(m => m.SenderId == userId && m.RecipientId == me && m.ReadAt == null)
-                .ExecuteUpdateAsync(s => s.SetProperty(m => m.ReadAt, DateTime.UtcNow));
+                .ExecuteUpdateAsync(s => s.SetProperty(m => m.ReadAt, now));
             messages.Reverse();
-            return Ok(messages);
+            // the list was read before the update: show the just-marked messages as read
+            return Ok(messages.Select(m => !m.fromMe && m.ReadAt == null ? m with { ReadAt = (DateTime?)now } : m));
         }
 
         [EnableRateLimiting("community")]
