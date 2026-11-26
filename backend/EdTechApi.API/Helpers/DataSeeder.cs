@@ -14,7 +14,7 @@ namespace EdTechApi.API.Helpers
             // örnek ayardaki yer tutucu parola herkesin bildiği bir yönetici hesabı açardı
             if (adminPass?.StartsWith("CHANGE_ME") == true) adminPass = null;
             if (!string.IsNullOrWhiteSpace(adminUser) && !string.IsNullOrWhiteSpace(adminPass)
-                && !db.Users.Any(u => u.Role == "Admin") && !db.Users.Any(u => u.Username == adminUser))
+                && !db.Users.Any(u => u.Role == "Admin" || u.Role == "SuperAdmin") && !db.Users.Any(u => u.Username == adminUser))
             {
                 db.Users.Add(NewUser(adminUser, adminPass, "Admin", "Admin", "", config["Seed:AdminEmail"] ?? ""));
                 db.SaveChanges();
