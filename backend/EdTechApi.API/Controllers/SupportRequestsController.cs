@@ -136,6 +136,8 @@ namespace EdTechApi.API.Controllers
             return Ok(requests);
         }
 
+        private const int MaxReply = 4000; // talep metniyle aynı sınır
+
         public class ReplySupportRequestDto
         {
             public string ReplyMessage { get; set; } = string.Empty;
@@ -147,13 +149,16 @@ namespace EdTechApi.API.Controllers
         [Authorize(Roles = RoleNames.Admins)]
         public async Task<IActionResult> ReplyToRequest(int id, [FromBody] ReplySupportRequestDto dto)
         {
+            var reply = (dto.ReplyMessage ?? "").Trim();
+            if (reply.Length == 0 || reply.Length > MaxReply) return BadRequest($"Mesaj 1-{MaxReply} karakter olmalıdır.");
+
             var request = await _context.SupportRequests.FindAsync(id);
             if (request == null)
             {
                 return NotFound("Support request not found.");
             }
 
-            request.ReplyMessage = dto.ReplyMessage;
+            request.ReplyMessage = reply;
             request.RepliedAt = DateTime.UtcNow;
             request.IsResolved = true;
 
@@ -168,7 +173,7 @@ namespace EdTechApi.API.Controllers
                 try
                 {
                     await _emailService.SendEmailAsync(to, "E-Kurs destek talebiniz yanıtlandı",
-                        $"Merhaba,\n\nDestek talebinize yanıt verildi:\n\n{dto.ReplyMessage}\n\nYanıtı Yardım Taleplerim sayfasında da görebilirsiniz.");
+                        $"Merhaba,\n\nDestek talebinize yanıt verildi:\n\n{reply}\n\nYanıtı Yardım Taleplerim sayfasında da görebilirsiniz.");
                 }
                 catch (Exception ex)
                 {

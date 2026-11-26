@@ -50,5 +50,19 @@ namespace EdTechApi.Tests
             Assert.IsNotType<BadRequestObjectResult>(await Support().CreateSupportRequest(Guest("guest@test.example")));
             Assert.Equal(1, await _db.SupportRequests.CountAsync());
         }
+
+        [Fact]
+        public async Task Blank_or_overlong_reply_is_refused_and_the_ticket_stays_open()
+        {
+            await Support().CreateSupportRequest(Guest("guest@test.example"));
+            var id = (await _db.SupportRequests.SingleAsync()).Id;
+
+            Assert.IsType<BadRequestObjectResult>(await Support().ReplyToRequest(id, new() { ReplyMessage = "   " }));
+            Assert.IsType<BadRequestObjectResult>(await Support().ReplyToRequest(id, new() { ReplyMessage = new string('a', 4001) }));
+            Assert.False((await _db.SupportRequests.AsNoTracking().SingleAsync()).IsResolved);
+
+            Assert.IsType<OkObjectResult>(await Support().ReplyToRequest(id, new() { ReplyMessage = " Şifreni sıfırlayabilirsin. " }));
+            Assert.Equal("Şifreni sıfırlayabilirsin.", (await _db.SupportRequests.AsNoTracking().SingleAsync()).ReplyMessage);
+        }
     }
 }
