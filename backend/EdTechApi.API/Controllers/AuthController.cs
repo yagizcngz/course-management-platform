@@ -39,6 +39,8 @@ namespace EdTechApi.API.Controllers
         public const int MaxTeacherBio = 2000;
         private const int MaxLoginFailures = 5;
         private static readonly TimeSpan LoginLockout = TimeSpan.FromMinutes(5);
+        private const string ResetPrefix = "pw-reset:";
+        private static readonly TimeSpan ResetCodeLifetime = TimeSpan.FromMinutes(10);
 
         [EnableRateLimiting("auth")]
         [HttpPost("send-verification-email")]
@@ -125,6 +127,67 @@ namespace EdTechApi.API.Controllers
                 role = newUser.Role,
                 teacherApplication = request.ApplyAsTeacher ? "Pending" : null
             });
+        }
+
+        // Şifre sıfırlama: kod yalnızca kayıtlı adrese gider; yanıt hesabın var olup olmadığını söylemez
+        [EnableRateLimiting("auth")]
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] SendVerificationEmailRequest request)
+        {
+            var email = (request.Email ?? "").Trim();
+            if (!new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(email))
+                return BadRequest("Geçerli bir e-posta adresi giriniz.");
+
+            var key = email.ToLowerInvariant();
+            if (_memoryCache.TryGetValue($"{ResetPrefix}sent:{key}", out _))
+                return StatusCode(429, "Bu adrese az önce kod gönderildi. Lütfen bir dakika sonra tekrar deneyin.");
+            _memoryCache.Set($"{ResetPrefix}sent:{key}", true, TimeSpan.FromMinutes(1));
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email != null && u.Email.ToLower() == key);
+            if (user != null && user.Role != EdTechApi.Business.Services.AccountRetirement.DeletedRole)
+            {
+                var code = System.Security.Cryptography.RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
+                _memoryCache.Set(ResetPrefix + key, code, ResetCodeLifetime);
+                _memoryCache.Remove($"{ResetPrefix}fail:{key}");
+                await _emailService.SendEmailAsync(user.Email!, "E-Kurs Şifre Sıfırlama Kodu", $@"
+                <h3>Şifre sıfırlama isteği</h3>
+                <p>Şifrenizi sıfırlamak için kodunuz:</p>
+                <h2 style='color: #4285F4;'>{code}</h2>
+                <p>Bu kod {ResetCodeLifetime.TotalMinutes:0} dakika boyunca geçerlidir. İsteği siz yapmadıysanız bu e-postayı yok sayın.</p>
+            ");
+            }
+
+            return Ok(new { message = "Bu adrese kayıtlı bir hesap varsa sıfırlama kodu gönderildi." });
+        }
+
+        // Yeni şifre eskisinin güvenlik damgasını değiştirir, bu yüzden açık oturumlar da kapanır
+        [EnableRateLimiting("auth")]
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            var email = (request.Email ?? "").Trim();
+            var key = email.ToLowerInvariant();
+            if (!_memoryCache.TryGetValue(ResetPrefix + key, out string? expectedCode) || expectedCode != request.Code)
+            {
+                // kayıttaki gibi: 5 yanlış denemede kod geçersiz olur, yenisi istenmeli
+                var failKey = $"{ResetPrefix}fail:{key}";
+                var fails = (_memoryCache.TryGetValue(failKey, out int f) ? f : 0) + 1;
+                _memoryCache.Set(failKey, fails, ResetCodeLifetime);
+                if (fails >= MaxOtpAttempts) _memoryCache.Remove(ResetPrefix + key);
+                return BadRequest("Geçersiz veya süresi dolmuş doğrulama kodu.");
+            }
+            if ((request.NewPassword ?? "").Length < MinPasswordLength)
+                return BadRequest($"Şifre en az {MinPasswordLength} karakter olmalıdır.");
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email != null && u.Email.ToLower() == key);
+            _memoryCache.Remove(ResetPrefix + key);
+            _memoryCache.Remove($"{ResetPrefix}fail:{key}");
+            if (user == null || user.Role == EdTechApi.Business.Services.AccountRetirement.DeletedRole)
+                return BadRequest("Geçersiz veya süresi dolmuş doğrulama kodu.");
+
+            user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Şifreniz güncellendi." });
         }
 
         // Yönetici panelinden öğrenci, eğitmen veya yönetici hesabı açma. Yetki JWT'deki rolden gelir; e-posta doğrulaması gerekmez.
@@ -322,6 +385,13 @@ namespace EdTechApi.API.Controllers
         public string Password { get; set; } = string.Empty;
         public string Role { get; set; } = "User"; // User | Teacher | Admin
         public string? Branch { get; set; }
+    }
+
+    public class ResetPasswordRequest
+    {
+        public string Email { get; set; } = string.Empty;
+        public string Code { get; set; } = string.Empty;
+        public string NewPassword { get; set; } = string.Empty;
     }
 
     public class SendVerificationEmailRequest
