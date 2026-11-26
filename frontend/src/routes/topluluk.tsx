@@ -462,7 +462,8 @@ function ThreadView({
     const res = await fetch(`${API_BASE}/api/forum/posts/${post.id}/like`, {
       method: "POST",
       headers: authHeaders(),
-    });
+    }).catch(() => null);
+    if (!res) return toast.error(t("community.postFailed"));
     if (!res.ok) return toast.error(await readError(res, t("community.postFailed")));
     const { liked, likes } = await res.json();
     setThread(
