@@ -67,6 +67,7 @@ const RULES: Rule[] = [
   [/az önce kod gönderildi/i, "codeCooldown"],
   [/Geçerli bir kullanıcı adı/i, "invalidUsername"],
   [/Kullanıcı adı zorunludur/i, "usernameRequired"],
+  [/Çok fazla hatalı kod/i, "tooManyCodeAttempts"],
   [/(geçersiz|hatalı).*doğrulama kodu|doğrulama kodu.*(hatalı|geçersiz)/i, "invalidCode"],
   [/listeden bir branş/i, "branchRequired"],
   [/Çok fazla hatalı giriş/i, "tooManyAttempts"],

@@ -47,7 +47,7 @@ function RegisterPage() {
   const [registered, setRegistered] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [failures, setFailures] = useState(0);
-  const [codeSentAt, setCodeSentAt] = useState<number | null>(null);
+  const [codeExpiresAt, setCodeExpiresAt] = useState<number | null>(null);
   const [now, setNow] = useState(() => Date.now());
 
   // ticks once a second only while a code is waiting to be used
@@ -56,7 +56,7 @@ function RegisterPage() {
     const id = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(id);
   }, [isEmailSent]);
-  const codeLeft = codeSentAt ? Math.max(0, CODE_TTL_MS - (now - codeSentAt)) : 0;
+  const codeLeft = codeExpiresAt ? Math.max(0, codeExpiresAt - now) : 0;
   const codeClock = `${Math.floor(codeLeft / 60000)}:${String(Math.floor((codeLeft % 60000) / 1000)).padStart(2, "0")}`;
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -136,8 +136,13 @@ function RegisterPage() {
       });
 
       if (response.ok) {
+        // a code that is still valid is sent again, so its clock keeps running from the first send
+        const { expiresInSeconds } = await response.json().catch(() => ({}));
         setIsEmailSent(true);
-        setCodeSentAt(Date.now());
+        setCodeExpiresAt(
+          Date.now() +
+            (typeof expiresInSeconds === "number" ? expiresInSeconds * 1000 : CODE_TTL_MS),
+        );
         setNow(Date.now());
         setVerificationCode("");
         setSuccessMsg(t("register.emailSentSuccess"));
@@ -286,10 +291,12 @@ function RegisterPage() {
               id="reg-code"
               type="text"
               required
-              inputMode="numeric"
+              autoCapitalize="characters"
               autoComplete="one-time-code"
+              spellCheck={false}
+              maxLength={12}
               placeholder={t("register.codePlaceholder")}
-              className={`${authInputClass} tracking-[0.3em]`}
+              className={`${authInputClass} uppercase tracking-[0.3em]`}
               value={verificationCode}
               onChange={(e) => setVerificationCode(e.target.value)}
             />

@@ -162,10 +162,12 @@ function ForgotPasswordPage() {
                 id="forgot-code"
                 type="text"
                 required
-                inputMode="numeric"
+                autoCapitalize="characters"
                 autoComplete="one-time-code"
+                spellCheck={false}
+                maxLength={12}
                 placeholder={t("register.codePlaceholder")}
-                className={`${authInputClass} tracking-[0.3em]`}
+                className={`${authInputClass} uppercase tracking-[0.3em]`}
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
               />

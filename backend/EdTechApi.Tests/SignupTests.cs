@@ -37,20 +37,36 @@ namespace EdTechApi.Tests
             _connection.Dispose();
         }
 
-        private sealed class NoEmail : IEmailService
+        private sealed class Outbox : IEmailService
         {
-            public Task SendEmailAsync(string toEmail, string subject, string body) => Task.CompletedTask;
+            public string LastBody = "";
+            public Task SendEmailAsync(string toEmail, string subject, string body)
+            {
+                LastBody = body;
+                return Task.CompletedTask;
+            }
         }
 
-        private AuthController Auth() => new(new ConfigurationBuilder().Build(), _db, _cache, new NoEmail())
+        private readonly Outbox _outbox = new();
+        private string _code = "";
+
+        // the real flow: ask for a code, read it from the mail
+        private async Task SendCode()
+        {
+            Assert.IsType<OkObjectResult>(await Auth().SendVerificationEmail(new SendVerificationEmailRequest { Email = "new@test.example" }));
+            _code = System.Text.RegularExpressions.Regex.Match(_outbox.LastBody, @">([A-Z2-9]{8})<").Groups[1].Value;
+            Assert.Equal(AuthController.CodeLength, _code.Length);
+        }
+
+        private AuthController Auth() => new(new ConfigurationBuilder().Build(), _db, _cache, _outbox)
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
         };
 
-        private static RegisterRequest Request(string username, bool teacher = false) => new()
+        private RegisterRequest Request(string username, bool teacher = false) => new()
         {
             FirstName = "Yeni", LastName = "Kişi", Username = username, Password = "Pass-2026",
-            Email = "new@test.example", VerificationCode = "123456",
+            Email = "new@test.example", VerificationCode = _code,
             ApplyAsTeacher = teacher, Branch = teacher ? "Matematik" : null,
             AboutMe = teacher ? "On yıldır lise matematiği öğretiyorum, olimpiyat takımı çalıştırıyorum." : null
         };
@@ -65,20 +81,18 @@ namespace EdTechApi.Tests
         [Fact]
         public async Task Failed_signup_keeps_the_email_code_until_one_succeeds()
         {
-            _cache.Set("new@test.example", "123456", TimeSpan.FromMinutes(5));
+            await SendCode();
 
             Assert.IsType<BadRequestObjectResult>(await Auth().Register(Request("taken")));
-            Assert.True(_cache.TryGetValue("new@test.example", out _));
-
+            // the same code still works after a validation error, and only once
             Assert.IsType<OkObjectResult>(await Auth().Register(Request("fresh")));
-            Assert.False(_cache.TryGetValue("new@test.example", out _));
             Assert.IsType<BadRequestObjectResult>(await Auth().Register(Request("again")));
         }
 
         [Fact]
         public async Task Short_password_is_rejected_before_an_account_exists()
         {
-            _cache.Set("new@test.example", "123456", TimeSpan.FromMinutes(5));
+            await SendCode();
             var request = Request("shorty");
             request.Password = "1234567";
 
@@ -89,7 +103,7 @@ namespace EdTechApi.Tests
         [Fact]
         public async Task Approved_applicant_becomes_a_teacher_and_can_still_delete_the_account()
         {
-            _cache.Set("new@test.example", "123456", TimeSpan.FromMinutes(5));
+            await SendCode();
             Assert.IsType<OkObjectResult>(await Auth().Register(Request("applicant", teacher: true)));
             var user = _db.Users.Single(u => u.Username == "applicant");
             Assert.Equal("User", user.Role); // no invite code: a learner until approved

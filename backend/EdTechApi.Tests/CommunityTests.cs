@@ -148,14 +148,16 @@ namespace EdTechApi.Tests
         [Fact]
         public async Task Public_signup_never_grants_a_staff_role_but_admins_can_create_one()
         {
-            var cache = new MemoryCache(new MemoryCacheOptions());
-            cache.Set("x@test", "111111", TimeSpan.FromMinutes(5));
-            var auth = new AuthController(new ConfigurationBuilder().Build(), _db, cache, new NoEmail()) { ControllerContext = As("root", "Admin") };
+            var mail = new CapturingEmail();
+            var auth = new AuthController(new ConfigurationBuilder().Build(), _db, new MemoryCache(new MemoryCacheOptions()), mail)
+                { ControllerContext = As("root", "Admin") };
+            Assert.IsType<OkObjectResult>(await auth.SendVerificationEmail(new SendVerificationEmailRequest { Email = "x@test" }));
+            var code = System.Text.RegularExpressions.Regex.Match(mail.Sent.Single().Body, @">([A-Z2-9]{8})<").Groups[1].Value;
 
             // even an admin's token does not turn the public form into a staff signup
             Assert.IsType<OkObjectResult>(await auth.Register(new RegisterRequest
             {
-                FirstName = "X", LastName = "Y", Username = "xavier", Email = "x@test", Password = "Pass-2026", VerificationCode = "111111"
+                FirstName = "X", LastName = "Y", Username = "xavier", Email = "x@test", Password = "Pass-2026", VerificationCode = code
             }));
             Assert.Equal("User", _db.Users.Single(u => u.Username == "xavier").Role);
 

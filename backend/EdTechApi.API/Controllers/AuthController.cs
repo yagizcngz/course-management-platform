@@ -39,8 +39,49 @@ namespace EdTechApi.API.Controllers
         public const int MaxTeacherBio = 2000;
         private const int MaxLoginFailures = 5;
         private static readonly TimeSpan LoginLockout = TimeSpan.FromMinutes(5);
-        private const string ResetPrefix = "pw-reset:";
+        private const string SignupPurpose = "signup", ResetPurpose = "pw-reset";
+        private static readonly TimeSpan SignupCodeLifetime = TimeSpan.FromMinutes(5);
         private static readonly TimeSpan ResetCodeLifetime = TimeSpan.FromMinutes(10);
+
+        // E-postayla giden tek kullanımlık kod: 8 karakter, karışan harfler (0/O, 1/I) yok; ~10^12 olasılık
+        public const int CodeLength = 8;
+        private const string CodeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        private sealed record PendingCode(string Code, DateTime ExpiresAt);
+        private enum CodeCheck { Ok, Wrong, Locked }
+
+        private static string CodeKey(string purpose, string email) => $"{purpose}:{email.Trim().ToLowerInvariant()}";
+
+        // Süresi dolmamış kod varsa aynısı yeniden gönderilir: başkasının "kod gönder"i sahibinin kodunu değiştiremez
+        private PendingCode IssueCode(string purpose, string email, TimeSpan lifetime)
+        {
+            var key = CodeKey(purpose, email);
+            if (_memoryCache.TryGetValue(key, out PendingCode? live) && live!.ExpiresAt > DateTime.UtcNow) return live;
+            var code = new string(Enumerable.Range(0, CodeLength)
+                .Select(_ => CodeAlphabet[System.Security.Cryptography.RandomNumberGenerator.GetInt32(CodeAlphabet.Length)]).ToArray());
+            var fresh = new PendingCode(code, DateTime.UtcNow + lifetime);
+            _memoryCache.Set(key, fresh, lifetime);
+            return fresh;
+        }
+
+        // Yanlış denemeler adres + istemci (IP) başına sayılır: yabancının denemeleri sahibinin 5 hakkını tüketmez.
+        // Sayaç koda bağlıdır; kilitlenen istemci kodun süresi dolunca yeni kod ister.
+        private CodeCheck CheckCode(string purpose, string email, string? typed)
+        {
+            if (!_memoryCache.TryGetValue(CodeKey(purpose, email), out PendingCode? live) || live == null) return CodeCheck.Wrong;
+            var failKey = $"{CodeKey(purpose, email)}:fail:{HttpContext.Connection.RemoteIpAddress}:{live.Code}";
+            var fails = _memoryCache.TryGetValue(failKey, out int f) ? f : 0;
+            if (fails >= MaxOtpAttempts) return CodeCheck.Locked;
+            // boşluk, tire ve küçük harf kabul edilir ("abcd-2345")
+            if (new string((typed ?? "").Where(char.IsLetterOrDigit).ToArray()).ToUpperInvariant() == live.Code) return CodeCheck.Ok;
+            _memoryCache.Set(failKey, fails + 1, live.ExpiresAt);
+            return fails + 1 >= MaxOtpAttempts ? CodeCheck.Locked : CodeCheck.Wrong;
+        }
+
+        private IActionResult CodeError(CodeCheck check) => BadRequest(check == CodeCheck.Locked
+            ? "Çok fazla hatalı kod denemesi. Kodun süresi dolunca yeni kod isteyin."
+            : "Geçersiz veya süresi dolmuş doğrulama kodu.");
+
+        private static int MinutesLeft(PendingCode code) => (int)Math.Ceiling((code.ExpiresAt - DateTime.UtcNow).TotalMinutes);
 
         [EnableRateLimiting("auth")]
         [HttpPost("send-verification-email")]
@@ -59,22 +100,23 @@ namespace EdTechApi.API.Controllers
                 return StatusCode(429, "Bu adrese az önce kod gönderildi. Lütfen bir dakika sonra tekrar deneyin.");
             _memoryCache.Set(cooldownKey, true, TimeSpan.FromMinutes(1));
 
-            var code = System.Security.Cryptography.RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
-
-            _memoryCache.Set(request.Email, code, TimeSpan.FromMinutes(5));
-            _memoryCache.Remove($"otp-fail:{request.Email}");
+            var code = IssueCode(SignupPurpose, request.Email, SignupCodeLifetime);
 
             var subject = "E-Kurs Kayıt Doğrulama Kodu";
             var body = $@"
                 <h3>E-Kurs Sistemine Hoş Geldiniz!</h3>
                 <p>Kayıt işleminizi tamamlamak için doğrulama kodunuz:</p>
-                <h2 style='color: #4285F4;'>{code}</h2>
-                <p>Bu kod 5 dakika boyunca geçerlidir.</p>
+                <h2 style='color: #4285F4; letter-spacing: 4px;'>{code.Code}</h2>
+                <p>Bu kod {MinutesLeft(code)} dakika boyunca geçerlidir.</p>
             ";
 
             await _emailService.SendEmailAsync(request.Email, subject, body);
 
-            return Ok(new { message = "Doğrulama kodu e-posta adresinize gönderildi." });
+            return Ok(new
+            {
+                message = "Doğrulama kodu e-posta adresinize gönderildi.",
+                expiresInSeconds = (int)(code.ExpiresAt - DateTime.UtcNow).TotalSeconds
+            });
         }
 
         // Herkese açık kayıt: yalnızca öğrenci hesabı açar; eğitmen adayının başvurusu yönetici onayına düşer.
@@ -83,15 +125,8 @@ namespace EdTechApi.API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
-            if (!_memoryCache.TryGetValue(request.Email, out string? expectedCode) || expectedCode != request.VerificationCode)
-            {
-                // Kaba kuvvete karşı: 5 yanlış denemede kod geçersiz olur, yenisi istenmeli
-                var failKey = $"otp-fail:{request.Email}";
-                var fails = _memoryCache.GetOrCreate(failKey, e => { e.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5); return 0; }) + 1;
-                _memoryCache.Set(failKey, fails, TimeSpan.FromMinutes(5));
-                if (fails >= MaxOtpAttempts) _memoryCache.Remove(request.Email);
-                return BadRequest("Geçersiz veya süresi dolmuş doğrulama kodu.");
-            }
+            var check = CheckCode(SignupPurpose, request.Email, request.VerificationCode);
+            if (check != CodeCheck.Ok) return CodeError(check);
             // kod burada silinmez: 5 dakikalık süresi boyunca geçerli kalır, böylece alınmış kullanıcı adı gibi
             // bir doğrulama hatasında kullanıcı yeni kod istemeden tekrar dener; kayıt tamamlanınca silinir
 
@@ -116,8 +151,7 @@ namespace EdTechApi.API.Controllers
                 request.ApplyAsTeacher ? new TeacherApplication { Branch = branch!, AboutMe = aboutMe! } : null);
 
             // Kayıt başarılı olduysa kodu önbellekten siliyoruz (tek kullanımlık)
-            _memoryCache.Remove(request.Email);
-            _memoryCache.Remove($"otp-fail:{request.Email}");
+            _memoryCache.Remove(CodeKey(SignupPurpose, request.Email));
 
             return Ok(new
             {
@@ -139,21 +173,19 @@ namespace EdTechApi.API.Controllers
                 return BadRequest("Geçerli bir e-posta adresi giriniz.");
 
             var key = email.ToLowerInvariant();
-            if (_memoryCache.TryGetValue($"{ResetPrefix}sent:{key}", out _))
+            if (_memoryCache.TryGetValue($"{ResetPurpose}-sent:{key}", out _))
                 return StatusCode(429, "Bu adrese az önce kod gönderildi. Lütfen bir dakika sonra tekrar deneyin.");
-            _memoryCache.Set($"{ResetPrefix}sent:{key}", true, TimeSpan.FromMinutes(1));
+            _memoryCache.Set($"{ResetPurpose}-sent:{key}", true, TimeSpan.FromMinutes(1));
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email != null && u.Email.ToLower() == key);
             if (user != null && user.Role != EdTechApi.Business.Services.AccountRetirement.DeletedRole)
             {
-                var code = System.Security.Cryptography.RandomNumberGenerator.GetInt32(100000, 1000000).ToString();
-                _memoryCache.Set(ResetPrefix + key, code, ResetCodeLifetime);
-                _memoryCache.Remove($"{ResetPrefix}fail:{key}");
+                var code = IssueCode(ResetPurpose, email, ResetCodeLifetime);
                 await _emailService.SendEmailAsync(user.Email!, "E-Kurs Şifre Sıfırlama Kodu", $@"
                 <h3>Şifre sıfırlama isteği</h3>
                 <p>Şifrenizi sıfırlamak için kodunuz:</p>
-                <h2 style='color: #4285F4;'>{code}</h2>
-                <p>Bu kod {ResetCodeLifetime.TotalMinutes:0} dakika boyunca geçerlidir. İsteği siz yapmadıysanız bu e-postayı yok sayın.</p>
+                <h2 style='color: #4285F4; letter-spacing: 4px;'>{code.Code}</h2>
+                <p>Bu kod {MinutesLeft(code)} dakika boyunca geçerlidir. İsteği siz yapmadıysanız bu e-postayı yok sayın.</p>
             ");
             }
 
@@ -167,21 +199,13 @@ namespace EdTechApi.API.Controllers
         {
             var email = (request.Email ?? "").Trim();
             var key = email.ToLowerInvariant();
-            if (!_memoryCache.TryGetValue(ResetPrefix + key, out string? expectedCode) || expectedCode != request.Code)
-            {
-                // kayıttaki gibi: 5 yanlış denemede kod geçersiz olur, yenisi istenmeli
-                var failKey = $"{ResetPrefix}fail:{key}";
-                var fails = (_memoryCache.TryGetValue(failKey, out int f) ? f : 0) + 1;
-                _memoryCache.Set(failKey, fails, ResetCodeLifetime);
-                if (fails >= MaxOtpAttempts) _memoryCache.Remove(ResetPrefix + key);
-                return BadRequest("Geçersiz veya süresi dolmuş doğrulama kodu.");
-            }
+            var check = CheckCode(ResetPurpose, email, request.Code);
+            if (check != CodeCheck.Ok) return CodeError(check);
             if ((request.NewPassword ?? "").Length < MinPasswordLength)
                 return BadRequest($"Şifre en az {MinPasswordLength} karakter olmalıdır.");
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email != null && u.Email.ToLower() == key);
-            _memoryCache.Remove(ResetPrefix + key);
-            _memoryCache.Remove($"{ResetPrefix}fail:{key}");
+            _memoryCache.Remove(CodeKey(ResetPurpose, email));
             if (user == null || user.Role == EdTechApi.Business.Services.AccountRetirement.DeletedRole)
                 return BadRequest("Geçersiz veya süresi dolmuş doğrulama kodu.");
 
