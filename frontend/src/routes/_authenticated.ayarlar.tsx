@@ -20,7 +20,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Switch } from "@/components/ui/switch";
 import { chip, pillButton } from "@/lib/utils";
-import { authHeaders, getRoleFromToken, isAdminRole, readError } from "@/lib/auth";
+import { authHeaders, clearSession, getRoleFromToken, isAdminRole, readError } from "@/lib/auth";
 import { API_BASE, refundNote, type ActivePurchase } from "@/components/courseHelpers";
 import { formatDate, formatTry } from "@/lib/utils";
 import { getReduceMotion, setReduceMotion } from "@/lib/motionPref";
@@ -60,6 +60,7 @@ function SettingsPage() {
     purchases: ActivePurchase[];
     refundWindowDays: number;
   } | null>(null);
+  const [walletFailed, setWalletFailed] = useState(false);
 
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -105,9 +106,9 @@ function SettingsPage() {
     fetchProfile();
     if (!admin)
       fetch(`${API_BASE}/api/wallet/me`, { headers: authHeaders() })
-        .then((r) => (r.ok ? r.json() : null))
-        .then((w) => w && setWallet(w))
-        .catch(() => {});
+        .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+        .then(setWallet)
+        .catch(() => setWalletFailed(true));
   }, []);
 
   useEffect(() => {
@@ -187,9 +188,7 @@ function SettingsPage() {
         setCurrentPassword("");
         setNewPassword("");
         setTimeout(() => {
-          localStorage.removeItem("jwt_token");
-          localStorage.removeItem("username");
-          localStorage.removeItem("user_profile");
+          clearSession();
           window.location.href = "/login";
         }, 1500);
       } else {
@@ -251,9 +250,7 @@ function SettingsPage() {
       if (res.ok) {
         showToast("success", t("settings.success"));
         setTimeout(() => {
-          localStorage.removeItem("jwt_token");
-          localStorage.removeItem("username");
-          localStorage.removeItem("user_profile");
+          clearSession();
           window.location.href = "/login";
         }, 1500);
       } else {
@@ -370,7 +367,7 @@ function SettingsPage() {
       });
       setDeletePassword("");
       if (!res.ok) throw new Error(await readError(res, t("settings.profile.deleteError")));
-      localStorage.removeItem("jwt_token");
+      clearSession();
       window.location.href = "/";
     } catch (e) {
       showToast("error", (e as Error).message);
@@ -666,7 +663,9 @@ function SettingsPage() {
                 {wallet ? formatTry(wallet.balance) : "—"}
               </span>
             </p>
-            {wallet && wallet.purchases.length === 0 ? (
+            {walletFailed ? (
+              <p className="text-sm text-destructive">{t("common.loadFailed")}</p>
+            ) : wallet && wallet.purchases.length === 0 ? (
               <p className="text-sm text-muted-foreground">{t("settings.purchases.none")}</p>
             ) : (
               <ul className="divide-y rounded-lg border border-border">

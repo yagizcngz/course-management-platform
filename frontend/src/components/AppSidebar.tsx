@@ -32,6 +32,7 @@ import type { TFunction } from "i18next";
 import {
   parseJwt,
   authHeaders,
+  clearSession,
   getToken,
   getRoleFromToken,
   isAdminRole,
@@ -331,9 +332,7 @@ export function AppSidebar() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("jwt_token");
-    localStorage.removeItem("username");
-    localStorage.removeItem("user_profile");
+    clearSession();
     navigate({ to: "/" });
   };
 

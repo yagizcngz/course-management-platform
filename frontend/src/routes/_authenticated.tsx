@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useState } from "react";
 import { AppSidebar } from "../components/AppSidebar";
 
-import { authHeaders, parseJwt } from "@/lib/auth";
+import { authHeaders, clearSession, parseJwt } from "@/lib/auth";
 import { API_BASE } from "@/components/courseHelpers";
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
@@ -24,8 +24,7 @@ const checkAndHandleExpiry = (navigate: ReturnType<typeof useNavigate>) => {
   const token = localStorage.getItem("jwt_token");
 
   if (!token || isTokenExpired(token)) {
-    localStorage.removeItem("jwt_token");
-    localStorage.removeItem("username");
+    clearSession();
     navigate({ to: "/login", replace: true });
     return false;
   }
@@ -58,8 +57,7 @@ function AuthenticatedLayout() {
       fetch(`${API_BASE}/api/auth/me`, { headers: authHeaders() })
         .then((r) => {
           if (r.status !== 401) return;
-          localStorage.removeItem("jwt_token");
-          localStorage.removeItem("username");
+          clearSession();
           navigate({ to: "/login", replace: true });
         })
         .catch(() => {});

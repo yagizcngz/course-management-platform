@@ -21,6 +21,10 @@ export const parseJwt = (token: string) => {
 export const getToken = () =>
   typeof window === "undefined" ? null : localStorage.getItem("jwt_token");
 
+/** Local sign-out: every key tied to the signed-in account (preferences such as theme or language stay). */
+export const clearSession = () =>
+  ["jwt_token", "username", "user_profile"].forEach((key) => localStorage.removeItem(key));
+
 export const authHeaders = (): Record<string, string> => {
   const token = getToken();
   return token
