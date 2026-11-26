@@ -46,7 +46,16 @@ namespace EdTechApi.Business.Services
             teacher.ProfilePictureUrl = updatedTeacher.ProfilePictureUrl;
 
             await _context.SaveChangesAsync();
+            await SyncInstructorNameAsync(_context, teacher);
             return true;
+        }
+
+        // Course.Instructor eğitmen adının kopyasıdır: ad değişince eğitmenin bütün kurslarında güncellenir
+        public static Task SyncInstructorNameAsync(AppDbContext db, Teacher teacher)
+        {
+            var name = $"{teacher.FirstName} {teacher.LastName}".Trim();
+            return db.Courses.IgnoreQueryFilters().Where(c => c.TeacherId == teacher.Id && c.Instructor != name)
+                .ExecuteUpdateAsync(s => s.SetProperty(c => c.Instructor, name));
         }
 
         public async Task DeleteTeacherAsync(int id)

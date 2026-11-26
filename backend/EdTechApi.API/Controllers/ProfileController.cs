@@ -342,6 +342,7 @@ namespace EdTechApi.API.Controllers
             }
 
             await _context.SaveChangesAsync();
+            if (teacher != null) await EdTechApi.Business.Services.TeacherService.SyncInstructorNameAsync(_context, teacher);
             return Ok(new { message = "Kullanıcı profili başarıyla güncellendi." });
         }
 
