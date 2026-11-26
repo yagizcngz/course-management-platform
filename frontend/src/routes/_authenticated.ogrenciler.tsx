@@ -835,11 +835,14 @@ function StudentsPage() {
                 <input
                   type="email"
                   required
-                  onInvalid={(e) =>
-                    (e.target as HTMLInputElement).setCustomValidity(t("validation.required"))
-                  }
+                  onInvalid={(e) => {
+                    const input = e.target as HTMLInputElement;
+                    // a malformed address keeps the browser's message plus the title hint
+                    if (input.validity.valueMissing)
+                      input.setCustomValidity(t("validation.required"));
+                  }}
                   onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
-                  pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                  pattern="[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}"
                   title={t("students.emailTitle")}
                   className="w-full p-2.5 bg-background border border-border rounded-md text-sm outline-none focus:border-foreground transition-colors"
                   value={newEmail}
