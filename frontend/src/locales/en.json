@@ -190,7 +190,9 @@
         "title": "The E-Kurs Ledger",
         "heading": "Register of scholars",
         "seal": "Seal"
-      }
+      },
+      "forgotPassword": "Forgot your password?",
+      "cantSignIn": "Can't sign in? Get help"
     },
     "register": {
       "panelTitle": "Every course lights a new *star* in your sky.",
@@ -1387,10 +1389,12 @@
       "myRequests": "My requests",
       "contactEyebrow": "Contact",
       "contactDesc": "Your message reaches the support team with your account name and email; you will see the reply on My Support Requests.",
+      "contactDescGuest": "Leave your name and e-mail address; the support team's reply comes to that address.",
       "emailLabel": "Email",
       "responseLabel": "Response time",
       "responseTime": "Usually within 24 hours on working days",
-      "formMessageLabel": "Your message"
+      "formMessageLabel": "Your message",
+      "guestName": "Your name"
     },
     "mySupportRequests": {
       "title": "My Support Requests",
@@ -2216,6 +2220,19 @@
       "text": "The data is a snapshot and nothing reaches a server: your changes reset when you reload. Sign in as a student, instructor or admin with any password.",
       "source": "Source code",
       "close": "Close"
+    },
+    "forgot": {
+      "panelTitle": "A new *key* for the same page.",
+      "panelEyebrow": "Reading room",
+      "eyebrow": "Password reset",
+      "title": "Reset your *password*",
+      "subtitle": "Enter the e-mail address on your account. We'll send you a 6-digit code.",
+      "codeSent": "If an account uses this address, a code is on its way. It is valid for 10 minutes.",
+      "newPassword": "New password",
+      "submit": "Set new password",
+      "done": "Password updated. Taking you to sign in…",
+      "failed": "The password could not be reset.",
+      "backToLogin": "Back to sign in"
     }
   }
 }

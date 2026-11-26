@@ -287,6 +287,12 @@ function LoginPage() {
                 {t("login.capsLock")}
               </p>
             )}
+            <Link
+              to="/sifremi-unuttum"
+              className="mt-2 inline-block text-xs font-medium text-gold underline-offset-4 hover:underline"
+            >
+              {t("login.forgotPassword")}
+            </Link>
           </div>
 
           <button
@@ -318,7 +324,13 @@ function LoginPage() {
             {t("login.registerNow")}
           </Link>
         </p>
-        <p className="mt-3 text-center text-xs">
+        <p className="mt-3 flex justify-center gap-4 text-center text-xs">
+          <Link
+            to="/destek"
+            className="text-muted-foreground transition-colors hover:text-foreground"
+          >
+            {t("login.cantSignIn")}
+          </Link>
           <Link to="/" className="text-muted-foreground transition-colors hover:text-foreground">
             {t("login.returnHome")}
           </Link>

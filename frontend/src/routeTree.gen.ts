@@ -9,68 +9,49 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ToplulukRouteImport } from './routes/topluluk'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as RegisterRouteImport } from './routes/register'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as KurslarRouteImport } from './routes/kurslar'
-import { Route as KategorilerRouteImport } from './routes/kategoriler'
-import { Route as HakkimizdaRouteImport } from './routes/hakkimizda'
-import { Route as EgitmenlerRouteImport } from './routes/egitmenler'
-import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedYardimTaleplerimRouteImport } from './routes/_authenticated.yardim-taleplerim'
-import { Route as AuthenticatedYardimRouteImport } from './routes/_authenticated.yardim'
-import { Route as AuthenticatedVerdigimKurslarRouteImport } from './routes/_authenticated.verdigim-kurslar'
-import { Route as AuthenticatedRaporlarRouteImport } from './routes/_authenticated.raporlar'
-import { Route as AuthenticatedProfilRouteImport } from './routes/_authenticated.profil'
-import { Route as AuthenticatedOgretmenlerRouteImport } from './routes/_authenticated.ogretmenler'
-import { Route as AuthenticatedOgrencilerRouteImport } from './routes/_authenticated.ogrenciler'
-import { Route as AuthenticatedMesajlarRouteImport } from './routes/_authenticated.mesajlar'
-import { Route as AuthenticatedKurslarimRouteImport } from './routes/_authenticated.kurslarim'
-import { Route as AuthenticatedKayitlarRouteImport } from './routes/_authenticated.kayitlar'
-import { Route as AuthenticatedKatalogRouteImport } from './routes/_authenticated.katalog'
-import { Route as AuthenticatedIsteklerRouteImport } from './routes/_authenticated.istekler'
-import { Route as AuthenticatedEgitmenPaneliRouteImport } from './routes/_authenticated.egitmen-paneli'
-import { Route as AuthenticatedDuyurularRouteImport } from './routes/_authenticated.duyurular'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
-import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated.cuzdan'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as DestekRouteImport } from './routes/destek'
+import { Route as EgitmenlerRouteImport } from './routes/egitmenler'
+import { Route as HakkimizdaRouteImport } from './routes/hakkimizda'
+import { Route as KategorilerRouteImport } from './routes/kategoriler'
+import { Route as KurslarRouteImport } from './routes/kurslar'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as SifremiUnuttumRouteImport } from './routes/sifremi-unuttum'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as ToplulukRouteImport } from './routes/topluluk'
 import { Route as AuthenticatedAyarlarRouteImport } from './routes/_authenticated.ayarlar'
+import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated.cuzdan'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated.dashboard'
+import { Route as AuthenticatedDuyurularRouteImport } from './routes/_authenticated.duyurular'
+import { Route as AuthenticatedEgitmenPaneliRouteImport } from './routes/_authenticated.egitmen-paneli'
+import { Route as AuthenticatedIsteklerRouteImport } from './routes/_authenticated.istekler'
+import { Route as AuthenticatedKatalogRouteImport } from './routes/_authenticated.katalog'
+import { Route as AuthenticatedKayitlarRouteImport } from './routes/_authenticated.kayitlar'
+import { Route as AuthenticatedKurslarimRouteImport } from './routes/_authenticated.kurslarim'
+import { Route as AuthenticatedMesajlarRouteImport } from './routes/_authenticated.mesajlar'
+import { Route as AuthenticatedOgrencilerRouteImport } from './routes/_authenticated.ogrenciler'
+import { Route as AuthenticatedOgretmenlerRouteImport } from './routes/_authenticated.ogretmenler'
+import { Route as AuthenticatedProfilRouteImport } from './routes/_authenticated.profil'
+import { Route as AuthenticatedRaporlarRouteImport } from './routes/_authenticated.raporlar'
+import { Route as AuthenticatedVerdigimKurslarRouteImport } from './routes/_authenticated.verdigim-kurslar'
+import { Route as AuthenticatedYardimRouteImport } from './routes/_authenticated.yardim'
+import { Route as AuthenticatedYardimTaleplerimRouteImport } from './routes/_authenticated.yardim-taleplerim'
 import { Route as AuthenticatedKursIdRouteImport } from './routes/_authenticated.kurs.$id'
 
-const ToplulukRoute = ToplulukRouteImport.update({
-  id: '/topluluk',
-  path: '/topluluk',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RegisterRoute = RegisterRouteImport.update({
-  id: '/register',
-  path: '/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const KurslarRoute = KurslarRouteImport.update({
-  id: '/kurslar',
-  path: '/kurslar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const KategorilerRoute = KategorilerRouteImport.update({
-  id: '/kategoriler',
-  path: '/kategoriler',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HakkimizdaRoute = HakkimizdaRouteImport.update({
-  id: '/hakkimizda',
-  path: '/hakkimizda',
+const DestekRoute = DestekRouteImport.update({
+  id: '/destek',
+  path: '/destek',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EgitmenlerRoute = EgitmenlerRouteImport.update({
@@ -78,76 +59,64 @@ const EgitmenlerRoute = EgitmenlerRouteImport.update({
   path: '/egitmenler',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
+const HakkimizdaRoute = HakkimizdaRouteImport.update({
+  id: '/hakkimizda',
+  path: '/hakkimizda',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const KategorilerRoute = KategorilerRouteImport.update({
+  id: '/kategoriler',
+  path: '/kategoriler',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedYardimTaleplerimRoute =
-  AuthenticatedYardimTaleplerimRouteImport.update({
-    id: '/yardim-taleplerim',
-    path: '/yardim-taleplerim',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedYardimRoute = AuthenticatedYardimRouteImport.update({
-  id: '/yardim',
-  path: '/yardim',
+const KurslarRoute = KurslarRouteImport.update({
+  id: '/kurslar',
+  path: '/kurslar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SifremiUnuttumRoute = SifremiUnuttumRouteImport.update({
+  id: '/sifremi-unuttum',
+  path: '/sifremi-unuttum',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ToplulukRoute = ToplulukRouteImport.update({
+  id: '/topluluk',
+  path: '/topluluk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAyarlarRoute = AuthenticatedAyarlarRouteImport.update({
+  id: '/ayarlar',
+  path: '/ayarlar',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedVerdigimKurslarRoute =
-  AuthenticatedVerdigimKurslarRouteImport.update({
-    id: '/verdigim-kurslar',
-    path: '/verdigim-kurslar',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedRaporlarRoute = AuthenticatedRaporlarRouteImport.update({
-  id: '/raporlar',
-  path: '/raporlar',
+const AuthenticatedCuzdanRoute = AuthenticatedCuzdanRouteImport.update({
+  id: '/cuzdan',
+  path: '/cuzdan',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedProfilRoute = AuthenticatedProfilRouteImport.update({
-  id: '/profil',
-  path: '/profil',
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedOgretmenlerRoute =
-  AuthenticatedOgretmenlerRouteImport.update({
-    id: '/ogretmenler',
-    path: '/ogretmenler',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedOgrencilerRoute = AuthenticatedOgrencilerRouteImport.update({
-  id: '/ogrenciler',
-  path: '/ogrenciler',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedMesajlarRoute = AuthenticatedMesajlarRouteImport.update({
-  id: '/mesajlar',
-  path: '/mesajlar',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedKurslarimRoute = AuthenticatedKurslarimRouteImport.update({
-  id: '/kurslarim',
-  path: '/kurslarim',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedKayitlarRoute = AuthenticatedKayitlarRouteImport.update({
-  id: '/kayitlar',
-  path: '/kayitlar',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedKatalogRoute = AuthenticatedKatalogRouteImport.update({
-  id: '/katalog',
-  path: '/katalog',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedIsteklerRoute = AuthenticatedIsteklerRouteImport.update({
-  id: '/istekler',
-  path: '/istekler',
+const AuthenticatedDuyurularRoute = AuthenticatedDuyurularRouteImport.update({
+  id: '/duyurular',
+  path: '/duyurular',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedEgitmenPaneliRoute =
@@ -156,26 +125,69 @@ const AuthenticatedEgitmenPaneliRoute =
     path: '/egitmen-paneli',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedDuyurularRoute = AuthenticatedDuyurularRouteImport.update({
-  id: '/duyurular',
-  path: '/duyurular',
+const AuthenticatedIsteklerRoute = AuthenticatedIsteklerRouteImport.update({
+  id: '/istekler',
+  path: '/istekler',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
+const AuthenticatedKatalogRoute = AuthenticatedKatalogRouteImport.update({
+  id: '/katalog',
+  path: '/katalog',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedCuzdanRoute = AuthenticatedCuzdanRouteImport.update({
-  id: '/cuzdan',
-  path: '/cuzdan',
+const AuthenticatedKayitlarRoute = AuthenticatedKayitlarRouteImport.update({
+  id: '/kayitlar',
+  path: '/kayitlar',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedAyarlarRoute = AuthenticatedAyarlarRouteImport.update({
-  id: '/ayarlar',
-  path: '/ayarlar',
+const AuthenticatedKurslarimRoute = AuthenticatedKurslarimRouteImport.update({
+  id: '/kurslarim',
+  path: '/kurslarim',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedMesajlarRoute = AuthenticatedMesajlarRouteImport.update({
+  id: '/mesajlar',
+  path: '/mesajlar',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedOgrencilerRoute = AuthenticatedOgrencilerRouteImport.update({
+  id: '/ogrenciler',
+  path: '/ogrenciler',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedOgretmenlerRoute =
+  AuthenticatedOgretmenlerRouteImport.update({
+    id: '/ogretmenler',
+    path: '/ogretmenler',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedProfilRoute = AuthenticatedProfilRouteImport.update({
+  id: '/profil',
+  path: '/profil',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedRaporlarRoute = AuthenticatedRaporlarRouteImport.update({
+  id: '/raporlar',
+  path: '/raporlar',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedVerdigimKurslarRoute =
+  AuthenticatedVerdigimKurslarRouteImport.update({
+    id: '/verdigim-kurslar',
+    path: '/verdigim-kurslar',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedYardimRoute = AuthenticatedYardimRouteImport.update({
+  id: '/yardim',
+  path: '/yardim',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedYardimTaleplerimRoute =
+  AuthenticatedYardimTaleplerimRouteImport.update({
+    id: '/yardim-taleplerim',
+    path: '/yardim-taleplerim',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedKursIdRoute = AuthenticatedKursIdRouteImport.update({
   id: '/kurs/$id',
   path: '/kurs/$id',
@@ -184,12 +196,14 @@ const AuthenticatedKursIdRoute = AuthenticatedKursIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/destek': typeof DestekRoute
   '/egitmenler': typeof EgitmenlerRoute
   '/hakkimizda': typeof HakkimizdaRoute
   '/kategoriler': typeof KategorilerRoute
   '/kurslar': typeof KurslarRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/sifremi-unuttum': typeof SifremiUnuttumRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/topluluk': typeof ToplulukRoute
   '/ayarlar': typeof AuthenticatedAyarlarRoute
@@ -213,12 +227,14 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/destek': typeof DestekRoute
   '/egitmenler': typeof EgitmenlerRoute
   '/hakkimizda': typeof HakkimizdaRoute
   '/kategoriler': typeof KategorilerRoute
   '/kurslar': typeof KurslarRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/sifremi-unuttum': typeof SifremiUnuttumRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/topluluk': typeof ToplulukRoute
   '/ayarlar': typeof AuthenticatedAyarlarRoute
@@ -244,12 +260,14 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/destek': typeof DestekRoute
   '/egitmenler': typeof EgitmenlerRoute
   '/hakkimizda': typeof HakkimizdaRoute
   '/kategoriler': typeof KategorilerRoute
   '/kurslar': typeof KurslarRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/sifremi-unuttum': typeof SifremiUnuttumRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/topluluk': typeof ToplulukRoute
   '/_authenticated/ayarlar': typeof AuthenticatedAyarlarRoute
@@ -275,12 +293,14 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/destek'
     | '/egitmenler'
     | '/hakkimizda'
     | '/kategoriler'
     | '/kurslar'
     | '/login'
     | '/register'
+    | '/sifremi-unuttum'
     | '/sitemap.xml'
     | '/topluluk'
     | '/ayarlar'
@@ -304,12 +324,14 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/destek'
     | '/egitmenler'
     | '/hakkimizda'
     | '/kategoriler'
     | '/kurslar'
     | '/login'
     | '/register'
+    | '/sifremi-unuttum'
     | '/sitemap.xml'
     | '/topluluk'
     | '/ayarlar'
@@ -334,12 +356,14 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/destek'
     | '/egitmenler'
     | '/hakkimizda'
     | '/kategoriler'
     | '/kurslar'
     | '/login'
     | '/register'
+    | '/sifremi-unuttum'
     | '/sitemap.xml'
     | '/topluluk'
     | '/_authenticated/ayarlar'
@@ -365,72 +389,25 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  DestekRoute: typeof DestekRoute
   EgitmenlerRoute: typeof EgitmenlerRoute
   HakkimizdaRoute: typeof HakkimizdaRoute
   KategorilerRoute: typeof KategorilerRoute
   KurslarRoute: typeof KurslarRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  SifremiUnuttumRoute: typeof SifremiUnuttumRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   ToplulukRoute: typeof ToplulukRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/topluluk': {
-      id: '/topluluk'
-      path: '/topluluk'
-      fullPath: '/topluluk'
-      preLoaderRoute: typeof ToplulukRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/register': {
-      id: '/register'
-      path: '/register'
-      fullPath: '/register'
-      preLoaderRoute: typeof RegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/kurslar': {
-      id: '/kurslar'
-      path: '/kurslar'
-      fullPath: '/kurslar'
-      preLoaderRoute: typeof KurslarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/kategoriler': {
-      id: '/kategoriler'
-      path: '/kategoriler'
-      fullPath: '/kategoriler'
-      preLoaderRoute: typeof KategorilerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/hakkimizda': {
-      id: '/hakkimizda'
-      path: '/hakkimizda'
-      fullPath: '/hakkimizda'
-      preLoaderRoute: typeof HakkimizdaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/egitmenler': {
-      id: '/egitmenler'
-      path: '/egitmenler'
-      fullPath: '/egitmenler'
-      preLoaderRoute: typeof EgitmenlerRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -440,116 +417,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/destek': {
+      id: '/destek'
+      path: '/destek'
+      fullPath: '/destek'
+      preLoaderRoute: typeof DestekRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/yardim-taleplerim': {
-      id: '/_authenticated/yardim-taleplerim'
-      path: '/yardim-taleplerim'
-      fullPath: '/yardim-taleplerim'
-      preLoaderRoute: typeof AuthenticatedYardimTaleplerimRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/egitmenler': {
+      id: '/egitmenler'
+      path: '/egitmenler'
+      fullPath: '/egitmenler'
+      preLoaderRoute: typeof EgitmenlerRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/yardim': {
-      id: '/_authenticated/yardim'
-      path: '/yardim'
-      fullPath: '/yardim'
-      preLoaderRoute: typeof AuthenticatedYardimRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/hakkimizda': {
+      id: '/hakkimizda'
+      path: '/hakkimizda'
+      fullPath: '/hakkimizda'
+      preLoaderRoute: typeof HakkimizdaRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/verdigim-kurslar': {
-      id: '/_authenticated/verdigim-kurslar'
-      path: '/verdigim-kurslar'
-      fullPath: '/verdigim-kurslar'
-      preLoaderRoute: typeof AuthenticatedVerdigimKurslarRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/kategoriler': {
+      id: '/kategoriler'
+      path: '/kategoriler'
+      fullPath: '/kategoriler'
+      preLoaderRoute: typeof KategorilerRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/raporlar': {
-      id: '/_authenticated/raporlar'
-      path: '/raporlar'
-      fullPath: '/raporlar'
-      preLoaderRoute: typeof AuthenticatedRaporlarRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/kurslar': {
+      id: '/kurslar'
+      path: '/kurslar'
+      fullPath: '/kurslar'
+      preLoaderRoute: typeof KurslarRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/profil': {
-      id: '/_authenticated/profil'
-      path: '/profil'
-      fullPath: '/profil'
-      preLoaderRoute: typeof AuthenticatedProfilRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/ogretmenler': {
-      id: '/_authenticated/ogretmenler'
-      path: '/ogretmenler'
-      fullPath: '/ogretmenler'
-      preLoaderRoute: typeof AuthenticatedOgretmenlerRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/ogrenciler': {
-      id: '/_authenticated/ogrenciler'
-      path: '/ogrenciler'
-      fullPath: '/ogrenciler'
-      preLoaderRoute: typeof AuthenticatedOgrencilerRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/sifremi-unuttum': {
+      id: '/sifremi-unuttum'
+      path: '/sifremi-unuttum'
+      fullPath: '/sifremi-unuttum'
+      preLoaderRoute: typeof SifremiUnuttumRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/mesajlar': {
-      id: '/_authenticated/mesajlar'
-      path: '/mesajlar'
-      fullPath: '/mesajlar'
-      preLoaderRoute: typeof AuthenticatedMesajlarRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/kurslarim': {
-      id: '/_authenticated/kurslarim'
-      path: '/kurslarim'
-      fullPath: '/kurslarim'
-      preLoaderRoute: typeof AuthenticatedKurslarimRouteImport
-      parentRoute: typeof AuthenticatedRoute
+    '/topluluk': {
+      id: '/topluluk'
+      path: '/topluluk'
+      fullPath: '/topluluk'
+      preLoaderRoute: typeof ToplulukRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/kayitlar': {
-      id: '/_authenticated/kayitlar'
-      path: '/kayitlar'
-      fullPath: '/kayitlar'
-      preLoaderRoute: typeof AuthenticatedKayitlarRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/katalog': {
-      id: '/_authenticated/katalog'
-      path: '/katalog'
-      fullPath: '/katalog'
-      preLoaderRoute: typeof AuthenticatedKatalogRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/istekler': {
-      id: '/_authenticated/istekler'
-      path: '/istekler'
-      fullPath: '/istekler'
-      preLoaderRoute: typeof AuthenticatedIsteklerRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/egitmen-paneli': {
-      id: '/_authenticated/egitmen-paneli'
-      path: '/egitmen-paneli'
-      fullPath: '/egitmen-paneli'
-      preLoaderRoute: typeof AuthenticatedEgitmenPaneliRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/duyurular': {
-      id: '/_authenticated/duyurular'
-      path: '/duyurular'
-      fullPath: '/duyurular'
-      preLoaderRoute: typeof AuthenticatedDuyurularRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+    '/_authenticated/ayarlar': {
+      id: '/_authenticated/ayarlar'
+      path: '/ayarlar'
+      fullPath: '/ayarlar'
+      preLoaderRoute: typeof AuthenticatedAyarlarRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/cuzdan': {
@@ -559,11 +501,109 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCuzdanRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/ayarlar': {
-      id: '/_authenticated/ayarlar'
-      path: '/ayarlar'
-      fullPath: '/ayarlar'
-      preLoaderRoute: typeof AuthenticatedAyarlarRouteImport
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/duyurular': {
+      id: '/_authenticated/duyurular'
+      path: '/duyurular'
+      fullPath: '/duyurular'
+      preLoaderRoute: typeof AuthenticatedDuyurularRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/egitmen-paneli': {
+      id: '/_authenticated/egitmen-paneli'
+      path: '/egitmen-paneli'
+      fullPath: '/egitmen-paneli'
+      preLoaderRoute: typeof AuthenticatedEgitmenPaneliRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/istekler': {
+      id: '/_authenticated/istekler'
+      path: '/istekler'
+      fullPath: '/istekler'
+      preLoaderRoute: typeof AuthenticatedIsteklerRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/katalog': {
+      id: '/_authenticated/katalog'
+      path: '/katalog'
+      fullPath: '/katalog'
+      preLoaderRoute: typeof AuthenticatedKatalogRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/kayitlar': {
+      id: '/_authenticated/kayitlar'
+      path: '/kayitlar'
+      fullPath: '/kayitlar'
+      preLoaderRoute: typeof AuthenticatedKayitlarRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/kurslarim': {
+      id: '/_authenticated/kurslarim'
+      path: '/kurslarim'
+      fullPath: '/kurslarim'
+      preLoaderRoute: typeof AuthenticatedKurslarimRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/mesajlar': {
+      id: '/_authenticated/mesajlar'
+      path: '/mesajlar'
+      fullPath: '/mesajlar'
+      preLoaderRoute: typeof AuthenticatedMesajlarRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/ogrenciler': {
+      id: '/_authenticated/ogrenciler'
+      path: '/ogrenciler'
+      fullPath: '/ogrenciler'
+      preLoaderRoute: typeof AuthenticatedOgrencilerRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/ogretmenler': {
+      id: '/_authenticated/ogretmenler'
+      path: '/ogretmenler'
+      fullPath: '/ogretmenler'
+      preLoaderRoute: typeof AuthenticatedOgretmenlerRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/profil': {
+      id: '/_authenticated/profil'
+      path: '/profil'
+      fullPath: '/profil'
+      preLoaderRoute: typeof AuthenticatedProfilRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/raporlar': {
+      id: '/_authenticated/raporlar'
+      path: '/raporlar'
+      fullPath: '/raporlar'
+      preLoaderRoute: typeof AuthenticatedRaporlarRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/verdigim-kurslar': {
+      id: '/_authenticated/verdigim-kurslar'
+      path: '/verdigim-kurslar'
+      fullPath: '/verdigim-kurslar'
+      preLoaderRoute: typeof AuthenticatedVerdigimKurslarRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/yardim': {
+      id: '/_authenticated/yardim'
+      path: '/yardim'
+      fullPath: '/yardim'
+      preLoaderRoute: typeof AuthenticatedYardimRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/yardim-taleplerim': {
+      id: '/_authenticated/yardim-taleplerim'
+      path: '/yardim-taleplerim'
+      fullPath: '/yardim-taleplerim'
+      preLoaderRoute: typeof AuthenticatedYardimTaleplerimRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/kurs/$id': {
@@ -625,12 +665,14 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  DestekRoute: DestekRoute,
   EgitmenlerRoute: EgitmenlerRoute,
   HakkimizdaRoute: HakkimizdaRoute,
   KategorilerRoute: KategorilerRoute,
   KurslarRoute: KurslarRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  SifremiUnuttumRoute: SifremiUnuttumRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   ToplulukRoute: ToplulukRoute,
 }

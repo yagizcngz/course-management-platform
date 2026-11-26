@@ -190,7 +190,9 @@
         "title": "E-Kurs Defteri",
         "heading": "Öğrenci kayıt defteri",
         "seal": "Mühür"
-      }
+      },
+      "forgotPassword": "Şifreni mi unuttun?",
+      "cantSignIn": "Giriş yapamıyor musun? Yardım al"
     },
     "register": {
       "panelTitle": "Her kurs gökyüzünde yeni bir *yıldız* yakar.",
@@ -1308,10 +1310,12 @@
       "myRequests": "Taleplerim",
       "contactEyebrow": "İletişim",
       "contactDesc": "Mesajınız hesabınızdaki ad ve e-posta ile destek ekibine gider; yanıtı Yardım Taleplerim sayfasında görürsünüz.",
+      "contactDescGuest": "Adını ve e-posta adresini bırak; destek ekibinin yanıtı bu adrese gelir.",
       "emailLabel": "E-posta",
       "responseLabel": "Yanıt süresi",
       "responseTime": "İş günlerinde genellikle 24 saat içinde",
-      "formMessageLabel": "Mesajınız"
+      "formMessageLabel": "Mesajınız",
+      "guestName": "Adın"
     },
     "mySupportRequests": {
       "title": "Yardım Taleplerim",
@@ -2099,6 +2103,19 @@
       "text": "Veriler bir anlık görüntüdür ve hiçbir şey sunucuya gitmez: değişiklikleriniz sayfa yenilenince sıfırlanır. Öğrenci, eğitmen veya yönetici olarak herhangi bir şifreyle giriş yapın.",
       "source": "Kaynak kod",
       "close": "Kapat"
+    },
+    "forgot": {
+      "panelTitle": "Aynı sayfa için yeni bir *anahtar*.",
+      "panelEyebrow": "Okuma odası",
+      "eyebrow": "Şifre sıfırlama",
+      "title": "Şifreni *sıfırla*",
+      "subtitle": "Hesabındaki e-posta adresini yaz. Sana 6 haneli bir kod gönderelim.",
+      "codeSent": "Bu adresle bir hesap varsa kod yolda. 10 dakika geçerli.",
+      "newPassword": "Yeni şifre",
+      "submit": "Yeni şifreyi kaydet",
+      "done": "Şifren güncellendi. Girişe yönlendiriliyorsun…",
+      "failed": "Şifre sıfırlanamadı.",
+      "backToLogin": "Girişe dön"
     }
   }
 }
