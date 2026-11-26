@@ -113,6 +113,11 @@ const RULES: Rule[] = [
   [/Video bağlantısının süresi dolmuş/i, "videoLinkExpired"],
   [/Kategori bulunamadı/i, "categoryNotFound"],
   [/Kategori adı boş olamaz/i, "categoryNameRequired"],
+  [
+    /Bu kategori kullanımda: (\d+) kurs, (\d+) eğitmen/i,
+    "categoryInUse",
+    (m) => ({ courses: m[1], teachers: m[2] }),
+  ],
   [/Bu kategori adı zaten mevcut/i, "categoryExists"],
   [/ID eşleşmiyor/i, "idMismatch"],
   [/Kurs başlığı boş bırakılamaz/i, "courseTitleRequired"],

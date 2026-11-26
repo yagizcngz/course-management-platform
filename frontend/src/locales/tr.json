@@ -1118,6 +1118,7 @@
       "videoLinkExpired": "Video bağlantısının süresi dolmuş veya geçersiz. Sayfayı yenileyin.",
       "categoryNotFound": "Kategori bulunamadı.",
       "categoryNameRequired": "Kategori adı boş olamaz.",
+      "categoryInUse": "Bu kategori kullanımda: {{courses}} kurs, {{teachers}} eğitmen. Önce onları başka bir kategoriye taşıyın.",
       "categoryExists": "Bu kategori adı zaten mevcut.",
       "idMismatch": "Kayıt kimliği eşleşmiyor.",
       "courseTitleRequired": "Kurs başlığı boş bırakılamaz.",

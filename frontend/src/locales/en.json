@@ -1191,6 +1191,7 @@
       "videoLinkExpired": "The video link has expired or is invalid. Refresh the page.",
       "categoryNotFound": "Category not found.",
       "categoryNameRequired": "Category name cannot be empty.",
+      "categoryInUse": "This category is in use: {{courses}} courses, {{teachers}} instructors. Move them to another category first.",
       "categoryExists": "This category name already exists.",
       "idMismatch": "The record id does not match.",
       "courseTitleRequired": "Course title cannot be empty.",
