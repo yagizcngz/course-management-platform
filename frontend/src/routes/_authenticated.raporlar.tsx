@@ -8,6 +8,7 @@ import { API_BASE } from "@/components/courseHelpers";
 import { authHeaders } from "@/lib/auth";
 import { toast } from "sonner";
 import { formatTry, formatDate } from "@/lib/utils";
+import { growthPercent, thisAndLastMonth } from "@/lib/growth";
 export const Route = createFileRoute("/_authenticated/raporlar")({
   head: () => ({
     meta: [
@@ -195,25 +196,12 @@ function ReportsPage() {
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
-  // 1. Toplam Öğrenci Büyümesi (geçen aya göre % artış)
-  let studentsThisMonth = 0;
-  let studentsBeforeThisMonth = 0;
-  dbStudents.forEach((s) => {
-    const dRaw = s.createdAt || s.CreatedAt || s.date || s.Date;
-    if (!dRaw) return; // no date: not counted as new this month
-    const d = new Date(dRaw);
-    if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
-      studentsThisMonth++;
-    } else if (d < new Date(currentYear, currentMonth, 1)) {
-      studentsBeforeThisMonth++;
-    }
-  });
-  const studentGrowth =
-    studentsBeforeThisMonth === 0
-      ? studentsThisMonth > 0
-        ? 100
-        : 0
-      : (studentsThisMonth / studentsBeforeThisMonth) * 100;
+  // 1. Yeni öğrenciler: bu ay katılanlar geçen ay katılanlarla karşılaştırılır
+  const newStudents = thisAndLastMonth(
+    dbStudents.map((s) => s.createdAt || s.CreatedAt || s.date || s.Date),
+    now,
+  );
+  const studentGrowth = growthPercent(newStudents.current, newStudents.previous);
 
   // 2. Yeni Kayıtlar (son 30 gün vs önceki 30 gün ivmesi)
   let enrollmentsLast30 = 0;
@@ -228,12 +216,7 @@ function ReportsPage() {
       enrollmentsPrev30++;
     }
   });
-  const enrollmentGrowth =
-    enrollmentsPrev30 === 0
-      ? enrollmentsLast30 > 0
-        ? 100
-        : 0
-      : ((enrollmentsLast30 - enrollmentsPrev30) / enrollmentsPrev30) * 100;
+  const enrollmentGrowth = growthPercent(enrollmentsLast30, enrollmentsPrev30);
 
   // 3. Gelir: cüzdan satın alma kayıtlarından (iadeler düşülmüş, net) — /api/wallet/summary
   const monthRevenue = (year: number, month: number) =>
@@ -241,12 +224,7 @@ function ReportsPage() {
   const lastMonthDate = new Date(currentYear, currentMonth - 1, 1);
   const revThisMonth = monthRevenue(currentYear, currentMonth);
   const revLastMonth = monthRevenue(lastMonthDate.getFullYear(), lastMonthDate.getMonth());
-  const revenueGrowth =
-    revLastMonth === 0
-      ? revThisMonth > 0
-        ? 100
-        : 0
-      : ((revThisMonth - revLastMonth) / revLastMonth) * 100;
+  const revenueGrowth = growthPercent(revThisMonth, revLastMonth);
 
   const dynamicRevenue = formatTry(revThisMonth);
 
