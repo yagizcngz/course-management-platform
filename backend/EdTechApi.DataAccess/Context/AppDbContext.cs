@@ -64,6 +64,12 @@ namespace EdTechApi.DataAccess.Context
             modelBuilder.Entity<Teacher>().HasQueryFilter(t => !t.IsDeleted);
             modelBuilder.Entity<Lesson>().HasQueryFilter(l => !l.IsDeleted);
 
+            modelBuilder.Entity<SystemSetting>().HasIndex(s => s.SettingKey).IsUnique();
+            // eğitmen önce boş numarayla eklenir, numara kimlikten sonra yazılır: boş değerler indekse girmez
+            modelBuilder.Entity<Teacher>().HasIndex(t => t.TeacherNumber).IsUnique().HasFilter("[TeacherNumber] <> ''");
+            modelBuilder.Entity<Course>().Property(c => c.Price).HasPrecision(18, 2);
+            modelBuilder.Entity<Enrollment>().Property(e => e.Grade).HasPrecision(18, 2);
+
             modelBuilder.Entity<User>().Property(u => u.Balance).HasPrecision(18, 2);
             modelBuilder.Entity<User>().HasIndex(u => u.Username).IsUnique();
             modelBuilder.Entity<User>().HasIndex(u => u.Role);

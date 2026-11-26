@@ -157,6 +157,7 @@ namespace EdTechApi.DataAccess.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Price")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("SubCategory")
@@ -306,6 +307,7 @@ namespace EdTechApi.DataAccess.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<decimal>("Grade")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<bool>("IsDeleted")
@@ -626,13 +628,16 @@ namespace EdTechApi.DataAccess.Migrations
 
                     b.Property<string>("SettingKey")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("SettingValue")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SettingKey")
+                        .IsUnique();
 
                     b.ToTable("SystemSettings");
                 });
@@ -677,12 +682,16 @@ namespace EdTechApi.DataAccess.Migrations
 
                     b.Property<string>("TeacherNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TeacherNumber")
+                        .IsUnique()
+                        .HasFilter("[TeacherNumber] <> ''");
 
                     b.HasIndex("UserId");
 
