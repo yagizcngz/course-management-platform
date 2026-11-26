@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
+import i18next from "i18next";
 import { toast } from "sonner";
 import { Check, Clock, Lock, MessageSquare, UserPlus, UserMinus } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -364,7 +365,6 @@ export function ProfileRecord({ target }: { target: ProfileTarget }) {
 }
 
 function usePublicProfile(target: ProfileTarget | null) {
-  const { t } = useTranslation();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
   const kind = target?.kind;
@@ -376,7 +376,7 @@ function usePublicProfile(target: ProfileTarget | null) {
     setError(null);
     fetch(`${API_BASE}/api/profile/public/${kind}/${id}`, { headers: authHeaders() })
       .then(async (r) => {
-        if (!r.ok) throw new Error(await readError(r, t("community.profileLoadFailed")));
+        if (!r.ok) throw new Error(await readError(r, i18next.t("community.profileLoadFailed")));
         return r.json() as Promise<PublicProfile>;
       })
       .then((p) => !off && setProfile(p))
@@ -384,7 +384,8 @@ function usePublicProfile(target: ProfileTarget | null) {
     return () => {
       off = true;
     };
-  }, [kind, id, t]);
+    // i18next.t, not t: switching language must not blank and refetch an open profile
+  }, [kind, id]);
   return { profile, error };
 }
 

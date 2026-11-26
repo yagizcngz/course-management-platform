@@ -4,6 +4,7 @@ import { PageHeader, SectionHeader } from "../components/PageHeader";
 import { CheckCircle2, Edit2, UploadCloud } from "lucide-react";
 import { useEffect, useMemo, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import i18next from "i18next";
 import type { TFunction } from "i18next";
 import { fetchCategories, type CourseData, type TeacherLiteDto } from "../components/courseHelpers";
 import { toast } from "sonner";
@@ -68,7 +69,7 @@ function ProfilePage() {
   const { t, i18n } = useTranslation();
   const badges = useBadges();
   const [name, setName] = useState("");
-  const [role, setRole] = useState(t("profile.roles.student"));
+  const [role, setRole] = useState("user"); // raw API role, translated when shown
   const [photoUrl, setPhotoUrl] = useState("");
   const [bio, setBio] = useState("");
   const [isPublic, setIsPublic] = useState(true);
@@ -93,7 +94,7 @@ function ProfilePage() {
 
   useEffect(() => {
     const token = localStorage.getItem("jwt_token");
-    let currentUserName = t("profile.defaultUser");
+    let currentUserName = "";
 
     if (token) {
       const payload = parseJwt(token);
@@ -111,8 +112,7 @@ function ProfilePage() {
           currentUserName = tokenName;
         }
 
-        // Çeviri fonksiyonunu burada çağırıyoruz
-        setRole(translateRole(tokenRole, t));
+        setRole(tokenRole);
       }
     }
 
@@ -161,18 +161,20 @@ function ProfilePage() {
             );
           }
         } else {
-          toast.error(t("common.loadFailed"));
+          toast.error(i18next.t("common.loadFailed"));
         }
       } catch (err) {
         console.warn("Profil bilgisi alınamadı:", err);
-        toast.error(t("common.loadFailed"));
+        toast.error(i18next.t("common.loadFailed"));
       } finally {
         setProfileLoaded(true);
       }
     };
 
     loadProfile();
-  }, [t]);
+    // i18next.t, not t: a language switch must not reload the profile and wipe unsaved edits
+    // (react-i18next hands out a new t and i18n wrapper on every switch)
+  }, []);
 
   const [taughtCourses, setTaughtCourses] = useState<CourseData[]>([]);
 
@@ -318,7 +320,7 @@ function ProfilePage() {
     }
   };
 
-  const isTeacherRole = role === t("profile.roles.teacher") || isTeacherRoleName(role);
+  const isTeacherRole = isTeacherRoleName(role);
 
   const displayedCourses = useMemo(() => {
     const taughtCourseTitles = isTeacherRole
@@ -389,7 +391,9 @@ function ProfilePage() {
                 <h2 className="text-xl font-bold break-words [overflow-wrap:anywhere]">
                   {name || t("profile.defaultUser")}
                 </h2>
-                <p className="text-sm text-muted-foreground uppercase tracking-[0.2em]">{role}</p>
+                <p className="text-sm text-muted-foreground uppercase tracking-[0.2em]">
+                  {translateRole(role, t)}
+                </p>
               </div>
             </div>
 
