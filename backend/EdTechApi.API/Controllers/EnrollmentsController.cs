@@ -128,8 +128,10 @@ namespace EdTechApi.API.Controllers
             var myStudentId = await _context.Students.Where(s => s.UserId == user.Id).Select(s => (int?)s.Id).FirstOrDefaultAsync();
             var myCourseIds = await _context.Courses.Where(c => c.Teacher != null && c.Teacher.UserId == user.Id).Select(c => c.Id).ToListAsync();
 
+            // başkalarının satırı yalnızca "bu kursta bir kayıt" der: kart sayıları çalışır, kimin nerede olduğu görünmez
             foreach (var e in enrollments.Where(e => e.StudentId != myStudentId && !myCourseIds.Contains(e.CourseId)))
             {
+                e.StudentId = 0;
                 e.StudentFullName = string.Empty;
                 e.StudentNumber = string.Empty;
             }
